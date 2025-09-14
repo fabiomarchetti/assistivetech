@@ -1,0 +1,17 @@
+# File sensibili con credenziali
+dati_aruba.txt
+*.credentials
+.env
+.env.local
+
+# Directory di sistema
+.DS_Store
+*/.DS_Store
+
+# Log files
+*.log
+
+# Editor temporanei
+*.tmp
+*.temp
+*~

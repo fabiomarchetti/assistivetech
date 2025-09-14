@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrazione - AssistiveTech.it</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #673AB7;
+            --secondary-color: #9C27B0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        .register-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .register-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            padding: 12px;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(103, 58, 183, 0.25);
+        }
+
+        .role-card {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .role-card:hover {
+            border-color: var(--primary-color);
+            background-color: #f8f9fa;
+        }
+
+        .role-card.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(103, 58, 183, 0.1);
+        }
+
+        .role-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+
+        .password-strength {
+            height: 5px;
+            border-radius: 3px;
+            background: #e9ecef;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .strength-weak { background-color: #dc3545; width: 25%; }
+        .strength-fair { background-color: #fd7e14; width: 50%; }
+        .strength-good { background-color: #ffc107; width: 75%; }
+        .strength-strong { background-color: #28a745; width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="register-container">
+            <!-- Header -->
+            <div class="register-header">
+                <h1 class="h3 mb-3">
+                    <i class="bi bi-person-plus"></i> Registrazione
+                </h1>
+                <p class="mb-0">Crea il tuo account AssistiveTech.it</p>
+            </div>
+
+            <!-- Form -->
+            <div class="p-4">
+                <div id="alert-container"></div>
+
+                <form id="registerForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nome" class="form-label">
+                                    <i class="bi bi-person"></i> Nome *
+                                </label>
+                                <input type="text" class="form-control" id="nome" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="cognome" class="form-label">
+                                    <i class="bi bi-person"></i> Cognome *
+                                </label>
+                                <input type="text" class="form-control" id="cognome" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">
+                            <i class="bi bi-envelope"></i> Email/Username *
+                        </label>
+                        <input type="email" class="form-control" id="username" placeholder="nome@esempio.com" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="password" class="form-label">
+                                    <i class="bi bi-lock"></i> Password *
+                                </label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="password" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="password-strength">
+                                    <div class="password-strength-bar" id="strengthBar"></div>
+                                </div>
+                                <small id="passwordHelp" class="form-text text-muted">
+                                    Minimo 6 caratteri
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">
+                                    <i class="bi bi-lock-fill"></i> Conferma Password *
+                                </label>
+                                <input type="password" class="form-control" id="confirmPassword" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selezione Ruolo -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-person-badge"></i> Tipo di Account *
+                        </label>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="role-card p-3 text-center" data-role="amministratore">
+                                    <div class="role-icon mb-2">
+                                        <i class="bi bi-shield-check"></i>
+                                    </div>
+                                    <h6>Amministratore</h6>
+                                    <small class="text-muted">Gestione completa del sistema</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="role-card p-3 text-center" data-role="educatore">
+                                    <div class="role-icon mb-2">
+                                        <i class="bi bi-mortarboard"></i>
+                                    </div>
+                                    <h6>Educatore/Terapista</h6>
+                                    <small class="text-muted">Gestione pazienti e agende</small>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="ruolo" required>
+                    </div>
+
+                    <!-- Privacy -->
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="privacy" required>
+                            <label class="form-check-label" for="privacy">
+                                Accetto i <a href="#" class="text-decoration-none">termini di servizio</a>
+                                e la <a href="#" class="text-decoration-none">privacy policy</a> *
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg" id="registerBtn">
+                            <i class="bi bi-person-plus"></i> Crea Account
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Links -->
+                <div class="text-center">
+                    <p class="mb-2">Hai già un account?</p>
+                    <a href="login.html" class="btn btn-outline-primary">
+                        <i class="bi bi-box-arrow-in-right"></i> Accedi
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back to Home -->
+        <div class="text-center mt-3">
+            <a href="index.html" class="text-white text-decoration-none">
+                <i class="bi bi-arrow-left"></i> Torna alla Home
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Password visibility toggle
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const password = document.getElementById('password');
+            const icon = this.querySelector('i');
+
+            if (password.type === 'password') {
+                password.type = 'text';
+                icon.className = 'bi bi-eye-slash';
+            } else {
+                password.type = 'password';
+                icon.className = 'bi bi-eye';
+            }
+        });
+
+        // Password strength checker
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthBar = document.getElementById('strengthBar');
+            const helpText = document.getElementById('passwordHelp');
+
+            let strength = 0;
+            let message = '';
+
+            if (password.length >= 6) strength += 1;
+            if (password.match(/[a-z]/)) strength += 1;
+            if (password.match(/[A-Z]/)) strength += 1;
+            if (password.match(/[0-9]/)) strength += 1;
+            if (password.match(/[^a-zA-Z0-9]/)) strength += 1;
+
+            strengthBar.className = 'password-strength-bar';
+
+            switch (strength) {
+                case 0:
+                case 1:
+                    strengthBar.classList.add('strength-weak');
+                    message = 'Password troppo debole';
+                    break;
+                case 2:
+                    strengthBar.classList.add('strength-fair');
+                    message = 'Password discreta';
+                    break;
+                case 3:
+                case 4:
+                    strengthBar.classList.add('strength-good');
+                    message = 'Password buona';
+                    break;
+                case 5:
+                    strengthBar.classList.add('strength-strong');
+                    message = 'Password molto forte';
+                    break;
+            }
+
+            helpText.textContent = message;
+        });
+
+        // Role selection
+        document.querySelectorAll('.role-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                document.getElementById('ruolo').value = this.dataset.role;
+            });
+        });
+
+        // Show alert
+        function showAlert(message, type = 'danger') {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+
+            // Scroll to top to show alert
+            alertContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Form validation and submission
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const registerBtn = document.getElementById('registerBtn');
+            const nome = document.getElementById('nome').value.trim();
+            const cognome = document.getElementById('cognome').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const ruolo = document.getElementById('ruolo').value;
+            const privacy = document.getElementById('privacy').checked;
+
+            // Validations
+            if (!nome || !cognome || !username || !password || !ruolo) {
+                showAlert('Tutti i campi obbligatori devono essere compilati');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAlert('La password deve essere di almeno 6 caratteri');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert('Le password non coincidono');
+                return;
+            }
+
+            if (!privacy) {
+                showAlert('Devi accettare i termini di servizio e la privacy policy');
+                return;
+            }
+
+            // Show loading state
+            registerBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Registrazione in corso...';
+            registerBtn.disabled = true;
+
+            try {
+                const response = await fetch('api/auth_registrazioni.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'create',
+                        nome: nome,
+                        cognome: cognome,
+                        username: username,
+                        password: password,
+                        ruolo: ruolo
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Registrazione completata con successo! Reindirizzamento alla pagina di login...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showAlert(result.message || 'Errore durante la registrazione');
+                }
+            } catch (error) {
+                console.error('Errore durante la registrazione:', error);
+                showAlert('Errore di connessione. Riprova più tardi.');
+            } finally {
+                registerBtn.innerHTML = '<i class="bi bi-person-plus"></i> Crea Account';
+                registerBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pannello Amministrativo - AssistiveTech.it</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #673AB7;
+            --secondary-color: #9C27B0;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+        }
+
+        .navbar {
+            background-color: var(--danger-color) !important;
+        }
+
+        .sidebar {
+            background-color: #f8f9fa;
+            min-height: calc(100vh - 56px);
+            padding: 1rem 0;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .sidebar .nav-link {
+            color: #495057;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, var(--danger-color), #dc3545);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .stats-card {
+            border-left: 4px solid var(--danger-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+
+        .table th {
+            border-top: none;
+            background-color: #f8f9fa;
+        }
+
+        .role-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .role-amministratore { background-color: #dc3545; color: white; }
+        .role-educatore { background-color: #007bff; color: white; }
+        .role-paziente { background-color: #28a745; color: white; }
+
+        .action-buttons .btn {
+            margin: 0 0.2rem;
+        }
+
+        .modal-header {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .form-control:focus {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="../index.html">
+                <i class="bi bi-shield-lock"></i> Pannello Amministrativo
+            </a>
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-gear"></i> <span id="adminName">Amministratore</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="../dashboard.html">
+                            <i class="bi bi-speedometer2"></i> Dashboard Utente
+                        </a></li>
+                        <li><a class="dropdown-item" href="../index.html">
+                            <i class="bi bi-house"></i> Sito Principale
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 px-0">
+                <div class="sidebar">
+                    <ul class="nav nav-pills flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" onclick="showSection('overview')">
+                                <i class="bi bi-bar-chart"></i> Panoramica
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('users')">
+                                <i class="bi bi-people"></i> Gestione Utenti
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('sedi')">
+                                <i class="bi bi-buildings"></i> Gestione Sedi
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('system')">
+                                <i class="bi bi-gear"></i> Sistema
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('logs')">
+                                <i class="bi bi-file-text"></i> Log Accessi
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('settings')">
+                                <i class="bi bi-sliders"></i> Impostazioni
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10">
+                <div class="p-4">
+                    <!-- Admin Header -->
+                    <div class="admin-header">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h3 class="mb-1">
+                                    <i class="bi bi-shield-check"></i> Pannello Amministrativo
+                                </h3>
+                                <p class="mb-0">Gestione completa del sistema AssistiveTech.it</p>
+                            </div>
+                            <div class="col-md-4 text-md-end">
+                                <button class="btn btn-light" onclick="refreshData()">
+                                    <i class="bi bi-arrow-clockwise"></i> Aggiorna Dati
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alert Container -->
+                    <div id="alert-container"></div>
+
+                    <!-- Overview Section -->
+                    <div id="overview-section">
+                        <!-- Statistics Cards -->
+                        <div class="row mb-4">
+                            <div class="col-md-3 mb-3">
+                                <div class="card stats-card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h6 class="card-subtitle mb-2 text-muted">Utenti Totali</h6>
+                                                <h3 class="card-title" id="totalUsers">0</h3>
+                                            </div>
+                                            <i class="bi bi-people display-6 text-danger"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card stats-card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h6 class="card-subtitle mb-2 text-muted">Amministratori</h6>
+                                                <h3 class="card-title" id="totalAdmins">0</h3>
+                                            </div>
+                                            <i class="bi bi-shield-check display-6 text-danger"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card stats-card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h6 class="card-subtitle mb-2 text-muted">Educatori</h6>
+                                                <h3 class="card-title" id="totalEducatori">0</h3>
+                                            </div>
+                                            <i class="bi bi-mortarboard display-6 text-primary"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card stats-card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h6 class="card-subtitle mb-2 text-muted">Pazienti</h6>
+                                                <h3 class="card-title" id="totalPazienti">0</h3>
+                                            </div>
+                                            <i class="bi bi-person-heart display-6 text-success"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Azioni Rapide</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-3 mb-2">
+                                                <button class="btn btn-danger w-100" onclick="showCreateUser()">
+                                                    <i class="bi bi-person-plus"></i> Nuovo Utente
+                                                </button>
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <button class="btn btn-warning w-100" onclick="showSection('users')">
+                                                    <i class="bi bi-people"></i> Gestisci Utenti
+                                                </button>
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <button class="btn btn-info w-100" onclick="showSection('logs')">
+                                                    <i class="bi bi-file-text"></i> Visualizza Log
+                                                </button>
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <button class="btn btn-secondary w-100" onclick="showSection('system')">
+                                                    <i class="bi bi-gear"></i> Sistema
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Users Management Section -->
+                    <div id="users-section" class="d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4>Gestione Utenti</h4>
+                            <button class="btn btn-danger" onclick="showCreateUser()">
+                                <i class="bi bi-person-plus"></i> Nuovo Utente
+                            </button>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Nome</th>
+                                                <th>Email/Username</th>
+                                                <th>Ruolo</th>
+                                                <th>Sede</th>
+                                                <th>Data Registrazione</th>
+                                                <th>Ultimo Accesso</th>
+                                                <th>Azioni</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="usersTableBody">
+                                            <tr>
+                                                <td colspan="8" class="text-center">
+                                                    <div class="spinner-border text-danger" role="status">
+                                                        <span class="visually-hidden">Caricamento...</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sedi Management Section -->
+                    <div id="sedi-section" class="d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4>Gestione Sedi</h4>
+                            <button class="btn btn-danger" onclick="showCreateSede()">
+                                <i class="bi bi-building-add"></i> Nuova Sede
+                            </button>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Nome Sede</th>
+                                                <th>Indirizzo</th>
+                                                <th>Città</th>
+                                                <th>Provincia</th>
+                                                <th>CAP</th>
+                                                <th>Telefono</th>
+                                                <th>Email</th>
+                                                <th>Stato</th>
+                                                <th>Data Creazione</th>
+                                                <th>Azioni</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="sediTableBody">
+                                            <tr>
+                                                <td colspan="11" class="text-center">
+                                                    <div class="spinner-border text-danger" role="status">
+                                                        <span class="visually-hidden">Caricamento...</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Section -->
+                    <div id="system-section" class="d-none">
+                        <h4>Informazioni Sistema</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6>Stato Database</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Host:</strong> MySQL Aruba</p>
+                                        <p><strong>Database:</strong> Sql1073852_1</p>
+                                        <p><strong>Connessione:</strong> <span class="badge bg-success">Attiva</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6>Versione Sistema</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>AssistiveTech.it:</strong> v1.0.0</p>
+                                        <p><strong>Ultimo Aggiornamento:</strong> 2025-01-13</p>
+                                        <p><strong>Ambiente:</strong> Produzione</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Logs Section -->
+                    <div id="logs-section" class="d-none">
+                        <h4>Log Accessi</h4>
+                        <div class="card">
+                            <div class="card-body">
+                                <p class="text-muted">I log degli accessi sono disponibili sul server. Implementazione in corso...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Section -->
+                    <div id="settings-section" class="d-none">
+                        <h4>Impostazioni Sistema</h4>
+                        <div class="card">
+                            <div class="card-body">
+                                <p class="text-muted">Pannello impostazioni in sviluppo...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sede Modal -->
+    <div class="modal fade" id="sedeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sedeModalTitle">Nuova Sede</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="sedeForm">
+                        <input type="hidden" id="sedeId">
+                        <div class="mb-3">
+                            <label for="sedeNome" class="form-label">Nome Sede *</label>
+                            <input type="text" class="form-control" id="sedeNome" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sedeIndirizzo" class="form-label">Indirizzo</label>
+                            <input type="text" class="form-control" id="sedeIndirizzo">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="sedeCitta" class="form-label">Città</label>
+                                    <input type="text" class="form-control" id="sedeCitta">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="sedeProvincia" class="form-label">Provincia</label>
+                                    <input type="text" class="form-control" id="sedeProvincia" maxlength="2" style="text-transform: uppercase;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="sedeCap" class="form-label">CAP</label>
+                                    <input type="text" class="form-control" id="sedeCap" maxlength="5">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="sedeTelefono" class="form-label">Telefono</label>
+                                    <input type="tel" class="form-control" id="sedeTelefono">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sedeEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="sedeEmail">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-danger" onclick="saveSede()">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalTitle">Nuovo Utente</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="userForm">
+                        <input type="hidden" id="userId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="userNome" class="form-label">Nome *</label>
+                                    <input type="text" class="form-control" id="userNome" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="userCognome" class="form-label">Cognome *</label>
+                                    <input type="text" class="form-control" id="userCognome" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userUsername" class="form-label">Email/Username *</label>
+                            <input type="email" class="form-control" id="userUsername" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userPassword" class="form-label">Password *</label>
+                            <input type="password" class="form-control" id="userPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userRuolo" class="form-label">Ruolo *</label>
+                            <select class="form-select" id="userRuolo" required onchange="toggleRoleFields()">
+                                <option value="">Seleziona ruolo</option>
+                                <option value="amministratore">Amministratore</option>
+                                <option value="educatore">Educatore</option>
+                                <option value="paziente">Paziente</option>
+                            </select>
+                        </div>
+
+                        <!-- Campo sede sempre visibile -->
+                        <div class="mb-3">
+                            <label for="userSede" class="form-label">Sede</label>
+                            <select class="form-select" id="userSede">
+                                <option value="">Caricamento sedi...</option>
+                            </select>
+                        </div>
+
+                        <!-- Campi aggiuntivi per educatori e pazienti -->
+                        <div id="extraFields" class="d-none">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="userSettore" class="form-label">Settore</label>
+                                        <input type="text" class="form-control" id="userSettore" placeholder="es. Primaria, Secondaria...">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="userClasse" class="form-label">Classe</label>
+                                        <input type="text" class="form-control" id="userClasse" placeholder="es. 1A, 2B...">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-danger" onclick="saveUser()">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let usersData = [];
+        let sediData = [];
+
+        // Check authentication
+        window.addEventListener('load', function() {
+            const user = localStorage.getItem('user');
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            const userData = JSON.parse(user);
+            if (userData.ruolo_registrazione !== 'amministratore') {
+                alert('Accesso negato: non sei un amministratore');
+                window.location.href = '../dashboard.html';
+                return;
+            }
+
+            document.getElementById('adminName').textContent = `${userData.nome_registrazione} ${userData.cognome_registrazione}`;
+            loadData();
+            loadSedi();
+        });
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('[id$="-section"]').forEach(section => {
+                section.classList.add('d-none');
+            });
+
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.remove('d-none');
+
+            // Update active nav link
+            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Load section-specific data
+            if (sectionName === 'users') {
+                loadUsers();
+            } else if (sectionName === 'sedi') {
+                loadSedi();
+            }
+        }
+
+        function toggleRoleFields() {
+            const ruolo = document.getElementById('userRuolo').value;
+            const extraFields = document.getElementById('extraFields');
+
+            if (ruolo === 'educatore' || ruolo === 'paziente') {
+                extraFields.classList.remove('d-none');
+                loadSediDropdown();
+            } else {
+                extraFields.classList.add('d-none');
+            }
+        }
+
+        function showAlert(message, type = 'danger') {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        async function loadData() {
+            await loadUsers();
+            updateStats();
+        }
+
+        async function loadSedi() {
+            try {
+                const response = await fetch('../api/api_sedi.php');
+                const result = await response.json();
+                if (result.success) {
+                    sediData = result.sedi || [];
+                    updateSediTable();
+                } else {
+                    showAlert('Errore nel caricamento sedi: ' + result.message);
+                }
+            } catch (error) {
+                showAlert('Errore di connessione nel caricamento sedi');
+            }
+        }
+
+        function updateSediTable() {
+            const tbody = document.getElementById('sediTableBody');
+            if (sediData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" class="text-center">Nessuna sede trovata</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = sediData.map(sede => `
+                <tr>
+                    <td>${sede.id_sede}</td>
+                    <td><strong>${sede.nome_sede}</strong></td>
+                    <td>${sede.indirizzo || '-'}</td>
+                    <td>${sede.citta || '-'}</td>
+                    <td>${sede.provincia || '-'}</td>
+                    <td>${sede.cap || '-'}</td>
+                    <td>${sede.telefono || '-'}</td>
+                    <td>${sede.email || '-'}</td>
+                    <td><span class="badge bg-${sede.stato_sede === 'attiva' ? 'success' : 'warning'}">${sede.stato_sede}</span></td>
+                    <td>${formatDateFromDB(sede.data_creazione)}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-warning" onclick="editSede(${sede.id_sede})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Funzione specifica per formattare date dal database (formato dd/mm/yyyy hh:mm:ss)
+        function formatDateFromDB(dateString) {
+            if (!dateString) return '-';
+            try {
+                // Se è già in formato dd/mm/yyyy, restituiscilo così
+                if (dateString.match(/^\d{2}\/\d{2}\/\d{4}/)) {
+                    return dateString.split(' ')[0]; // Prendi solo la parte data
+                }
+                // Altrimenti prova a parsarlo come data standard
+                return new Date(dateString).toLocaleDateString('it-IT');
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        async function loadSediDropdown() {
+            const sedeSelect = document.getElementById('userSede');
+            sedeSelect.innerHTML = '<option value="">Seleziona sede...</option>';
+
+            // Se non abbiamo ancora i dati delle sedi, caricali
+            if (sediData.length === 0) {
+                await loadSedi();
+            }
+
+            sediData.forEach(sede => {
+                if (sede.stato_sede === 'attiva') {
+                    const option = document.createElement('option');
+                    option.value = sede.id_sede;
+                    option.textContent = sede.nome_sede;
+                    sedeSelect.appendChild(option);
+                }
+            });
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('../api/auth_registrazioni.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_all' })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    usersData = result.registrazioni || [];
+                    updateUsersTable();
+                    updateStats();
+                } else {
+                    showAlert('Errore nel caricamento utenti: ' + result.message);
+                }
+            } catch (error) {
+                showAlert('Errore di connessione nel caricamento utenti');
+            }
+        }
+
+        function updateUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            if (usersData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">Nessun utente trovato</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = usersData.map(user => `
+                <tr>
+                    <td>${user.id_registrazione}</td>
+                    <td>${user.nome_registrazione} ${user.cognome_registrazione}</td>
+                    <td>${user.username_registrazione}</td>
+                    <td><span class="role-badge role-${user.ruolo_registrazione}">${getRoleDisplayName(user.ruolo_registrazione)}</span></td>
+                    <td><small class="text-muted">Da implementare</small></td>
+                    <td>${formatDate(user.data_registrazione)}</td>
+                    <td>${user.ultimo_accesso ? formatDate(user.ultimo_accesso) : 'Mai'}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-warning" onclick="editUser(${user.id_registrazione})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id_registrazione}, '${user.nome_registrazione} ${user.cognome_registrazione}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStats() {
+            const stats = usersData.reduce((acc, user) => {
+                acc.total++;
+                acc[user.ruolo_registrazione]++;
+                return acc;
+            }, { total: 0, amministratore: 0, educatore: 0, paziente: 0 });
+
+            document.getElementById('totalUsers').textContent = stats.total;
+            document.getElementById('totalAdmins').textContent = stats.amministratore;
+            document.getElementById('totalEducatori').textContent = stats.educatore;
+            document.getElementById('totalPazienti').textContent = stats.paziente;
+        }
+
+        function getRoleDisplayName(role) {
+            const roles = {
+                'amministratore': 'Amministratore',
+                'educatore': 'Educatore',
+                'paziente': 'Paziente'
+            };
+            return roles[role] || role;
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('it-IT');
+        }
+
+        function showCreateUser() {
+            document.getElementById('userModalTitle').textContent = 'Nuovo Utente';
+            document.getElementById('userForm').reset();
+            document.getElementById('userId').value = '';
+            document.getElementById('extraFields').classList.add('d-none');
+            loadSediDropdown();
+            new bootstrap.Modal(document.getElementById('userModal')).show();
+        }
+
+        function showCreateSede() {
+            document.getElementById('sedeModalTitle').textContent = 'Nuova Sede';
+            document.getElementById('sedeForm').reset();
+            document.getElementById('sedeId').value = '';
+            new bootstrap.Modal(document.getElementById('sedeModal')).show();
+        }
+
+        function editSede(id) {
+            const sede = sediData.find(s => s.id_sede == id);
+            if (!sede) return;
+
+            document.getElementById('sedeModalTitle').textContent = 'Modifica Sede';
+            document.getElementById('sedeId').value = sede.id_sede;
+            document.getElementById('sedeNome').value = sede.nome_sede;
+            document.getElementById('sedeIndirizzo').value = sede.indirizzo || '';
+            document.getElementById('sedeCitta').value = sede.citta || '';
+            document.getElementById('sedeProvincia').value = sede.provincia || '';
+            document.getElementById('sedeCap').value = sede.cap || '';
+            document.getElementById('sedeTelefono').value = sede.telefono || '';
+            document.getElementById('sedeEmail').value = sede.email || '';
+
+            new bootstrap.Modal(document.getElementById('sedeModal')).show();
+        }
+
+        async function saveSede() {
+            const form = document.getElementById('sedeForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const sedeId = document.getElementById('sedeId').value;
+            const isEdit = sedeId !== '';
+
+            const sedeData = {
+                action: isEdit ? 'update' : 'create',
+                nome_sede: document.getElementById('sedeNome').value.trim(),
+                indirizzo: document.getElementById('sedeIndirizzo').value.trim(),
+                citta: document.getElementById('sedeCitta').value.trim(),
+                provincia: document.getElementById('sedeProvincia').value.trim(),
+                cap: document.getElementById('sedeCap').value.trim(),
+                telefono: document.getElementById('sedeTelefono').value.trim(),
+                email: document.getElementById('sedeEmail').value.trim()
+            };
+
+            if (isEdit) {
+                sedeData.id_sede = sedeId;
+            }
+
+            try {
+                const response = await fetch('../api/api_sedi.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(sedeData)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert(isEdit ? 'Sede aggiornata con successo' : 'Sede creata con successo', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('sedeModal')).hide();
+                    await loadSedi();
+                } else {
+                    showAlert('Errore: ' + result.message);
+                }
+            } catch (error) {
+                showAlert('Errore di connessione durante il salvataggio');
+            }
+        }
+
+        function editUser(id) {
+            const user = usersData.find(u => u.id_registrazione == id);
+            if (!user) return;
+
+            document.getElementById('userModalTitle').textContent = 'Modifica Utente';
+            document.getElementById('userId').value = user.id_registrazione;
+            document.getElementById('userNome').value = user.nome_registrazione;
+            document.getElementById('userCognome').value = user.cognome_registrazione;
+            document.getElementById('userUsername').value = user.username_registrazione;
+            document.getElementById('userPassword').value = user.password_registrazione;
+            document.getElementById('userRuolo').value = user.ruolo_registrazione;
+
+            // Carica le sedi e poi imposta i valori per educatori/pazienti
+            loadSediDropdown().then(() => {
+                if (user.ruolo_registrazione === 'educatore' || user.ruolo_registrazione === 'paziente') {
+                    toggleRoleFields();
+                    // Qui dovremmo recuperare i dati dalle tabelle educatori/pazienti
+                    // Per ora impostiamo valori di default
+                }
+            });
+
+            new bootstrap.Modal(document.getElementById('userModal')).show();
+        }
+
+        async function saveUser() {
+            const form = document.getElementById('userForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const userId = document.getElementById('userId').value;
+            const isEdit = userId !== '';
+
+            const userData = {
+                action: isEdit ? 'update' : 'create',
+                nome: document.getElementById('userNome').value.trim(),
+                cognome: document.getElementById('userCognome').value.trim(),
+                username: document.getElementById('userUsername').value.trim(),
+                password: document.getElementById('userPassword').value,
+                ruolo: document.getElementById('userRuolo').value
+            };
+
+            // Aggiungi campo sede per tutti i ruoli
+            userData.id_sede = document.getElementById('userSede').value || 1; // Default alla sede principale
+
+            // Aggiungi campi extra per educatori e pazienti
+            const ruolo = document.getElementById('userRuolo').value;
+            if (ruolo === 'educatore' || ruolo === 'paziente') {
+                userData.settore = document.getElementById('userSettore').value.trim();
+                userData.classe = document.getElementById('userClasse').value.trim();
+
+                // La sede è obbligatoria per educatori e pazienti
+                if (!document.getElementById('userSede').value) {
+                    showAlert('La sede è obbligatoria per educatori e pazienti');
+                    return;
+                }
+            }
+
+            if (isEdit) {
+                userData.id = userId;
+            }
+
+            try {
+                const response = await fetch('../api/auth_registrazioni.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert(isEdit ? 'Utente aggiornato con successo' : 'Utente creato con successo', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('userModal')).hide();
+                    await loadUsers();
+                } else {
+                    showAlert('Errore: ' + result.message);
+                }
+            } catch (error) {
+                showAlert('Errore di connessione durante il salvataggio');
+            }
+        }
+
+        async function deleteUser(id, name) {
+            if (!confirm(`Sei sicuro di voler eliminare l'utente "${name}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('../api/auth_registrazioni.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'delete', id: id })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('Utente eliminato con successo', 'success');
+                    await loadUsers();
+                } else {
+                    showAlert('Errore nell\'eliminazione: ' + result.message);
+                }
+            } catch (error) {
+                showAlert('Errore di connessione durante l\'eliminazione');
+            }
+        }
+
+        function refreshData() {
+            loadData();
+            showAlert('Dati aggiornati', 'success');
+        }
+
+        function logout() {
+            if (confirm('Sei sicuro di voler uscire dal pannello amministrativo?')) {
+                localStorage.removeItem('user');
+                window.location.href = '../index.html';
+            }
+        }
+    </script>
+</body>
+</html>

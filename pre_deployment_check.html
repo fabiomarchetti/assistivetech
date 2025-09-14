@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checklist Pre-Deployment - AssistiveTech.it</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .check-item {
+            border-left: 4px solid #007bff;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+        }
+        .check-item.success {
+            border-left-color: #28a745;
+            background-color: #d4edda;
+        }
+        .check-item.error {
+            border-left-color: #dc3545;
+            background-color: #f8d7da;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <h1 class="text-center mb-5">
+            <i class="bi bi-check-circle"></i> Checklist Pre-Deployment
+        </h1>
+
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+
+                <h3 class="mb-4">Files Essenziali</h3>
+                <div id="files-check">
+                    <div class="check-item" data-file="index.html">
+                        <i class="bi bi-file-earmark-text"></i> <strong>index.html</strong> - Homepage principale
+                        <div class="status mt-2"></div>
+                    </div>
+                    <div class="check-item" data-file="login.html">
+                        <i class="bi bi-box-arrow-in-right"></i> <strong>login.html</strong> - Pagina login
+                        <div class="status mt-2"></div>
+                    </div>
+                    <div class="check-item" data-file="register.html">
+                        <i class="bi bi-person-plus"></i> <strong>register.html</strong> - Pagina registrazione
+                        <div class="status mt-2"></div>
+                    </div>
+                    <div class="check-item" data-file="dashboard.html">
+                        <i class="bi bi-speedometer2"></i> <strong>dashboard.html</strong> - Dashboard educatori
+                        <div class="status mt-2"></div>
+                    </div>
+                    <div class="check-item" data-file="api/auth_login.php">
+                        <i class="bi bi-server"></i> <strong>api/auth_login.php</strong> - API login
+                        <div class="status mt-2"></div>
+                    </div>
+                    <div class="check-item" data-file="api/auth_registrazioni.php">
+                        <i class="bi bi-server"></i> <strong>api/auth_registrazioni.php</strong> - API gestione utenti
+                        <div class="status mt-2"></div>
+                    </div>
+                    <div class="check-item" data-file="api/create_database.sql">
+                        <i class="bi bi-database"></i> <strong>api/create_database.sql</strong> - Script database
+                        <div class="status mt-2"></div>
+                    </div>
+                    <div class="check-item" data-file="admin/index.html">
+                        <i class="bi bi-gear"></i> <strong>admin/index.html</strong> - Pannello admin
+                        <div class="status mt-2"></div>
+                    </div>
+                </div>
+
+                <h3 class="mb-4 mt-5">Test Funzionalità Locali</h3>
+                <div id="local-tests">
+                    <div class="check-item">
+                        <i class="bi bi-globe"></i> <strong>Homepage</strong>
+                        <div class="mt-2">
+                            <button class="btn btn-primary btn-sm" onclick="testPage('index.html')">
+                                <i class="bi bi-arrow-right"></i> Testa Homepage
+                            </button>
+                            <div class="status mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="check-item">
+                        <i class="bi bi-box-arrow-in-right"></i> <strong>Login Page</strong>
+                        <div class="mt-2">
+                            <button class="btn btn-primary btn-sm" onclick="testPage('login.html')">
+                                <i class="bi bi-arrow-right"></i> Testa Login
+                            </button>
+                            <div class="status mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="check-item">
+                        <i class="bi bi-person-plus"></i> <strong>Registrazione</strong>
+                        <div class="mt-2">
+                            <button class="btn btn-primary btn-sm" onclick="testPage('register.html')">
+                                <i class="bi bi-arrow-right"></i> Testa Registrazione
+                            </button>
+                            <div class="status mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="check-item">
+                        <i class="bi bi-calendar-check"></i> <strong>Agenda Flutter</strong>
+                        <div class="mt-2">
+                            <button class="btn btn-primary btn-sm" onclick="testAgenda()">
+                                <i class="bi bi-arrow-right"></i> Testa Agenda (8082)
+                            </button>
+                            <div class="status mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="mb-4 mt-5">Informazioni Deployment</h3>
+                <div class="alert alert-info">
+                    <h5><i class="bi bi-info-circle"></i> Server Aruba</h5>
+                    <ul class="mb-0">
+                        <li><strong>FTP Host:</strong> ftp.assistivetech.it</li>
+                        <li><strong>Database Host:</strong> 31.11.39.242</li>
+                        <li><strong>Database:</strong> Sql1073852_1</li>
+                        <li><strong>Admin Login:</strong> marchettisoft@gmail.com</li>
+                    </ul>
+                </div>
+
+                <div class="text-center mt-5">
+                    <button class="btn btn-success btn-lg" onclick="runAllChecks()">
+                        <i class="bi bi-check-all"></i> Esegui Tutti i Controlli
+                    </button>
+                </div>
+
+                <div id="summary" class="mt-5" style="display: none;">
+                    <div class="alert alert-success">
+                        <h5><i class="bi bi-check-circle"></i> Tutti i controlli completati!</h5>
+                        <p class="mb-0">Il sistema è pronto per il deployment su Aruba.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function checkFileExists(filePath) {
+            try {
+                const response = await fetch(filePath, { method: 'HEAD' });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        async function runAllChecks() {
+            console.log('Avvio controlli pre-deployment...');
+
+            // Controlla tutti i files
+            const fileChecks = document.querySelectorAll('#files-check .check-item');
+            for (let item of fileChecks) {
+                const filePath = item.dataset.file;
+                const exists = await checkFileExists(filePath);
+                const statusDiv = item.querySelector('.status');
+
+                if (exists) {
+                    item.classList.add('success');
+                    statusDiv.innerHTML = '<i class="bi bi-check-circle text-success"></i> File trovato e accessibile';
+                } else {
+                    item.classList.add('error');
+                    statusDiv.innerHTML = '<i class="bi bi-x-circle text-danger"></i> File non trovato o non accessibile';
+                }
+            }
+
+            // Mostra summary
+            document.getElementById('summary').style.display = 'block';
+        }
+
+        function testPage(pageName) {
+            window.open(pageName, '_blank');
+        }
+
+        function testAgenda() {
+            window.open('http://localhost:8082', '_blank');
+        }
+
+        // Auto-run checks on page load
+        window.addEventListener('load', function() {
+            setTimeout(runAllChecks, 1000);
+        });
+    </script>
+</body>
+</html>
