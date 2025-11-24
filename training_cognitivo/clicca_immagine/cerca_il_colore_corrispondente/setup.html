@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Setup Esercizio - Cerca il Colore Corrispondente</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Esercizio cognitivo di accoppiamento colori con click/tap - Training Cognitivo AssistiveTech">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Colore Click">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192x192.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512x512.png">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .setup-container {
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .setup-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .header-section h1 {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .color-item {
+            position: relative;
+            cursor: pointer;
+            border: 3px solid transparent;
+            border-radius: 15px;
+            padding: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .color-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .color-item.selected {
+            border-color: #667eea;
+            background: #e7f1ff;
+        }
+
+        .color-item.target {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .color-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+
+        .color-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 8px;
+            color: #495057;
+        }
+
+        .check-icon {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .color-item.selected .check-icon,
+        .color-item.target .check-icon {
+            display: flex;
+        }
+
+        .color-item.target .check-icon {
+            background: #28a745;
+        }
+
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, #dee2e6, transparent);
+            margin: 25px 0;
+        }
+
+        .start-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            color: white;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .start-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .start-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading-spinner {
+            display: none;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .loading-spinner.active {
+            display: flex;
+        }
+
+        .error-message {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .info-badge {
+            background: #e7f1ff;
+            color: #004085;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: inline-block;
+            margin: 5px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .legend-box {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            border: 3px solid;
+        }
+
+        .legend-box.target {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .legend-box.distractor {
+            border-color: #667eea;
+            background: #e7f1ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-card">
+            <!-- Header -->
+            <div class="header-section">
+                <h1><i class="bi bi-palette-fill"></i> Cerca il Colore Corrispondente - Setup Esercizio</h1>
+                <p class="text-muted">Configura l'esercizio di accoppiamento colori con click/tap - pittogrammi ARASAAC</p>
+            </div>
+
+            <!-- Configurazione Educatore/Paziente -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-person-badge"></i> Educatore
+                    </label>
+                    <input type="text" class="form-control" id="educatoreName" readonly>
+                    <small class="text-muted">Utente attualmente loggato</small>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-person"></i> Paziente
+                    </label>
+                    <select class="form-select" id="patientSelect">
+                        <option value="Anonimo">Anonimo (Sviluppatore)</option>
+                        <!-- Popolato dinamicamente -->
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-repeat"></i> Numero Prove
+                    </label>
+                    <select class="form-select" id="trialCount">
+                        <option value="3">3 prove</option>
+                        <option value="4">4 prove</option>
+                        <option value="5" selected>5 prove</option>
+                        <option value="6">6 prove</option>
+                        <option value="7">7 prove</option>
+                        <option value="8">8 prove</option>
+                        <option value="9">9 prove</option>
+                        <option value="10">10 prove</option>
+                    </select>
+                    <small class="text-muted">Le prime 3 sono gratuite (non registrate)</small>
+                </div>
+            </div>
+
+            <!-- Messaggio TTS Personalizzato -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-chat-left-quote"></i> Messaggio di Rinforzo Positivo
+                    </label>
+                    <input type="text" class="form-control" id="feedbackMessage" value="Molto bene!" placeholder="Es: Molto bene!, Bravo!, Ottimo!">
+                    <small class="text-muted">Questo messaggio verrà pronunciato dal TTS quando il paziente accoppia correttamente il colore</small>
+                </div>
+            </div>
+
+            <!-- Modalità Interazione -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-hand-index"></i> Modalità di Interazione
+                    </label>
+                    <div class="row g-3">
+                        <!-- Opzione 1: Scansione con Timer -->
+                        <div class="col-md-4">
+                            <div class="form-check p-3 border rounded" style="cursor: pointer;">
+                                <input class="form-check-input" type="radio" name="interactionMode" id="modeTimer" value="timer" checked>
+                                <label class="form-check-label" for="modeTimer" style="cursor: pointer; width: 100%;">
+                                    <i class="bi bi-stopwatch text-primary"></i>
+                                    <strong>Scansione con Timer</strong>
+                                    <small class="d-block text-muted mt-1">I colori vengono evidenziati automaticamente in sequenza</small>
+                                </label>
+                            </div>
+                        </div>
+                        <!-- Opzione 2: Click Manuale -->
+                        <div class="col-md-4">
+                            <div class="form-check p-3 border rounded" style="cursor: pointer;">
+                                <input class="form-check-input" type="radio" name="interactionMode" id="modeClick" value="click">
+                                <label class="form-check-label" for="modeClick" style="cursor: pointer; width: 100%;">
+                                    <i class="bi bi-cursor text-success"></i>
+                                    <strong>Click Manuale</strong>
+                                    <small class="d-block text-muted mt-1">L'utente clicca direttamente sul colore corretto</small>
+                                </label>
+                            </div>
+                        </div>
+                        <!-- Opzione 3: Drag & Drop -->
+                        <div class="col-md-4">
+                            <div class="form-check p-3 border rounded" style="cursor: pointer;">
+                                <input class="form-check-input" type="radio" name="interactionMode" id="modeDrag" value="drag">
+                                <label class="form-check-label" for="modeDrag" style="cursor: pointer; width: 100%;">
+                                    <i class="bi bi-arrows-move text-warning"></i>
+                                    <strong>Drag & Drop</strong>
+                                    <small class="d-block text-muted mt-1">L'utente trascina il colore corretto sul target centrale</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timer Scansione (visibile solo quando modalità Timer è selezionata) -->
+            <div class="row mb-4" id="timerSettings">
+                <div class="col-12">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-clock"></i> Velocità Scansione
+                    </label>
+                    <div class="input-group">
+                        <input type="range" class="form-range me-3" id="scanTimerRange" min="3000" max="60000" step="500" value="3000">
+                        <span class="badge bg-primary" id="scanTimerLabel" style="font-size: 16px; padding: 10px 15px;">3.0s</span>
+                    </div>
+                    <small class="text-muted">Tempo di permanenza su ogni colore durante la scansione automatica</small>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Selezione Colore Target -->
+            <div class="mb-4">
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-bullseye"></i> 1. Seleziona il Colore Target
+                    <span class="badge bg-success ms-2" id="targetBadge">Nessuno selezionato</span>
+                </h5>
+                <div class="loading-spinner" id="loadingTarget">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Caricamento...</span>
+                    </div>
+                </div>
+                <div class="color-grid" id="targetColorGrid"></div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Selezione Colori Distrattori -->
+            <div class="mb-4">
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-grid-3x3-gap"></i> 2. Seleziona i Colori Distrattori (includi anche il target)
+                    <span class="badge bg-primary ms-2" id="distractorBadge">Minimo 2 colori</span>
+                </h5>
+                <p class="text-muted small">
+                    Seleziona tra 2 e 12 colori totali. Ricordati di includere anche il colore target tra i distrattori.
+                </p>
+                <div class="color-grid" id="distractorColorGrid"></div>
+            </div>
+
+            <!-- Legenda -->
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-box target"></div>
+                    <span>Colore Target</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box distractor"></div>
+                    <span>Colori Distrattori Selezionati</span>
+                </div>
+            </div>
+
+            <!-- Riepilogo Configurazione -->
+            <div class="alert alert-info mt-4" id="summaryAlert" style="display: none;">
+                <h6 class="fw-bold mb-2"><i class="bi bi-info-circle"></i> Riepilogo Configurazione</h6>
+                <div id="summaryContent"></div>
+            </div>
+
+            <!-- Errori -->
+            <div class="error-message" id="errorMessage"></div>
+
+            <!-- Bottone Avvia -->
+            <div class="text-center mt-4">
+                <button class="btn start-button" id="startButton" disabled>
+                    <i class="bi bi-play-circle-fill me-2"></i>
+                    Avvia Esercizio
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Configurazione
+        const ARASAAC_API = 'https://api.arasaac.org/api';
+        // Auto-detection ambiente: localhost usa '/Assistivetech', produzione usa ''
+        const BASE_PATH = window.location.hostname === 'localhost' ? '/Assistivetech' : '';
+
+        // Lista colori con ID pittogrammi ARASAAC (verificati 2025-10-21)
+        const AVAILABLE_COLORS = [
+            { name: 'rosso', id: 2808 },      // red
+            { name: 'blu', id: 4869 },        // blue
+            { name: 'giallo', id: 2648 },     // yellow
+            { name: 'verde', id: 4887 },      // green
+            { name: 'arancione', id: 2888 },  // orange
+            { name: 'viola', id: 2907 },      // purple
+            { name: 'rosa', id: 2807 },       // pink
+            { name: 'marrone', id: 2923 },    // brown
+            { name: 'nero', id: 2886 },       // black
+            { name: 'bianco', id: 8043 },     // white
+            { name: 'grigio', id: 3340 },     // grey
+            { name: 'azzurro', id: 3355 }     // light blue
+        ];
+
+        // State
+        let targetColor = null;
+        let selectedDistractors = new Set();
+        let colorData = [];
+
+        // Inizializzazione
+        document.addEventListener('DOMContentLoaded', async () => {
+            loadEducatorInfo();
+            await loadColors();
+            setupEventListeners();
+        });
+
+        // Carica informazioni educatore dal localStorage
+        function loadEducatorInfo() {
+            const sessionData = localStorage.getItem('session');
+            if (sessionData) {
+                try {
+                    const session = JSON.parse(sessionData);
+                    const educatorName = `${session.nome || ''} ${session.cognome || ''}`.trim();
+                    document.getElementById('educatoreName').value = educatorName || 'Sviluppatore';
+                } catch (e) {
+                    document.getElementById('educatoreName').value = 'Sviluppatore';
+                }
+            } else {
+                document.getElementById('educatoreName').value = 'Sviluppatore';
+            }
+        }
+
+        // Carica pittogrammi colori da ARASAAC usando ID diretti
+        async function loadColors() {
+            document.getElementById('loadingTarget').classList.add('active');
+
+            try {
+                // Usa ID diretti invece di search - molto più veloce e affidabile
+                // L'API ARASAAC restituisce immagini 500x500 di default
+                colorData = AVAILABLE_COLORS.map(color => ({
+                    name: color.name,
+                    id: color.id,
+                    imageUrl: `${ARASAAC_API}/pictograms/${color.id}`
+                }));
+
+                console.log('Colori caricati:', colorData);
+                renderColorGrids();
+            } catch (error) {
+                console.error('Errore caricamento colori:', error);
+                showError('Errore durante il caricamento dei colori: ' + error.message);
+            } finally {
+                document.getElementById('loadingTarget').classList.remove('active');
+            }
+        }
+
+        // Renderizza griglie colori
+        function renderColorGrids() {
+            const targetGrid = document.getElementById('targetColorGrid');
+            const distractorGrid = document.getElementById('distractorColorGrid');
+
+            // Svuota griglie
+            targetGrid.innerHTML = '';
+            distractorGrid.innerHTML = '';
+
+            // Renderizza griglia target
+            colorData.forEach(color => {
+                const colorItem = createColorItem(color, 'target');
+                targetGrid.appendChild(colorItem);
+            });
+
+            // Renderizza griglia distrattori
+            colorData.forEach(color => {
+                const colorItem = createColorItem(color, 'distractor');
+                distractorGrid.appendChild(colorItem);
+            });
+        }
+
+        // Crea elemento colore
+        function createColorItem(color, type) {
+            const div = document.createElement('div');
+            div.className = 'color-item';
+            div.dataset.colorName = color.name;
+            div.dataset.type = type;
+
+            div.innerHTML = `
+                <div class="check-icon"><i class="bi bi-check-lg"></i></div>
+                <img src="${color.imageUrl}" alt="${color.name}" loading="lazy">
+                <div class="color-name">${color.name}</div>
+            `;
+
+            div.addEventListener('click', () => handleColorClick(color, type, div));
+
+            return div;
+        }
+
+        // Gestisce click su colore
+        function handleColorClick(color, type, element) {
+            if (type === 'target') {
+                // Deseleziona tutti i target
+                document.querySelectorAll('.color-item[data-type="target"]').forEach(el => {
+                    el.classList.remove('target');
+                });
+
+                // Seleziona nuovo target
+                element.classList.add('target');
+                targetColor = color.name;
+                document.getElementById('targetBadge').textContent = color.name;
+                document.getElementById('targetBadge').className = 'badge bg-success ms-2';
+
+            } else {
+                // Toggle distractor
+                if (selectedDistractors.has(color.name)) {
+                    selectedDistractors.delete(color.name);
+                    element.classList.remove('selected');
+                } else {
+                    if (selectedDistractors.size >= 12) {
+                        showError('Puoi selezionare massimo 12 colori distrattori');
+                        return;
+                    }
+                    selectedDistractors.add(color.name);
+                    element.classList.add('selected');
+                }
+
+                updateDistractorBadge();
+            }
+
+            validateAndUpdateSummary();
+        }
+
+        // Aggiorna badge distrattori
+        function updateDistractorBadge() {
+            const badge = document.getElementById('distractorBadge');
+            const count = selectedDistractors.size;
+
+            if (count < 2) {
+                badge.textContent = `Selezionati: ${count}/12 (minimo 2)`;
+                badge.className = 'badge bg-danger ms-2';
+            } else {
+                badge.textContent = `Selezionati: ${count}/12`;
+                badge.className = 'badge bg-primary ms-2';
+            }
+        }
+
+        // Valida configurazione e aggiorna riepilogo
+        function validateAndUpdateSummary() {
+            const startButton = document.getElementById('startButton');
+            const summaryAlert = document.getElementById('summaryAlert');
+            const summaryContent = document.getElementById('summaryContent');
+            const errorMsg = document.getElementById('errorMessage');
+
+            // Rimuovi errori precedenti
+            errorMsg.classList.remove('active');
+
+            // Validazione
+            const isValid = targetColor && selectedDistractors.size >= 2 && selectedDistractors.has(targetColor);
+
+            if (!targetColor) {
+                startButton.disabled = true;
+                summaryAlert.style.display = 'none';
+                return;
+            }
+
+            if (selectedDistractors.size < 2) {
+                startButton.disabled = true;
+                summaryAlert.style.display = 'none';
+                return;
+            }
+
+            if (!selectedDistractors.has(targetColor)) {
+                showError('⚠️ ATTENZIONE: Devi includere il colore target anche tra i distrattori!');
+                startButton.disabled = true;
+                summaryAlert.style.display = 'none';
+                return;
+            }
+
+            // Configurazione valida
+            startButton.disabled = false;
+            summaryAlert.style.display = 'block';
+
+            const educatoreName = document.getElementById('educatoreName').value;
+            const patientName = document.getElementById('patientSelect').value;
+            const trialCount = document.getElementById('trialCount').value;
+            const feedbackMsg = document.getElementById('feedbackMessage').value;
+
+            summaryContent.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Educatore:</strong> ${educatoreName}<br>
+                        <strong>Paziente:</strong> ${patientName}<br>
+                        <strong>Numero prove:</strong> ${trialCount} (prime 3 non registrate)
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Colore target:</strong> <span class="badge bg-success">${targetColor}</span><br>
+                        <strong>Colori totali:</strong> ${selectedDistractors.size}<br>
+                        <strong>Messaggio rinforzo:</strong> "${feedbackMsg}"
+                    </div>
+                </div>
+            `;
+        }
+
+        // Mostra errore
+        function showError(message) {
+            const errorMsg = document.getElementById('errorMessage');
+            errorMsg.textContent = message;
+            errorMsg.classList.add('active');
+
+            setTimeout(() => {
+                errorMsg.classList.remove('active');
+            }, 5000);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            const startButton = document.getElementById('startButton');
+
+            startButton.addEventListener('click', startExercise);
+
+            // Update summary on form change
+            ['patientSelect', 'trialCount', 'feedbackMessage'].forEach(id => {
+                document.getElementById(id).addEventListener('change', validateAndUpdateSummary);
+            });
+
+            // Modalità interazione: mostra/nascondi impostazioni timer
+            document.querySelectorAll('input[name="interactionMode"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    const timerSettings = document.getElementById('timerSettings');
+                    if (radio.value === 'timer') {
+                        timerSettings.style.display = 'block';
+                    } else {
+                        timerSettings.style.display = 'none';
+                    }
+                    validateAndUpdateSummary();
+                });
+            });
+
+            // Timer scansione: aggiorna label quando cambia lo slider
+            const scanTimerRange = document.getElementById('scanTimerRange');
+            const scanTimerLabel = document.getElementById('scanTimerLabel');
+            scanTimerRange.addEventListener('input', () => {
+                const value = parseInt(scanTimerRange.value, 10);
+                scanTimerLabel.textContent = (value / 1000).toFixed(1) + 's';
+            });
+        }
+
+        // Avvia esercizio
+        function startExercise() {
+            // Rileva modalità selezionata
+            const selectedMode = document.querySelector('input[name="interactionMode"]:checked').value;
+            
+            const config = {
+                educatore: document.getElementById('educatoreName').value,
+                paziente: document.getElementById('patientSelect').value,
+                numeroProve: parseInt(document.getElementById('trialCount').value),
+                targetColor: targetColor,
+                colors: Array.from(selectedDistractors),
+                colorData: colorData.filter(c => selectedDistractors.has(c.name)),
+                feedbackMessage: document.getElementById('feedbackMessage').value || 'Molto bene!',
+                interactionMode: selectedMode, // 'timer', 'click', 'drag'
+                scanEnabled: selectedMode === 'timer', // True solo se modalità timer
+                scanIntervalMs: parseInt(document.getElementById('scanTimerRange').value, 10)
+            };
+
+            // Salva configurazione in sessionStorage
+            sessionStorage.setItem('cercaColoreConfig', JSON.stringify(config));
+
+            // Redirect a index.html
+            window.location.href = 'index.html';
+        }
+
+        // Registrazione Service Worker per PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then((registration) => {
+                        console.log('✓ Service Worker registrato:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('✗ Service Worker registrazione fallita:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

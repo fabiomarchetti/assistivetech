@@ -10,11 +10,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Configurazione database MySQL Aruba
-$host = '31.11.39.242';
-$username = 'Sql1073852';
-$password = '5k58326940';
-$database = 'Sql1073852_1'; // Utilizzando il primo database disponibile
+// Configurazione database automatica (locale/produzione)
+require_once __DIR__ . '/config.php';
 
 // Funzione per rispondere con JSON
 function jsonResponse($success, $message = '', $data = null) {
@@ -44,9 +41,8 @@ function logAccess($username, $success, $ip) {
 }
 
 try {
-    // Connessione al database
-    $pdo = new PDO("mysql:host=$host;dbname=$database;charset=utf8", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    // Connessione al database usando helper function
+    $pdo = getDbConnection();
 
     // Leggi i dati JSON dalla richiesta
     $input = json_decode(file_get_contents('php://input'), true);
@@ -68,13 +64,13 @@ try {
         // Ottieni indirizzo IP per log
         $ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 
-        // Cerca l'utente nel database
+        // Cerca l'utente nel database (inclusi sviluppatori)
         $stmt = $pdo->prepare("
             SELECT id_registrazione, nome_registrazione, cognome_registrazione,
                    username_registrazione, password_registrazione, ruolo_registrazione,
                    data_registrazione
             FROM registrazioni
-            WHERE username_registrazione = :username AND password_registrazione = :password
+            WHERE username_registrazione = :username AND password_registrazione = :password AND stato_account = 'attivo'
         ");
 
         $stmt->execute([

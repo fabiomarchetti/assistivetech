@@ -10,11 +10,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Configurazione database MySQL Aruba
-$host = '31.11.39.242';
-$username = 'Sql1073852';
-$password = '5k58326940';
-$database = 'Sql1073852_1';
+// Configurazione database automatica (locale/produzione)
+require_once __DIR__ . '/config.php';
 
 // Funzione per rispondere con JSON
 function jsonResponse($success, $message = '', $data = null) {
@@ -27,26 +24,65 @@ function jsonResponse($success, $message = '', $data = null) {
 }
 
 try {
-    // Connessione al database
-    $pdo = new PDO("mysql:host=$host;dbname=$database;charset=utf8", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    // Connessione al database usando helper function
+    $pdo = getDbConnection();
 
     // Leggi i dati JSON dalla richiesta
     $input = json_decode(file_get_contents('php://input'), true);
 
-    // Se è una richiesta GET, restituisci tutte le sedi
+    // Se è una richiesta GET, restituisci tutte le sedi oppure i settori di una sede
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        $stmt = $pdo->prepare("
-            SELECT id_sede, nome_sede, indirizzo, citta, provincia, cap,
-                   telefono, email, stato_sede, data_creazione
-            FROM sedi
-            WHERE stato_sede IN ('attiva', 'sospesa')
-            ORDER BY nome_sede
-        ");
-        $stmt->execute();
-        $sedi = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $action = $_GET['action'] ?? 'get_all';
+        $id_sede = intval($_GET['id_sede'] ?? 1);
 
-        jsonResponse(true, 'Sedi recuperate con successo', $sedi);
+        if ($action === 'get_settori_sede') {
+            // Ritorna i settori per una sede specifica
+            $stmt = $pdo->prepare("
+                SELECT id_settore, nome_settore, descrizione, stato_settore
+                FROM settori
+                WHERE id_sede = :id_sede AND stato_settore = 'attivo'
+                ORDER BY ordine_visualizzazione, nome_settore
+            ");
+            $stmt->execute([':id_sede' => $id_sede]);
+            $settori = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Settori recuperati con successo',
+                'data' => $settori
+            ]);
+            exit();
+        } elseif ($action === 'get_classi_sede') {
+            // Ritorna le classi per una sede specifica
+            $stmt = $pdo->prepare("
+                SELECT id_classe, nome_classe, descrizione, stato_classe
+                FROM classi
+                WHERE id_sede = :id_sede AND stato_classe = 'attivo'
+                ORDER BY ordine_visualizzazione, nome_classe
+            ");
+            $stmt->execute([':id_sede' => $id_sede]);
+            $classi = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Classi recuperate con successo',
+                'data' => $classi
+            ]);
+            exit();
+        } else {
+            // Ritorna tutte le sedi
+            $stmt = $pdo->prepare("
+                SELECT id_sede, nome_sede, indirizzo, citta, provincia, cap,
+                       telefono, email, stato_sede, data_creazione
+                FROM sedi
+                WHERE stato_sede IN ('attiva', 'sospesa')
+                ORDER BY nome_sede
+            ");
+            $stmt->execute();
+            $sedi = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            jsonResponse(true, 'Sedi recuperate con successo', $sedi);
+        }
     }
 
     // Se è una richiesta POST per creare/aggiornare sede

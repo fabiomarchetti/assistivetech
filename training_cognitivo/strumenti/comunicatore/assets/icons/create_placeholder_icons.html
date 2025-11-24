@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Genera Icone Placeholder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #673AB7;
+        }
+        canvas {
+            border: 2px solid #ddd;
+            margin: 20px 0;
+            display: block;
+        }
+        button {
+            background: #673AB7;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #512DA8;
+        }
+        .info {
+            background: #E1F5FE;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #C8E6C9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Generatore Icone Placeholder PWA</h1>
+        
+        <div class="info">
+            <strong>ℹ️ Istruzioni:</strong>
+            <ol>
+                <li>Clicca i bottoni sotto per generare le icone</li>
+                <li>Salva i file come <code>icon-192.png</code> e <code>icon-512.png</code></li>
+                <li>Carica in <code>/comunicatore/assets/icons/</code></li>
+            </ol>
+        </div>
+
+        <h3>Icon 192x192</h3>
+        <canvas id="canvas192" width="192" height="192"></canvas>
+        <button onclick="generateIcon(192)">Genera Icon 192x192</button>
+        <button onclick="downloadIcon(192)">📥 Download icon-192.png</button>
+
+        <h3>Icon 512x512</h3>
+        <canvas id="canvas512" width="512" height="512"></canvas>
+        <button onclick="generateIcon(512)">Genera Icon 512x512</button>
+        <button onclick="downloadIcon(512)">📥 Download icon-512.png</button>
+
+        <div class="success" id="success">
+            ✅ Icone generate! Clicca i bottoni "Download" per salvarle.
+        </div>
+    </div>
+
+    <script>
+        function generateIcon(size) {
+            const canvas = document.getElementById(`canvas${size}`);
+            const ctx = canvas.getContext('2d');
+            
+            // Sfondo viola
+            ctx.fillStyle = '#673AB7';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Calcola dimensioni proporzionali
+            const gridPadding = size * 0.2;
+            const gridSize = size - (gridPadding * 2);
+            const cellSize = gridSize / 2 - 10;
+            const cornerRadius = size * 0.04;
+            
+            // Griglia 2x2 bianca
+            ctx.fillStyle = '#FFFFFF';
+            
+            // Funzione per disegnare rettangolo arrotondato
+            function roundRect(x, y, w, h, r) {
+                ctx.beginPath();
+                ctx.moveTo(x + r, y);
+                ctx.lineTo(x + w - r, y);
+                ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+                ctx.lineTo(x + w, y + h - r);
+                ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                ctx.lineTo(x + r, y + h);
+                ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+                ctx.lineTo(x, y + r);
+                ctx.quadraticCurveTo(x, y, x + r, y);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            // Top-left
+            roundRect(gridPadding, gridPadding, cellSize, cellSize, cornerRadius);
+            
+            // Top-right
+            roundRect(gridPadding + cellSize + 10, gridPadding, cellSize, cellSize, cornerRadius);
+            
+            // Bottom-left
+            roundRect(gridPadding, gridPadding + cellSize + 10, cellSize, cellSize, cornerRadius);
+            
+            // Bottom-right
+            roundRect(gridPadding + cellSize + 10, gridPadding + cellSize + 10, cellSize, cellSize, cornerRadius);
+            
+            // Simbolo comunicazione (fumetto stilizzato)
+            const bubbleSize = size * 0.15;
+            const bubbleX = size - bubbleSize - (size * 0.1);
+            const bubbleY = size - bubbleSize - (size * 0.1);
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.beginPath();
+            ctx.arc(bubbleX, bubbleY, bubbleSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Triangolo del fumetto
+            ctx.beginPath();
+            ctx.moveTo(bubbleX + 5, bubbleY + bubbleSize / 3);
+            ctx.lineTo(bubbleX + bubbleSize / 2, bubbleY + bubbleSize);
+            ctx.lineTo(bubbleX - 5, bubbleY + bubbleSize / 3);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Testo nel fumetto
+            ctx.fillStyle = '#673AB7';
+            ctx.font = `bold ${bubbleSize * 0.4}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('...', bubbleX, bubbleY - 2);
+            
+            // Mostra messaggio successo
+            document.getElementById('success').style.display = 'block';
+        }
+        
+        function downloadIcon(size) {
+            const canvas = document.getElementById(`canvas${size}`);
+            const link = document.createElement('a');
+            link.download = `icon-${size}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Genera automaticamente al caricamento
+        window.addEventListener('load', () => {
+            generateIcon(192);
+            generateIcon(512);
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Comunicatore - Educatore</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/educatore.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <header class="py-3 mb-4 border-bottom">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-grid-3x3-gap-fill fs-2 text-primary me-3"></i>
+                <h1 class="h3 mb-0">Gestione Comunicatore</h1>
+                <a href="index.html" class="btn btn-outline-secondary ms-auto">
+                    <i class="bi bi-arrow-left"></i> Torna all'Inizio
+                </a>
+                <a href="comunicatore.html" class="btn btn-outline-primary ms-2">
+                    <i class="bi bi-person-circle"></i> Area Utente
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="row">
+            <!-- Sidebar - Selezione Paziente e Pagine -->
+            <div class="col-md-4 col-lg-3">
+                <div class="sidebar-container">
+                    <div class="card mb-3">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-person"></i> Seleziona Utente</h5>
+                            <button class="btn btn-sm btn-light" onclick="toggleNuovoUtente()" title="Aggiungi utente locale">
+                                <i class="bi bi-person-plus"></i>
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <!-- Dropdown utenti esistenti -->
+                            <select id="selectPaziente" class="form-select mb-2" onchange="loadPagine()">
+                                <option value="">Caricamento...</option>
+                            </select>
+
+                            <!-- Campo nuovo utente locale (nascosto di default) -->
+                            <div id="nuovoUtenteContainer" style="display: none;">
+                                <div class="input-group mt-2">
+                                    <input type="text" id="inputNuovoUtente" class="form-control" placeholder="Nome utente locale">
+                                    <button class="btn btn-success" onclick="creaUtenteLocale()">
+                                        <i class="bi bi-check"></i>
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="toggleNuovoUtente()">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle"></i> Utente salvato solo in locale (PWA offline)
+                                </small>
+                            </div>
+
+                            <!-- Badge modalità -->
+                            <div class="mt-2 text-center">
+                                <span id="badgeModalita" class="badge bg-secondary">
+                                    <i class="bi bi-wifi"></i> Modalità Online
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Pagine</h5>
+                            <button class="btn btn-sm btn-light" onclick="openCreatePaginaModal()">
+                                <i class="bi bi-plus-circle"></i>
+                            </button>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="listaPagine" class="list-group list-group-flush">
+                                <div class="text-center py-3 text-muted">
+                                    <i class="bi bi-inbox fs-1"></i>
+                                    <p class="mb-0">Seleziona un paziente</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content - Griglia Items -->
+            <div class="col-md-8 col-lg-9">
+                <div id="noPaginaSelected" class="text-center py-5 text-muted">
+                    <i class="bi bi-arrow-left-circle fs-1"></i>
+                    <h4 class="mt-3">Seleziona una pagina per gestirne gli item</h4>
+                </div>
+
+                <div id="paginaContent" style="display: none;">
+                    <!-- Header Pagina -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h3 id="paginaTitle" class="mb-1">Pagina</h3>
+                            <p id="paginaDescrizione" class="text-muted mb-0"></p>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-primary" onclick="modificaPagina()">
+                                <i class="bi bi-pencil"></i> Modifica
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deletePagina()">
+                                <i class="bi bi-trash"></i> Elimina
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Griglia 2x2 -->
+                    <div class="griglia-preview">
+                        <!-- Slot 1 (Top-Left) -->
+                        <div class="grid-slot" data-posizione="1" onclick="openAddItemModal(1)">
+                            <span class="grid-slot-number">1</span>
+                            <i class="bi bi-plus-circle grid-slot-add"></i>
+                            <small class="text-muted">Clicca per aggiungere</small>
+                        </div>
+
+                        <!-- Slot 2 (Top-Right) -->
+                        <div class="grid-slot" data-posizione="2" onclick="openAddItemModal(2)">
+                            <span class="grid-slot-number">2</span>
+                            <i class="bi bi-plus-circle grid-slot-add"></i>
+                            <small class="text-muted">Clicca per aggiungere</small>
+                        </div>
+
+                        <!-- Slot 3 (Bottom-Left) -->
+                        <div class="grid-slot" data-posizione="3" onclick="openAddItemModal(3)">
+                            <span class="grid-slot-number">3</span>
+                            <i class="bi bi-plus-circle grid-slot-add"></i>
+                            <small class="text-muted">Clicca per aggiungere</small>
+                        </div>
+
+                        <!-- Slot 4 (Bottom-Right) -->
+                        <div class="grid-slot" data-posizione="4" onclick="openAddItemModal(4)">
+                            <span class="grid-slot-number">4</span>
+                            <i class="bi bi-plus-circle grid-slot-add"></i>
+                            <small class="text-muted">Clicca per aggiungere</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Crea Pagina -->
+    <div class="modal fade" id="modalCreaPagina" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Crea Nuova Pagina</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nome Pagina *</label>
+                        <input type="text" id="inputNomePagina" class="form-control" placeholder="es: Voglio Comunicare">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descrizione</label>
+                        <textarea id="inputDescrizionePagina" class="form-control" rows="2" placeholder="Descrizione opzionale"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" onclick="createPagina()">Crea Pagina</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Aggiungi/Modifica Item -->
+    <div class="modal fade" id="modalAggiungiItem" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalItemTitle"><span id="modalItemAction">Aggiungi</span> Item - Posizione <span id="modalItemPosizione"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Titolo -->
+                    <div class="mb-3">
+                        <label class="form-label">Titolo *</label>
+                        <input type="text" id="inputTitoloItem" class="form-control" placeholder="es: Voglio mangiare">
+                    </div>
+
+                    <!-- Frase TTS -->
+                    <div class="mb-3">
+                        <label class="form-label">Frase da Pronunciare (TTS) *</label>
+                        <textarea id="inputFraseTTS" class="form-control" placeholder="es: Voglio mangiare un gelato" rows="2"></textarea>
+                    </div>
+
+                    <!-- Tipo Immagine -->
+                    <div class="mb-3">
+                        <label class="form-label">Scegli Immagine</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipoImmagine" id="radioArasaac" value="arasaac" checked onchange="updateImageTypeFields()">
+                            <label class="form-check-label" for="radioArasaac">
+                                ARASAAC (pittogrammi)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipoImmagine" id="radioUpload" value="upload" onchange="updateImageTypeFields()">
+                            <label class="form-check-label" for="radioUpload">
+                                Upload Immagine Personalizzata
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipoImmagine" id="radioNessuna" value="nessuna" onchange="updateImageTypeFields()">
+                            <label class="form-check-label" for="radioNessuna">
+                                Nessuna Immagine (solo testo)
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Campo ARASAAC -->
+                    <div id="fieldArasaac" class="mb-3">
+                        <label class="form-label">Cerca Pittogramma ARASAAC</label>
+                        <input type="text" id="inputSearchArasaac" class="form-control mb-2" placeholder="Cerca pittogramma..." oninput="searchArasaac()">
+                        <div id="arasaacResults" class="arasaac-results">
+                            <!-- Popolato dinamicamente -->
+                        </div>
+                        <input type="hidden" id="selectedArasaacId">
+                        <input type="hidden" id="selectedArasaacUrl">
+                    </div>
+
+                    <!-- Campo Upload -->
+                    <div id="fieldUpload" class="mb-3" style="display: none;">
+                        <label class="form-label">Seleziona Immagine</label>
+                        <input type="file" id="inputFileImmagine" class="form-control" accept="image/*" onchange="previewUploadImage()">
+                        <small class="text-muted">Max 5MB - JPG, PNG, GIF, WebP</small>
+                        <div id="uploadPreview" class="upload-preview"></div>
+                    </div>
+
+                    <!-- Colori -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Colore Sfondo</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="inputColoreSfondo" class="color-picker-input" value="#FFFFFF">
+                                <span id="coloreSfondoValue">#FFFFFF</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Colore Testo</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="inputColoreTesto" class="color-picker-input" value="#000000">
+                                <span id="coloreTestoValue">#000000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sottopagina (navigazione) -->
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="checkSottopagina" onchange="toggleSottopaginaField()">
+                            <label class="form-check-label" for="checkSottopagina">
+                                <strong>🔗 Sottopagina</strong> (il click apre un'altra pagina)
+                            </label>
+                        </div>
+                        <small class="text-muted d-block mt-1">
+                            👆 Al click, l'utente pronuncia la frase e naviga immediatamente alla pagina collegata
+                        </small>
+                    </div>
+
+                    <!-- Selezione Pagina di Riferimento -->
+                    <div id="fieldPaginaRiferimento" class="mb-3" style="display: none;">
+                        <label class="form-label">Pagina da Aprire (click)</label>
+                        <select id="selectPaginaRiferimento" class="form-select">
+                            <option value="">-- Seleziona Pagina --</option>
+                            <!-- Popolato dinamicamente -->
+                        </select>
+                        <small class="text-muted">Seleziona quale pagina deve aprirsi al click (TTS + navigazione)</small>
+                    </div>
+
+                    <input type="hidden" id="editItemId">
+                    <input type="hidden" id="itemPosizione">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" onclick="saveItem()">Salva Item</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Services -->
+    <script src="js/db-local.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/arasaac-service.js"></script>
+
+    <!-- App Logic -->
+    <script src="js/educatore-app.js"></script>
+</body>
+</html>
+

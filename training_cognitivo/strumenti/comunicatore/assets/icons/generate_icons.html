@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genera Icone PWA - Comunicatore</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #673AB7;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+        
+        .upload-section {
+            border: 3px dashed #673AB7;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .upload-section:hover {
+            background: #e9ecef;
+            border-color: #512DA8;
+        }
+        
+        .upload-section.dragover {
+            background: #e1f5fe;
+            border-color: #2196F3;
+        }
+        
+        .upload-icon {
+            font-size: 4rem;
+            color: #673AB7;
+            margin-bottom: 20px;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        button {
+            background: #673AB7;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            background: #512DA8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(103, 58, 183, 0.4);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .preview-section {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .preview-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .preview-item h3 {
+            color: #673AB7;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .info {
+            background: #E1F5FE;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .success {
+            background: #C8E6C9;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4CAF50;
+            display: none;
+        }
+        
+        .warning {
+            background: #FFF9C4;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #FFC107;
+        }
+        
+        .download-section {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .btn-download {
+            background: #4CAF50;
+        }
+        
+        .btn-download:hover {
+            background: #45a049;
+        }
+        
+        .original-preview {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .original-preview img {
+            max-width: 200px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Generatore Icone PWA</h1>
+        <p class="subtitle">Genera automaticamente icon-192.png e icon-512.png per la tua PWA</p>
+        
+        <div class="info">
+            <strong>📋 Istruzioni:</strong>
+            <ol style="margin-left: 20px; margin-top: 10px;">
+                <li>Carica un'immagine PNG (preferibilmente 512x512 o superiore)</li>
+                <li>L'immagine verrà ridimensionata automaticamente a 192x192 e 512x512</li>
+                <li>Scarica i file generati</li>
+                <li>Sostituisci i vecchi icon-192.png e icon-512.png</li>
+            </ol>
+        </div>
+
+        <div class="upload-section" id="uploadSection" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon">📤</div>
+            <h3>Clicca per selezionare un'immagine</h3>
+            <p>oppure trascina qui il file PNG</p>
+            <p style="color: #999; margin-top: 10px; font-size: 0.9rem;">Formati supportati: PNG, JPG, WebP</p>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+
+        <div class="original-preview" id="originalPreview" style="display: none;">
+            <h3>📷 Immagine Originale</h3>
+            <img id="originalImage" alt="Originale">
+            <p id="originalInfo" style="color: #666; margin-top: 10px;"></p>
+        </div>
+
+        <div class="preview-section" id="previewSection">
+            <h2 style="color: #673AB7; margin-bottom: 20px;">✨ Anteprime Generate</h2>
+            
+            <div class="preview-grid">
+                <div class="preview-item">
+                    <h3>Icon 192×192</h3>
+                    <canvas id="canvas192" width="192" height="192"></canvas>
+                    <button class="btn-download" onclick="downloadIcon(192)" style="margin-top: 15px;">
+                        📥 Scarica icon-192.png
+                    </button>
+                </div>
+                
+                <div class="preview-item">
+                    <h3>Icon 512×512</h3>
+                    <canvas id="canvas512" width="512" height="512"></canvas>
+                    <button class="btn-download" onclick="downloadIcon(512)" style="margin-top: 15px;">
+                        📥 Scarica icon-512.png
+                    </button>
+                </div>
+            </div>
+
+            <div class="success" id="successMessage">
+                <strong>✅ Icone generate con successo!</strong>
+                <p style="margin-top: 10px;">Scarica entrambe le icone e sostituisci i file nella cartella assets/icons/</p>
+            </div>
+
+            <div class="download-section" id="downloadSection">
+                <button onclick="downloadAll()" style="font-size: 1.1rem; padding: 20px 40px;">
+                    📦 Scarica Entrambe le Icone
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadSection = document.getElementById('uploadSection');
+        const previewSection = document.getElementById('previewSection');
+        const originalPreview = document.getElementById('originalPreview');
+        const originalImage = document.getElementById('originalImage');
+        const originalInfo = document.getElementById('originalInfo');
+        const successMessage = document.getElementById('successMessage');
+        const downloadSection = document.getElementById('downloadSection');
+        
+        let loadedImage = null;
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                loadImage(file);
+            }
+        });
+
+        // Drag & Drop
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                loadImage(file);
+            } else {
+                alert('⚠️ Carica un file immagine valido (PNG, JPG, WebP)');
+            }
+        });
+
+        function loadImage(file) {
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                const img = new Image();
+                
+                img.onload = () => {
+                    loadedImage = img;
+                    
+                    // Mostra anteprima originale
+                    originalImage.src = e.target.result;
+                    originalInfo.textContent = `Dimensioni: ${img.width}×${img.height}px | Formato: ${file.type}`;
+                    originalPreview.style.display = 'block';
+                    
+                    // Genera icone
+                    generateIcon(192);
+                    generateIcon(512);
+                    
+                    // Mostra sezioni
+                    previewSection.style.display = 'block';
+                    successMessage.style.display = 'block';
+                    downloadSection.style.display = 'block';
+                    
+                    // Scroll to preview
+                    previewSection.scrollIntoView({ behavior: 'smooth' });
+                };
+                
+                img.onerror = () => {
+                    alert('❌ Errore caricamento immagine. Prova con un altro file.');
+                };
+                
+                img.src = e.target.result;
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        function generateIcon(size) {
+            if (!loadedImage) {
+                alert('⚠️ Carica prima un\'immagine!');
+                return;
+            }
+
+            const canvas = document.getElementById(`canvas${size}`);
+            const ctx = canvas.getContext('2d');
+            
+            // Pulisci canvas
+            ctx.clearRect(0, 0, size, size);
+            
+            // Calcola dimensioni mantenendo aspect ratio
+            let srcWidth = loadedImage.width;
+            let srcHeight = loadedImage.height;
+            let scale = Math.min(size / srcWidth, size / srcHeight);
+            
+            let destWidth = srcWidth * scale;
+            let destHeight = srcHeight * scale;
+            let destX = (size - destWidth) / 2;
+            let destY = (size - destHeight) / 2;
+            
+            // Sfondo trasparente o bianco se l'immagine ha trasparenza
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Disegna immagine centrata
+            ctx.drawImage(
+                loadedImage,
+                0, 0, srcWidth, srcHeight,
+                destX, destY, destWidth, destHeight
+            );
+            
+            // Se l'immagine è più piccola del target, aggiungi bordo arrotondato
+            if (destWidth < size || destHeight < size) {
+                // Cornice arrotondata
+                ctx.strokeStyle = '#673AB7';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(destX, destY, destWidth, destHeight, 10);
+                ctx.stroke();
+            }
+        }
+
+        function downloadIcon(size) {
+            const canvas = document.getElementById(`canvas${size}`);
+            const link = document.createElement('a');
+            link.download = `icon-${size}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            
+            console.log(`✅ Downloaded icon-${size}.png`);
+        }
+
+        function downloadAll() {
+            downloadIcon(192);
+            setTimeout(() => {
+                downloadIcon(512);
+            }, 500);
+        }
+
+        // Auto-load se c'è un file icon.png nella stessa cartella
+        window.addEventListener('load', () => {
+            // Cerca file icon.png locale
+            const possibleFiles = ['icon.png', 'logo.png', 'icona.png'];
+            
+            // Nota: per sicurezza browser, non possiamo caricare automaticamente
+            // L'utente deve selezionare manualmente il file
+        });
+    </script>
+</body>
+</html>
+

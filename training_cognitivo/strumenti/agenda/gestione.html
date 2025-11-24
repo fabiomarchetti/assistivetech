@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Agende - Educatore</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/educatore.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <header class="py-3 mb-4 border-bottom">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-journal-text fs-2 text-primary me-3"></i>
+                <h1 class="h3 mb-0">Gestione Agende Strumenti</h1>
+                <button class="btn btn-outline-primary ms-auto" onclick="window.location.href='agenda.html'">
+                    <i class="bi bi-eye"></i> Anteprima Agenda
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="row">
+            <!-- Sidebar - Selezione Paziente e Agende -->
+            <div class="col-md-4 col-lg-3">
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-person"></i> Seleziona Paziente</h5>
+                    </div>
+                    <div class="card-body">
+                        <select id="selectPaziente" class="form-select" onchange="loadAgende()">
+                            <option value="">Caricamento...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-folder"></i> Agende</h5>
+                        <button class="btn btn-sm btn-light" onclick="openCreateAgendaModal()">
+                            <i class="bi bi-plus-circle"></i>
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="listaAgende" class="list-group list-group-flush">
+                            <div class="text-center py-3 text-muted">
+                                <i class="bi bi-inbox fs-1"></i>
+                                <p class="mb-0">Seleziona un paziente</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content - Item -->
+            <div class="col-md-8 col-lg-9">
+                <div id="noAgendaSelected" class="text-center py-5 text-muted">
+                    <i class="bi bi-arrow-left-circle fs-1"></i>
+                    <h4 class="mt-3">Seleziona un'agenda per gestirne i contenuti</h4>
+                </div>
+
+                <div id="agendaContent" style="display: none;">
+                    <!-- Header Agenda -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h3 id="agendaTitle" class="mb-1">Agenda</h3>
+                            <p id="agendaBreadcrumb" class="text-muted mb-0">
+                                <small><i class="bi bi-folder"></i> Percorso</small>
+                            </p>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" onclick="openAddItemModal()">
+                                <i class="bi bi-plus-lg"></i> Aggiungi Item
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deleteAgenda()">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Lista Item -->
+                    <div id="listaItems" class="row g-3">
+                        <!-- Popolato dinamicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Crea Agenda -->
+    <div class="modal fade" id="modalCreaAgenda" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Crea Nuova Agenda</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nome Agenda *</label>
+                        <input type="text" id="inputNomeAgenda" class="form-control" placeholder="es: Agenda Fabio">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo Agenda</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipoAgenda" id="radioPrincipale" value="principale" checked>
+                            <label class="form-check-label" for="radioPrincipale">
+                                Agenda Principale
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipoAgenda" id="radioSottomenu" value="sottomenu">
+                            <label class="form-check-label" for="radioSottomenu">
+                                Sub-Agenda (collegata ad altra agenda)
+                            </label>
+                        </div>
+                    </div>
+                    <div id="selectParentAgendaContainer" class="mb-3" style="display: none;">
+                        <label class="form-label">Agenda Genitore</label>
+                        <select id="selectParentAgenda" class="form-select">
+                            <option value="">-- Seleziona --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" onclick="createAgenda()">Crea Agenda</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Aggiungi Item -->
+    <div class="modal fade" id="modalAggiungiItem" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Aggiungi Item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Titolo -->
+                    <div class="mb-3">
+                        <label class="form-label">Titolo *</label>
+                        <input type="text" id="inputTitoloItem" class="form-control" placeholder="es: Voglio mangiare">
+                    </div>
+
+                    <!-- Frase TTS (pronuncia) -->
+                    <div class="mb-3">
+                        <label class="form-label">Frase da Pronunciare (TTS) *</label>
+                        <textarea id="inputFraseTTS" class="form-control" placeholder="es: Voglio mangiare un gelato" rows="2"></textarea>
+                        <small class="text-muted">La stessa frase verrà pronunciata quando l'utente ascolta l'item</small>
+                    </div>
+
+                    <!-- Tipo Item -->
+                    <div class="mb-3">
+                        <label class="form-label">Tipo Item *</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipoItem" id="radioItemSemplice" value="semplice" checked onchange="updateItemTypeFields()">
+                            <label class="form-check-label" for="radioItemSemplice">
+                                Item Semplice
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipoItem" id="radioItemLink" value="link_agenda" onchange="updateItemTypeFields()">
+                            <label class="form-check-label" for="radioItemLink">
+                                Link ad Altra Agenda (apri con long-click)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipoItem" id="radioItemVideo" value="video_youtube" onchange="updateItemTypeFields()">
+                            <label class="form-check-label" for="radioItemVideo">
+                                Video YouTube
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Link Agenda (solo se tipo = link_agenda) -->
+                    <div id="fieldLinkAgenda" class="mb-3" style="display: none;">
+                        <label class="form-label">Seleziona Agenda da Collegare *</label>
+                        <select id="selectAgendaCollegata" class="form-select">
+                            <option value="">-- Seleziona --</option>
+                        </select>
+                    </div>
+
+                    <!-- Video YouTube (solo se tipo = video_youtube) -->
+                    <div id="fieldVideoYoutube" class="mb-3" style="display: none;">
+                        <label class="form-label">Cerca Video YouTube</label>
+                        <div class="input-group mb-2">
+                            <input type="text" id="inputSearchYoutube" class="form-control" placeholder="Cerca video...">
+                            <button class="btn btn-outline-primary" onclick="searchYoutube()">
+                                <i class="bi bi-search"></i> Cerca
+                            </button>
+                        </div>
+                        <div id="youtubeResults" class="youtube-results">
+                            <!-- Popolato dinamicamente -->
+                        </div>
+                        <input type="hidden" id="selectedYoutubeId">
+                        <input type="hidden" id="selectedYoutubeTitle">
+                        <input type="hidden" id="selectedYoutubeThumbnail">
+                    </div>
+
+                    <!-- Immagine (solo se tipo != video_youtube) -->
+                    <div id="fieldImmagine" class="mb-3">
+                        <label class="form-label">Immagine</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipoImmagine" id="radioArasaac" value="arasaac" checked onchange="updateImageTypeFields()">
+                            <label class="form-check-label" for="radioArasaac">
+                                ARASAAC (pittogrammi)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipoImmagine" id="radioUpload" value="upload" onchange="updateImageTypeFields()">
+                            <label class="form-check-label" for="radioUpload">
+                                Upload Immagine
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipoImmagine" id="radioNessuna" value="nessuna" onchange="updateImageTypeFields()">
+                            <label class="form-check-label" for="radioNessuna">
+                                Nessuna Immagine
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Campo ARASAAC -->
+                    <div id="fieldArasaac" class="mb-3">
+                        <label class="form-label">Cerca Pittogramma ARASAAC</label>
+                        <input type="text" id="inputSearchArasaac" class="form-control mb-2" placeholder="Cerca pittogramma..." oninput="searchArasaac()">
+                        <div id="arasaacResults" class="arasaac-results">
+                            <!-- Popolato dinamicamente -->
+                        </div>
+                        <input type="hidden" id="selectedArasaacId">
+                    </div>
+
+                    <!-- Campo Upload -->
+                    <div id="fieldUpload" class="mb-3" style="display: none;">
+                        <label class="form-label">Seleziona Immagine</label>
+                        <input type="file" id="inputFileImmagine" class="form-control" accept="image/*">
+                        <small class="text-muted">Max 5MB - JPG, PNG, GIF, WebP</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" onclick="createItem()">Aggiungi Item</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- SortableJS per drag & drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+    <!-- Services -->
+    <script src="js/api-client.js"></script>
+    <script src="js/arasaac-service.js"></script>
+    <script src="js/youtube-service.js"></script>
+
+    <!-- App Logic -->
+    <script src="js/educatore-app.js"></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Test MAMP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: white;
+            color: #333;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 { color: #667eea; }
+        .success { color: #28a745; font-size: 1.5em; }
+        .info { background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        a { color: #667eea; text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Test MAMP</h1>
+
+        <div class="success">
+            🎉 MAMP sta funzionando correttamente!
+        </div>
+
+        <div class="info">
+            <strong>📍 Se vedi questa pagina:</strong>
+            <ul>
+                <li>✅ Apache è avviato</li>
+                <li>✅ La porta 8888 funziona</li>
+                <li>✅ Il Document Root è corretto</li>
+            </ul>
+        </div>
+
+        <h3>🔗 Link di Test</h3>
+        <ul>
+            <li><a href="test.php">Test PHP</a> - Verifica che PHP funzioni</li>
+            <li><a href="test_connection.php">Test Database</a> - Verifica connessione DB</li>
+            <li><a href="index.html">Homepage</a> - Vai alla homepage</li>
+            <li><a href="login.html">Login</a> - Vai al login</li>
+        </ul>
+
+        <h3>📋 Info Sistema</h3>
+        <p><strong>URL corrente:</strong> <code id="current-url"></code></p>
+        <p><strong>Browser:</strong> <code id="browser"></code></p>
+
+        <script>
+            document.getElementById('current-url').textContent = window.location.href;
+            document.getElementById('browser').textContent = navigator.userAgent;
+        </script>
+    </div>
+</body>
+</html>

@@ -1,0 +1,113 @@
+═══════════════════════════════════════════════════════════════
+ COMUNICATORE v2.4.0 - LISTA FILE DA CARICARE SU ARUBA
+═══════════════════════════════════════════════════════════════
+
+PERCORSO BASE: /training_cognitivo/strumenti/comunicatore/
+
+───────────────────────────────────────────────────────────────
+ ROOT (3 HTML + 2 PWA)
+───────────────────────────────────────────────────────────────
+comunicatore/index.html
+comunicatore/gestione.html
+comunicatore/comunicatore.html
+comunicatore/manifest.json
+comunicatore/service-worker.js
+
+───────────────────────────────────────────────────────────────
+ API (3 file PHP)
+───────────────────────────────────────────────────────────────
+comunicatore/api/pagine.php
+comunicatore/api/items.php
+comunicatore/api/upload_image.php
+
+───────────────────────────────────────────────────────────────
+ JS (6 file JavaScript)
+───────────────────────────────────────────────────────────────
+comunicatore/js/api-client.js
+comunicatore/js/arasaac-service.js
+comunicatore/js/comunicatore-app.js
+comunicatore/js/educatore-app.js
+comunicatore/js/db-local.js
+comunicatore/js/swipe-handler.js
+
+───────────────────────────────────────────────────────────────
+ CSS (3 file)
+───────────────────────────────────────────────────────────────
+comunicatore/css/styles.css
+comunicatore/css/educatore.css
+comunicatore/css/comunicatore.css
+
+───────────────────────────────────────────────────────────────
+ ASSETS (2 icone PWA)
+───────────────────────────────────────────────────────────────
+comunicatore/assets/icons/icon-192.png
+comunicatore/assets/icons/icon-512.png
+
+───────────────────────────────────────────────────────────────
+ API ROOT (se non presenti)
+───────────────────────────────────────────────────────────────
+/api/config.php (verifica esista)
+/api/get_pazienti.php (sovrascrivi con versione aggiornata)
+
+───────────────────────────────────────────────────────────────
+ CARTELLE DA CREARE
+───────────────────────────────────────────────────────────────
+comunicatore/uploads/ (vuota, chmod 755 o 777)
+
+───────────────────────────────────────────────────────────────
+ DATABASE (eseguire in phpMyAdmin)
+───────────────────────────────────────────────────────────────
+
+SE TABELLE NON ESISTONO:
+→ Esegui contenuto di: api/setup_database.sql
+
+SE TABELLE ESISTONO MA MANCA SOTTOPAGINE:
+→ Esegui contenuto di: api/migrate_sottopagine_ARUBA.sql
+
+═══════════════════════════════════════════════════════════════
+ TOTALE: 22 file + 1 cartella + SQL
+═══════════════════════════════════════════════════════════════
+
+RIEPILOGO:
+✅ 3 HTML
+✅ 2 PWA
+✅ 3 API PHP
+✅ 6 JavaScript
+✅ 3 CSS
+✅ 2 PNG
+✅ 1 cartella uploads/
+✅ 2 API root (se mancanti)
+✅ 1-2 SQL (eseguire manualmente)
+
+═══════════════════════════════════════════════════════════════
+ FILE DA NON CARICARE (sviluppo/test)
+═══════════════════════════════════════════════════════════════
+
+README.md
+CHANGELOG.md
+DEPLOYMENT_ARUBA.md
+DEPLOYMENT_ARUBA_FINALE.md
+DEPLOY_CHECKLIST.md
+CHECKLIST_DEPLOYMENT.txt
+FILE_DA_CARICARE.txt
+SETUP_RAPIDO.md
+HYBRID_MODE.md
+
+api/test_pagine.php
+api/install_tables.php
+api/setup_database.sql (dopo esecuzione)
+api/migrate_sottopagine.sql (locale)
+api/migrate_sottopagine_ARUBA.sql (dopo esecuzione)
+
+js/app.js (vecchio)
+js/educatore-app-hybrid.js (vecchio)
+
+assets/icons/megafono.png (sorgente)
+assets/icons/generate_icons.html
+assets/icons/create_placeholder_icons.html
+assets/icons/GENERATE_ICONS.md
+
+test_api.html
+
+═══════════════════════════════════════════════════════════════
+

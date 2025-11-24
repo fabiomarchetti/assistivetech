@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Ricorda Sequenza - Training Cognitivo</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Esercizio di memoria - Memorizza e ripeti la sequenza di elementi">
+    <meta name="theme-color" content="#ec4899">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ricorda Sequenza">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192x192.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512x512.png">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .exercise-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .exercise-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        .exercise-icon {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .btn-exercise {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            color: white;
+            font-weight: 600;
+            margin: 10px;
+            transition: transform 0.2s;
+        }
+        .btn-exercise:hover {
+            transform: translateY(-2px);
+            color: white;
+        }
+        .exercise-description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="exercise-container">
+        <div class="exercise-card">
+            <div class="exercise-icon">
+                <i class="bi bi-brain"></i>
+            </div>
+
+            <h1 class="mb-3">Ricorda Sequenza</h1>
+
+            <div class="exercise-description">
+                <p>Benvenuto nell'esercizio di training cognitivo <strong>Ricorda Sequenza</strong>.</p>
+                <p>Questo esercizio è progettato per stimolare le tue capacità cognitive in modo divertente e interattivo.</p>
+            </div>
+
+            <div class="d-flex flex-column align-items-center">
+                <button class="btn btn-exercise btn-lg" onclick="startExercise()">
+                    <i class="bi bi-play-circle me-2"></i>
+                    Inizia Esercizio
+                </button>
+
+                <button class="btn btn-exercise btn-outline-secondary" onclick="showInstructions()">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Istruzioni
+                </button>
+
+                <a href="../../" class="btn btn-link mt-3">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Torna alle Categorie
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Istruzioni -->
+    <div class="modal fade" id="instructionsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Istruzioni - Ricorda Sequenza
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Come funziona l'esercizio:</h6>
+                    <ol>
+                        <li>Clicca su "Inizia Esercizio" per cominciare</li>
+                        <li>Segui le istruzioni che appariranno sullo schermo</li>
+                        <li>Completa l'attività nel tempo indicato</li>
+                        <li>Al termine riceverai un feedback sui tuoi risultati</li>
+                    </ol>
+                    <div class="alert alert-info">
+                        <i class="bi bi-lightbulb me-2"></i>
+                        <strong>Suggerimento:</strong> Prenditi il tempo necessario e concentrati sull'attività.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                    <button type="button" class="btn btn-exercise" data-bs-dismiss="modal" onclick="startExercise()">
+                        Inizia Ora
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function startExercise() {
+            alert('🧠 Esercizio "Ricorda Sequenza" in fase di sviluppo!\n\nQuesto è un template di base. Lo sviluppatore può:\n\n• Aggiungere logica JavaScript personalizzata\n• Integrare API specifiche per l\'esercizio\n• Creare interazioni cognitive specifiche\n• Salvare i progressi dell\'utente');
+        }
+
+        function showInstructions() {
+            const modal = new bootstrap.Modal(document.getElementById('instructionsModal'));
+            modal.show();
+        }
+
+        // Inizializzazione
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Ricorda Sequenza caricato con successo');
+        });
+
+        // Registrazione Service Worker per PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then((registration) => {
+                        console.log('✓ Service Worker registrato:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('✗ Service Worker registrazione fallita:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

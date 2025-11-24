@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Esercizio - Training Cognitivo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .setup-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .setup-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+
+        .step-number {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #e9ecef;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .step.active .step-number {
+            background: #667eea;
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background: #28a745;
+            color: white;
+        }
+
+        .step-text {
+            font-weight: 500;
+            color: #6c757d;
+        }
+
+        .step.active .step-text {
+            color: #667eea;
+        }
+
+        .step.completed .step-text {
+            color: #28a745;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        .pictogram-search {
+            position: relative;
+        }
+
+        .search-results {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .pictogram-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            padding: 15px;
+        }
+
+        .pictogram-item {
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .pictogram-item:hover {
+            border-color: #667eea;
+            background: #f8f9fa;
+        }
+
+        .pictogram-item.selected {
+            border-color: #28a745;
+            background: #e8f5e8;
+        }
+
+        .pictogram-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 5px;
+        }
+
+        .pictogram-item .name {
+            font-size: 0.8em;
+            color: #666;
+            line-height: 1.2;
+        }
+
+        .selected-pictogram {
+            text-align: center;
+            padding: 20px;
+            border: 2px dashed #28a745;
+            border-radius: 10px;
+            background: #f8fff8;
+        }
+
+        .selected-pictogram img {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .btn-custom {
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-outline-custom {
+            border: 2px solid #667eea;
+            color: #667eea;
+            background: transparent;
+        }
+
+        .btn-outline-custom:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .terms-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+
+        .terms-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .setup-card {
+                padding: 25px;
+                margin: 10px;
+            }
+
+            .pictogram-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 8px;
+            }
+
+            .pictogram-item img {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-card">
+            <!-- Indicatore step -->
+            <div class="step-indicator">
+                <div class="step active" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Dati Sessione</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-text">Scegli Oggetto</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-text">Conferma</div>
+                </div>
+            </div>
+
+            <!-- Step 1: Dati Educatore e Paziente -->
+            <div class="form-section active" id="section1">
+                <div class="text-center mb-4">
+                    <h2><i class="bi bi-person-gear me-2"></i>Dati Sessione</h2>
+                    <p class="text-muted">Inserisci i dati dell'educatore e del paziente</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="educatorName" class="form-label">Nome Educatore *</label>
+                        <input type="text" class="form-control" id="educatorName"
+                               placeholder="Es: Mario Rossi" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="patientName" class="form-label">Nome Paziente *</label>
+                        <input type="text" class="form-control" id="patientName"
+                               placeholder="Es: Anna Verdi" required>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="../../" class="btn btn-outline-custom btn-custom">
+                        <i class="bi bi-arrow-left me-1"></i>Indietro
+                    </a>
+                    <button onclick="nextStep(1)" class="btn btn-primary-custom btn-custom">
+                        Avanti <i class="bi bi-arrow-right ms-1"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Selezione Oggetto ARASAAC -->
+            <div class="form-section" id="section2">
+                <div class="text-center mb-4">
+                    <h2><i class="bi bi-search me-2"></i>Scegli Oggetto</h2>
+                    <p class="text-muted">Cerca e seleziona un oggetto dalla libreria ARASAAC</p>
+                    <small class="text-muted">
+                        <a href="#" onclick="showTermsDialog()" class="terms-link">
+                            <i class="bi bi-info-circle me-1"></i>Condizioni d'uso ARASAAC
+                        </a>
+                    </small>
+                </div>
+
+                <div class="pictogram-search">
+                    <label for="searchInput" class="form-label">Cerca pittogramma</label>
+                    <input type="text" class="form-control" id="searchInput"
+                           placeholder="Es: lampadina, luce, sole..." oninput="searchPictograms()">
+
+                    <div id="searchResults" class="search-results" style="display: none;">
+                        <div id="loadingIndicator" class="text-center p-3" style="display: none;">
+                            <div class="loading-spinner"></div>
+                            <span class="ms-2">Cercando...</span>
+                        </div>
+                        <div id="pictogramGrid" class="pictogram-grid"></div>
+                        <div id="noResults" class="text-center p-3 text-muted" style="display: none;">
+                            Nessun risultato trovato
+                        </div>
+                    </div>
+                </div>
+
+                <div id="selectedPictogramContainer" style="display: none;">
+                    <h5 class="mt-4 mb-3">Oggetto Selezionato:</h5>
+                    <div id="selectedPictogram" class="selected-pictogram">
+                        <!-- Pittogramma selezionato -->
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button onclick="prevStep()" class="btn btn-outline-custom btn-custom">
+                        <i class="bi bi-arrow-left me-1"></i>Indietro
+                    </button>
+                    <button onclick="nextStep(2)" id="nextStep2" class="btn btn-primary-custom btn-custom" disabled>
+                        Avanti <i class="bi bi-arrow-right ms-1"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Conferma e Avvio -->
+            <div class="form-section" id="section3">
+                <div class="text-center mb-4">
+                    <h2><i class="bi bi-check-circle me-2"></i>Conferma Setup</h2>
+                    <p class="text-muted">Verifica i dati e avvia l'esercizio</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6><i class="bi bi-people me-1"></i>Dati Sessione</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Educatore:</strong> <span id="confirmEducator"></span></p>
+                                <p><strong>Paziente:</strong> <span id="confirmPatient"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6><i class="bi bi-image me-1"></i>Oggetto Esercizio</h6>
+                            </div>
+                            <div class="card-body text-center" id="confirmPictogram">
+                                <!-- Oggetto confermato -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button onclick="prevStep()" class="btn btn-outline-custom btn-custom">
+                        <i class="bi bi-arrow-left me-1"></i>Indietro
+                    </button>
+                    <button onclick="startExercise()" class="btn btn-primary-custom btn-custom btn-lg">
+                        <i class="bi bi-play-fill me-2"></i>Avvia Esercizio
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Condizioni d'uso ARASAAC -->
+    <div class="modal fade" id="termsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-info-circle me-2"></i>Condizioni d'uso ARASAAC
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
+                    <div class="mb-4">
+                        <h6><strong>Licenza Creative Commons</strong></h6>
+                        <p>I pittogrammi e le immagini di ARASAAC sono pubblicati sotto licenza Creative Commons (BY-NC-SA), che permette di scaricare, utilizzare e condividere in qualsiasi tipo di formato, purché non sia a scopo commerciale, si citi la fonte e si condivida con la stessa licenza.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6><strong>Uso consentito</strong></h6>
+                        <ul>
+                            <li>Uso educativo e terapeutico</li>
+                            <li>Uso personale e familiare</li>
+                            <li>Condivisione con la stessa licenza</li>
+                            <li>Modifiche e adattamenti (citando la fonte)</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6><strong>Uso NON consentito</strong></h6>
+                        <ul>
+                            <li>Uso commerciale senza autorizzazione</li>
+                            <li>Vendita dei materiali</li>
+                            <li>Uso senza citare la fonte</li>
+                            <li>Rimozione del logo ARASAAC</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6><strong>Attribuzione</strong></h6>
+                        <p>Quando utilizzi i materiali ARASAAC, devi sempre includere:<br>
+                        <em>"Pittogrammi di ARASAAC - http://www.arasaac.org - Licenza CC (BY-NC-SA)"</em></p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6><strong>Responsabilità</strong></h6>
+                        <p>ARASAAC non si assume alcuna responsabilità per l'uso improprio dei materiali. L'utente è responsabile del rispetto delle condizioni di licenza.</p>
+                    </div>
+
+                    <p class="text-muted">
+                        <small>Per maggiori informazioni visita: <a href="https://arasaac.org/terms-of-use" target="_blank">https://arasaac.org/terms-of-use</a></small>
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // AUTO-DETECTION BASE_PATH (locale MAMP vs produzione Aruba)
+        const BASE_PATH = window.location.pathname.includes('/Assistivetech/') ? '/Assistivetech' : '';
+        
+        class ExerciseSetup {
+            constructor() {
+                this.currentStep = 1;
+                this.selectedPictogram = null;
+                this.searchTimeout = null;
+
+                // Inizializza con lampadina di default
+                this.defaultPictogram = {
+                    id: 2062,
+                    name: 'lampadina',
+                    url: 'https://static.arasaac.org/pictograms/2062/2062_500.png'
+                };
+
+                this.initializeSearch();
+            }
+
+            initializeSearch() {
+                // Pre-carica la lampadina come default
+                setTimeout(() => {
+                    this.searchPictograms('lampadina');
+                }, 500);
+            }
+        }
+
+        let setupInstance;
+
+        // Inizializza quando il DOM è caricato
+        document.addEventListener('DOMContentLoaded', () => {
+            setupInstance = new ExerciseSetup();
+        });
+
+        function nextStep(step) {
+            if (step === 1) {
+                const educator = document.getElementById('educatorName').value.trim();
+                const patient = document.getElementById('patientName').value.trim();
+
+                if (!educator || !patient) {
+                    alert('Inserisci nome educatore e paziente');
+                    return;
+                }
+            } else if (step === 2) {
+                if (!setupInstance.selectedPictogram) {
+                    alert('Seleziona un oggetto per l\'esercizio');
+                    return;
+                }
+
+                // Aggiorna conferma
+                document.getElementById('confirmEducator').textContent = document.getElementById('educatorName').value;
+                document.getElementById('confirmPatient').textContent = document.getElementById('patientName').value;
+
+                const confirmDiv = document.getElementById('confirmPictogram');
+                confirmDiv.innerHTML = `
+                    <img src="${setupInstance.selectedPictogram.url}" alt="${setupInstance.selectedPictogram.name}" style="width: 80px; height: 80px; object-fit: contain;">
+                    <div class="mt-2">
+                        <strong>${setupInstance.selectedPictogram.name}</strong>
+                    </div>
+                `;
+            }
+
+            // Aggiorna step
+            setupInstance.currentStep++;
+            updateStepIndicators();
+            showCurrentSection();
+        }
+
+        function prevStep() {
+            setupInstance.currentStep--;
+            updateStepIndicators();
+            showCurrentSection();
+        }
+
+        function updateStepIndicators() {
+            for (let i = 1; i <= 3; i++) {
+                const step = document.getElementById(`step${i}`);
+                step.classList.remove('active', 'completed');
+
+                if (i < setupInstance.currentStep) {
+                    step.classList.add('completed');
+                } else if (i === setupInstance.currentStep) {
+                    step.classList.add('active');
+                }
+            }
+        }
+
+        function showCurrentSection() {
+            // Nasconde tutte le sezioni
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Mostra la sezione corrente
+            document.getElementById(`section${setupInstance.currentStep}`).classList.add('active');
+        }
+
+        function searchPictograms() {
+            const query = document.getElementById('searchInput').value.trim();
+
+            if (setupInstance.searchTimeout) {
+                clearTimeout(setupInstance.searchTimeout);
+            }
+
+            if (query.length < 2) {
+                document.getElementById('searchResults').style.display = 'none';
+                return;
+            }
+
+            setupInstance.searchTimeout = setTimeout(() => {
+                performSearch(query);
+            }, 350);
+        }
+
+        async function performSearch(query) {
+            const resultsDiv = document.getElementById('searchResults');
+            const loadingDiv = document.getElementById('loadingIndicator');
+            const gridDiv = document.getElementById('pictogramGrid');
+            const noResultsDiv = document.getElementById('noResults');
+
+            resultsDiv.style.display = 'block';
+            loadingDiv.style.display = 'block';
+            gridDiv.innerHTML = '';
+            noResultsDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(`https://api.arasaac.org/api/pictograms/it/search/${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                loadingDiv.style.display = 'none';
+
+                if (data && data.length > 0) {
+                    displayPictograms(data.slice(0, 24)); // Limita a 24 risultati
+                } else {
+                    noResultsDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Errore ricerca:', error);
+                loadingDiv.style.display = 'none';
+                noResultsDiv.style.display = 'block';
+                noResultsDiv.textContent = 'Errore durante la ricerca';
+            }
+        }
+
+        function displayPictograms(pictograms) {
+            const gridDiv = document.getElementById('pictogramGrid');
+            gridDiv.innerHTML = '';
+
+            pictograms.forEach(item => {
+                const id = item._id;
+                if (!id) return;
+
+                // Trova nome in italiano
+                let name = 'pittogramma';
+                const keywords = item.keywords || [];
+                const italianKeywords = keywords.filter(k =>
+                    k.language && k.language.toLowerCase() === 'it'
+                );
+
+                if (italianKeywords.length > 0) {
+                    italianKeywords.sort((a, b) => a.keyword.length - b.keyword.length);
+                    name = italianKeywords[0].keyword;
+                } else if (keywords.length > 0) {
+                    name = keywords[0].keyword || 'pittogramma';
+                }
+
+                const pictogramDiv = document.createElement('div');
+                pictogramDiv.className = 'pictogram-item';
+                pictogramDiv.onclick = () => selectPictogram(id, name);
+
+                pictogramDiv.innerHTML = `
+                    <img src="https://static.arasaac.org/pictograms/${id}/${id}_300.png" alt="${name}">
+                    <div class="name">${name}</div>
+                `;
+
+                gridDiv.appendChild(pictogramDiv);
+            });
+        }
+
+        function selectPictogram(id, name) {
+            // Deseleziona tutti
+            document.querySelectorAll('.pictogram-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            // Seleziona questo
+            event.currentTarget.classList.add('selected');
+
+            // Salva selezione
+            setupInstance.selectedPictogram = {
+                id: id,
+                name: name,
+                url: `https://static.arasaac.org/pictograms/${id}/${id}_500.png`
+            };
+
+            // Mostra preview
+            const containerDiv = document.getElementById('selectedPictogramContainer');
+            const selectedDiv = document.getElementById('selectedPictogram');
+
+            selectedDiv.innerHTML = `
+                <img src="${setupInstance.selectedPictogram.url}" alt="${name}">
+                <div><strong>${name}</strong></div>
+                <small class="text-muted">ID: ${id}</small>
+            `;
+
+            containerDiv.style.display = 'block';
+
+            // Abilita bottone avanti
+            document.getElementById('nextStep2').disabled = false;
+
+            // Salva immagine localmente
+            saveSelectedImage();
+        }
+
+        async function saveSelectedImage() {
+            if (!setupInstance.selectedPictogram) return;
+
+            try {
+                const response = await fetch(setupInstance.selectedPictogram.url);
+                const blob = await response.blob();
+
+                // Resize immagine a 200x200
+                const resizedBlob = await resizeImage(blob, 200, 200);
+
+                // Crea FormData per upload
+                const formData = new FormData();
+                formData.append('image', resizedBlob, `${setupInstance.selectedPictogram.name}_${setupInstance.selectedPictogram.id}.png`);
+
+                // Upload tramite API PHP (stesso sistema dell'agenda)
+                const uploadResponse = await fetch(`${BASE_PATH}/api/upload_pictogram.php`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await uploadResponse.json();
+                if (result.success) {
+                    setupInstance.selectedPictogram.localPath = result.path;
+                    console.log('Immagine salvata:', result.path);
+                }
+            } catch (error) {
+                console.error('Errore salvataggio immagine:', error);
+            }
+        }
+
+        function resizeImage(blob, width, height) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+
+                img.onload = () => {
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    // Calcola dimensioni mantenendo proporzioni
+                    const scale = Math.min(width / img.width, height / img.height);
+                    const newWidth = img.width * scale;
+                    const newHeight = img.height * scale;
+                    const x = (width - newWidth) / 2;
+                    const y = (height - newHeight) / 2;
+
+                    ctx.clearRect(0, 0, width, height);
+                    ctx.drawImage(img, x, y, newWidth, newHeight);
+
+                    canvas.toBlob(resolve, 'image/png');
+                };
+
+                img.src = URL.createObjectURL(blob);
+            });
+        }
+
+        function showTermsDialog() {
+            const modal = new bootstrap.Modal(document.getElementById('termsModal'));
+            modal.show();
+        }
+
+        function startExercise() {
+            // Salva configurazione nel localStorage
+            const config = {
+                educatorName: document.getElementById('educatorName').value.trim(),
+                patientName: document.getElementById('patientName').value.trim(),
+                selectedPictogram: setupInstance.selectedPictogram,
+                timestamp: new Date().toISOString()
+            };
+
+            localStorage.setItem('exerciseConfig', JSON.stringify(config));
+
+            // Reindirizza all'esercizio
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "name": "Causa Effetto - Training Cognitivo",
+  "short_name": "Causa Effetto",
+  "description": "Esercizi di causa effetto - Training cognitivo",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#9C27B0",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "games", "medical"],
+  "lang": "it-IT",
+  "dir": "ltr"
+}

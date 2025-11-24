@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rispondo con gli Occhi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/paziente.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Schermata Iniziale -->
+    <div id="schermoIniziale" class="container-fluid vh-100 d-flex align-items-center justify-content-center">
+        <div class="text-center">
+            <h1 class="display-3 mb-4">
+                <i class="bi bi-eye-fill text-primary"></i> Rispondo con gli Occhi
+            </h1>
+            <p class="lead text-muted mb-5">Sistema di comunicazione con eye tracking</p>
+            
+            <!-- Selezione Utente -->
+            <div class="card mx-auto" style="max-width: 500px;">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="bi bi-person"></i> Seleziona Utente
+                    </h5>
+                    <select class="form-select form-select-lg mb-4" id="selezionaUtente">
+                        <option value="">-- Seleziona --</option>
+                        <!-- Le opzioni verranno caricate dinamicamente -->
+                    </select>
+                    
+                    <button class="btn btn-primary btn-lg w-100" id="btnAvviaEsercizio" disabled>
+                        <i class="bi bi-play-circle"></i> Avvia Esercizio
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <a href="index.html" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Torna Indietro
+                </a>
+                <a href="gestione.html" class="btn btn-outline-info">
+                    <i class="bi bi-gear"></i> Gestione Domande
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schermata Esercizio -->
+    <div id="schermoEsercizio" class="container-fluid vh-100" style="display: none;">
+        <!-- Header -->
+        <div class="header-bar">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="badge bg-info me-2">
+                        <i class="bi bi-person"></i> <span id="nomeUtente">Utente</span>
+                    </span>
+                    <span class="badge bg-primary">
+                        Domanda <span id="numeroDomanda">1</span> di <span id="totaleDomande">0</span>
+                    </span>
+                    <button class="btn btn-sm btn-warning" id="btnTornaEducatore">
+                        <i class="bi bi-arrow-left-circle"></i> Area Educatore
+                    </button>
+                </div>
+                <button class="btn btn-sm btn-danger" id="btnTermina">
+                    <i class="bi bi-x-circle"></i> Termina
+                </button>
+            </div>
+        </div>
+
+        <!-- Area Principale -->
+        <div class="row h-100 g-0">
+            <!-- Colonna Unica Fullscreen -->
+            <div class="col-12 d-flex flex-column">
+                <!-- Domanda -->
+                <div class="domanda-container">
+                    <div class="domanda-testo" id="testoDomanda">
+                        <!-- Testo domanda verrà inserito qui -->
+                    </div>
+                    <button class="btn btn-primary mt-2" id="btnRiproduciDomanda">
+                        <i class="bi bi-volume-up"></i> Ascolta Domanda
+                    </button>
+                </div>
+
+                <!-- Pulsanti Risposta -->
+                <div class="risposte-container">
+                    <div class="row g-3 h-100">
+                        <!-- Risposta SINISTRA -->
+                        <div class="col-6">
+                            <div class="risposta-box sinistra" id="rispostaSinistra">
+                                <div class="risposta-etichetta" id="etichettaSinistra">NO</div>
+                                <div class="risposta-immagine-container">
+                                    <img id="immagineSinistra" src="" alt="" class="risposta-immagine" style="display: none;">
+                                </div>
+                                <div class="progress mt-3" style="height: 20px; display: none;" id="progressSinistra">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Risposta DESTRA -->
+                        <div class="col-6">
+                            <div class="risposta-box destra" id="rispostaDestra">
+                                <div class="risposta-etichetta" id="etichettaDestra">SI</div>
+                                <div class="risposta-immagine-container">
+                                    <img id="immagineDestra" src="" alt="" class="risposta-immagine" style="display: none;">
+                                </div>
+                                <div class="progress mt-3" style="height: 20px; display: none;" id="progressDestra">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video nascosto (usato solo per processing) -->
+                <video id="videoPreview" autoplay playsinline style="display: none;"></video>
+                <canvas id="canvasOverlay" style="display: none;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schermata Completamento -->
+    <div id="schermoCompletamento" class="container-fluid vh-100 d-flex align-items-center justify-content-center" style="display: none;">
+        <div class="text-center">
+            <div class="mb-4">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 6rem;"></i>
+            </div>
+            <h2 class="display-4 mb-3">Esercizio Completato!</h2>
+            <p class="lead text-muted mb-5">Hai risposto a tutte le domande</p>
+            
+            <div class="d-flex gap-3 justify-content-center">
+                <button class="btn btn-primary btn-lg" id="btnRicomincia">
+                    <i class="bi bi-arrow-clockwise"></i> Ricomincia
+                </button>
+                <a href="index.html" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-house"></i> Torna alla Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- MediaPipe -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    
+    <!-- App Scripts -->
+    <script src="js/eye-tracking.js"></script>
+    <script src="js/paziente-app.js"></script>
+</body>
+</html>
+

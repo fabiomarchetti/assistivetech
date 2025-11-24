@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genera Icone PWA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .icons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .icon-item {
+            text-align: center;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .icon-item img {
+            max-width: 100%;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .icon-label {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+        #log {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Generatore Icone PWA - Cerca Colore</h1>
+        <p>Questo tool genera automaticamente tutte le icone PWA necessarie per Android e iOS.</p>
+
+        <div>
+            <button onclick="generateAllIcons()">🚀 Genera Tutte le Icone</button>
+            <button onclick="downloadAllIcons()">💾 Scarica Tutte</button>
+        </div>
+
+        <div id="log"></div>
+
+        <div class="icons-grid" id="iconsGrid"></div>
+    </div>
+
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        const generatedIcons = {};
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.textContent += message + '\n';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function generateIcon(size) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+
+                // Gradiente background
+                const gradient = ctx.createLinearGradient(0, 0, size, size);
+                gradient.addColorStop(0, '#667eea');
+                gradient.addColorStop(1, '#764ba2');
+
+                // Background con border radius
+                const radius = size * 0.15;
+                ctx.fillStyle = gradient;
+                roundRect(ctx, 0, 0, size, size, radius);
+                ctx.fill();
+
+                // Palette bianca
+                ctx.save();
+                ctx.translate(size / 2, size / 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, size * 0.3, size * 0.24, 0, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Buchi colori
+                const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', '#A8E6CF', '#C7CEEA'];
+                const positions = [
+                    [-0.12, -0.08], [0, -0.1], [0.12, -0.08],
+                    [-0.12, 0.04], [0, 0.06], [0.12, 0.04]
+                ];
+
+                const dotRadius = size * 0.05;
+                positions.forEach((pos, i) => {
+                    ctx.fillStyle = colors[i];
+                    ctx.beginPath();
+                    ctx.arc(pos[0] * size, pos[1] * size, dotRadius, 0, 2 * Math.PI);
+                    ctx.fill();
+                });
+
+                // Buco thumb
+                ctx.fillStyle = 'white';
+                ctx.strokeStyle = '#764ba2';
+                ctx.lineWidth = size * 0.008;
+                ctx.beginPath();
+                ctx.ellipse(size * 0.16, size * 0.12, size * 0.04, size * 0.06, 0, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.restore();
+
+                // Testo
+                if (size >= 192) {
+                    ctx.fillStyle = 'white';
+                    ctx.font = `bold ${size * 0.12}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('Cerca Colore', size / 2, size * 0.86);
+                }
+
+                canvas.toBlob((blob) => {
+                    generatedIcons[size] = blob;
+                    resolve(canvas.toDataURL());
+                }, 'image/png');
+            });
+        }
+
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
+        async function generateAllIcons() {
+            log('🚀 Inizio generazione icone...\n');
+            const grid = document.getElementById('iconsGrid');
+            grid.innerHTML = '';
+
+            for (const size of sizes) {
+                log(`Generazione icon-${size}x${size}.png...`);
+                const dataUrl = await generateIcon(size);
+
+                const item = document.createElement('div');
+                item.className = 'icon-item';
+                item.innerHTML = `
+                    <img src="${dataUrl}" alt="Icon ${size}x${size}">
+                    <div class="icon-label">${size}x${size}</div>
+                    <button onclick="downloadIcon(${size})">Scarica</button>
+                `;
+                grid.appendChild(item);
+
+                log(`✓ icon-${size}x${size}.png generata`);
+            }
+
+            log('\n✅ Tutte le icone generate con successo!');
+        }
+
+        function downloadIcon(size) {
+            if (!generatedIcons[size]) {
+                alert('Genera prima le icone!');
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.download = `icon-${size}x${size}.png`;
+            link.href = URL.createObjectURL(generatedIcons[size]);
+            link.click();
+        }
+
+        async function downloadAllIcons() {
+            if (Object.keys(generatedIcons).length === 0) {
+                alert('Genera prima le icone!');
+                return;
+            }
+
+            log('\n💾 Download di tutte le icone...');
+            for (const size of sizes) {
+                if (generatedIcons[size]) {
+                    downloadIcon(size);
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+            }
+            log('✅ Download completato!');
+        }
+
+        // Auto-genera all'avvio
+        window.addEventListener('load', () => {
+            setTimeout(generateAllIcons, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup - Ordina Lettere</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .setup-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .card {
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            border: none;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 16px 16px 0 0 !important;
+            padding: 20px;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .letter-preview {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 4px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="bi bi-gear-fill me-2"></i>Configura Esercizio - Ordina Lettere</h3>
+            </div>
+            <div class="card-body p-4">
+                <form id="setupForm">
+                    <!-- Educatore -->
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-person-badge me-2"></i>Educatore</label>
+                        <select class="form-select" id="educatore" required>
+                            <option value="">Seleziona educatore...</option>
+                        </select>
+                    </div>
+
+                    <!-- Paziente -->
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-person me-2"></i>Paziente</label>
+                        <select class="form-select" id="paziente" required>
+                            <option value="">Seleziona paziente...</option>
+                        </select>
+                    </div>
+
+                    <!-- Tipo Sequenza -->
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-sort-alpha-down me-2"></i>Tipo Sequenza</label>
+                        <select class="form-select" id="tipoSequenza" required>
+                            <option value="alfabetico">Ordine Alfabetico (A-Z)</option>
+                            <option value="alfabetico-inverso">Ordine Alfabetico Inverso (Z-A)</option>
+                        </select>
+                    </div>
+
+                    <!-- Numero Lettere -->
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-123 me-2"></i>Numero Lettere da Ordinare</label>
+                        <input type="range" class="form-range" id="numeroLettere" min="3" max="10" value="5" step="1">
+                        <div class="text-center mt-2">
+                            <span class="badge bg-primary fs-5" id="numeroLettereLabel">5 lettere</span>
+                        </div>
+                    </div>
+
+                    <!-- Anteprima Lettere -->
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-eye me-2"></i>Anteprima Lettere Casuali</label>
+                        <div class="p-3 bg-light rounded" id="letterPreview">
+                            <!-- Generato dinamicamente -->
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="regenerateBtn">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Genera Nuove Lettere
+                        </button>
+                    </div>
+
+                    <!-- Numero Prove -->
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-list-check me-2"></i>Numero Prove</label>
+                        <input type="range" class="form-range" id="numeroProve" min="3" max="15" value="5" step="1">
+                        <div class="text-center mt-2">
+                            <span class="badge bg-success fs-5" id="numeroProveLabel">5 prove</span>
+                        </div>
+                    </div>
+
+                    <!-- Timer -->
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-clock me-2"></i>Timer per Prova (secondi)</label>
+                        <input type="range" class="form-range" id="timer" min="10" max="120" value="30" step="5">
+                        <div class="text-center mt-2">
+                            <span class="badge bg-warning fs-5" id="timerLabel">30 secondi</span>
+                        </div>
+                    </div>
+
+                    <!-- TTS -->
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="ttsEnabled" checked>
+                            <label class="form-check-label" for="ttsEnabled">
+                                <i class="bi bi-volume-up me-2"></i>Abilita Istruzioni Vocali (TTS)
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Messaggio Rinforzo -->
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-chat-heart me-2"></i>Messaggio di Rinforzo</label>
+                        <input type="text" class="form-control" id="messaggioRinforzo" value="Molto bene!" placeholder="Es: Bravo!, Perfetto!">
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-play-circle me-2"></i>Avvia Esercizio
+                        </button>
+                        <a href="../" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Annulla
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-detection ambiente: localhost usa '/Assistivetech', produzione usa ''
+        const BASE_PATH = window.location.hostname === 'localhost' ? '/Assistivetech' : '';
+
+        // Carica educatori e pazienti
+        async function loadUtenti() {
+            try {
+                // Carica tutti gli utenti (inclusi sviluppatori per setup esercizi)
+                const respEducatori = await fetch(`${BASE_PATH}/api/auth_registrazioni.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_all' })
+                });
+                const dataEducatori = await respEducatori.json();
+
+                console.log('Risposta API:', dataEducatori); // DEBUG
+
+                if (!dataEducatori.success) {
+                    console.error('Errore API:', dataEducatori.message);
+                    return;
+                }
+
+                const selectEducatore = document.getElementById('educatore');
+                const selectPaziente = document.getElementById('paziente');
+
+                // L'API restituisce i dati in 'registrazioni'
+                let utenti = dataEducatori.registrazioni || [];
+
+                // Aggiungi manualmente lo sviluppatore (che è escluso dall'API get_all)
+                // Fabio Marchetti - marchettisoft@gmail.com
+                const sviluppatore = {
+                    nome_registrazione: 'Fabio',
+                    cognome_registrazione: 'Marchetti',
+                    ruolo_registrazione: 'sviluppatore',
+                    username_registrazione: 'marchettisoft@gmail.com'
+                };
+
+                utenti.unshift(sviluppatore); // Aggiungi in cima
+
+                // Aggiungi sviluppatore per primo e pre-selezionalo
+                const optionSviluppatore = document.createElement('option');
+                optionSviluppatore.value = `${sviluppatore.nome_registrazione} ${sviluppatore.cognome_registrazione}`;
+                optionSviluppatore.textContent = `${sviluppatore.nome_registrazione} ${sviluppatore.cognome_registrazione} (Sviluppatore)`;
+                optionSviluppatore.selected = true;
+                selectEducatore.appendChild(optionSviluppatore);
+
+                // Carica educatori
+                const educatori = utenti.filter(u => u.ruolo_registrazione === 'educatore');
+
+                educatori.forEach(edu => {
+                    const option = document.createElement('option');
+                    option.value = `${edu.nome_registrazione} ${edu.cognome_registrazione}`;
+                    option.textContent = `${edu.nome_registrazione} ${edu.cognome_registrazione}`;
+                    selectEducatore.appendChild(option);
+                });
+
+                // Aggiungi opzione Anonimo PRIMA e pre-selezionala
+                const optionAnonimo = document.createElement('option');
+                optionAnonimo.value = 'Anonimo';
+                optionAnonimo.textContent = 'Anonimo (Test)';
+                optionAnonimo.selected = true; // Sempre pre-selezionato
+                selectPaziente.appendChild(optionAnonimo);
+
+                // Carica pazienti
+                const pazienti = utenti.filter(u => u.ruolo_registrazione === 'paziente');
+
+                pazienti.forEach(paz => {
+                    const option = document.createElement('option');
+                    option.value = `${paz.nome_registrazione} ${paz.cognome_registrazione}`;
+                    option.textContent = `${paz.nome_registrazione} ${paz.cognome_registrazione}`;
+                    selectPaziente.appendChild(option);
+                });
+
+            } catch (error) {
+                console.error('Errore caricamento utenti:', error);
+            }
+        }
+
+        // Genera lettere casuali
+        function generaLettere() {
+            const numeroLettere = parseInt(document.getElementById('numeroLettere').value);
+            const alfabeto = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const lettere = [];
+
+            while (lettere.length < numeroLettere) {
+                const randomLettera = alfabeto[Math.floor(Math.random() * alfabeto.length)];
+                if (!lettere.includes(randomLettera)) {
+                    lettere.push(randomLettera);
+                }
+            }
+
+            return lettere;
+        }
+
+        // Mostra anteprima lettere
+        function mostraAnteprimaLettere() {
+            const lettere = generaLettere();
+            const preview = document.getElementById('letterPreview');
+            preview.innerHTML = lettere.map(l => `<span class="letter-preview">${l}</span>`).join('');
+        }
+
+        // Update labels
+        document.getElementById('numeroLettere').addEventListener('input', (e) => {
+            document.getElementById('numeroLettereLabel').textContent = `${e.target.value} lettere`;
+            mostraAnteprimaLettere();
+        });
+
+        document.getElementById('numeroProve').addEventListener('input', (e) => {
+            document.getElementById('numeroProveLabel').textContent = `${e.target.value} prove`;
+        });
+
+        document.getElementById('timer').addEventListener('input', (e) => {
+            document.getElementById('timerLabel').textContent = `${e.target.value} secondi`;
+        });
+
+        document.getElementById('regenerateBtn').addEventListener('click', mostraAnteprimaLettere);
+
+        // Submit form
+        document.getElementById('setupForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const config = {
+                educatore: document.getElementById('educatore').value,
+                paziente: document.getElementById('paziente').value,
+                tipoSequenza: document.getElementById('tipoSequenza').value,
+                numeroLettere: parseInt(document.getElementById('numeroLettere').value),
+                numeroProve: parseInt(document.getElementById('numeroProve').value),
+                timer: parseInt(document.getElementById('timer').value),
+                ttsEnabled: document.getElementById('ttsEnabled').checked,
+                messaggioRinforzo: document.getElementById('messaggioRinforzo').value
+            };
+
+            // Salva config in sessionStorage
+            sessionStorage.setItem('ordinaLettereConfig', JSON.stringify(config));
+
+            // Vai all'esercizio
+            window.location.href = 'index.html';
+        });
+
+        // Init
+        loadUtenti();
+        mostraAnteprimaLettere();
+    </script>
+</body>
+</html>

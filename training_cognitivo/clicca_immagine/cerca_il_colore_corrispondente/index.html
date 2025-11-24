@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Cerca il Colore Corrispondente - Click Mode</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Esercizio cognitivo di accoppiamento colori con click/tap - Training Cognitivo AssistiveTech">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Cerca Colore">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192x192.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512x512.png">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            min-height: 100vh;
+        }
+
+        .exercise-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .exercise-header {
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .trial-counter {
+            font-size: 18px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .trial-counter .current {
+            color: #667eea;
+            font-size: 24px;
+        }
+
+        /* Area di gioco */
+        .game-area {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 30px;
+            padding: 30px;
+            align-items: start;
+            min-height: calc(100vh - 120px);
+        }
+
+        /* Riga superiore - distrattori orizzontali */
+        .top-row {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Colonna sinistra - distrattori */
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            align-items: center;
+            align-self: start;
+        }
+
+        /* Colonna centrale - target */
+        .center-column {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 40px;
+        }
+
+        /* Colonna destra - distrattori */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            align-items: center;
+            align-self: start;
+        }
+
+        /* Riga inferiore - distrattori orizzontali */
+        .bottom-row {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Card colore target */
+        .target-card {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            border: 5px dashed #28a745;
+            animation: pulse-border 2s infinite;
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { border-color: #28a745; }
+            50% { border-color: #20c997; }
+        }
+
+        .target-card.drag-over {
+            background: #d4edda;
+            border-color: #155724;
+            transform: scale(1.05);
+        }
+
+        .target-card img {
+            width: 100%;
+            height: auto;
+            max-height: 250px;
+            object-fit: contain;
+            border-radius: 20px;
+            pointer-events: none;
+        }
+
+        .target-label {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+            margin-top: 20px;
+            text-transform: uppercase;
+        }
+
+        /* Card colore draggable */
+        .color-card {
+            background: white;
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 260px;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .color-card.active {
+            border: 6px solid #ffc107;
+            background: #fff8e1;
+            transform: scale(1.15);
+            box-shadow: 0 20px 50px rgba(255, 193, 7, 0.6);
+            z-index: 10;
+        }
+
+        .color-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .color-card:active {
+            transform: scale(0.95);
+        }
+
+        .color-card.clicked {
+            animation: clickEffect 0.3s ease;
+        }
+
+        @keyframes clickEffect {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Drag & Drop Styles */
+        .color-card.draggable {
+            cursor: grab;
+        }
+
+        .color-card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+            transform: rotate(5deg) scale(1.1);
+            z-index: 1000;
+        }
+
+        .target-card.drag-over {
+            background: #d4edda;
+            border-color: #155724;
+            border-width: 8px;
+            transform: scale(1.05);
+            animation: targetPulse 0.5s ease;
+        }
+
+        @keyframes targetPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+            50% { box-shadow: 0 0 0 20px rgba(40, 167, 69, 0); }
+        }
+
+        /* Animazione ritorno colore sbagliato */
+        .color-card.return-to-place {
+            animation: returnAnimation 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes returnAnimation {
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+            50% { transform: translate(-30px, -30px) rotate(-10deg); opacity: 0.7; }
+            100% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+        }
+
+        .color-card img {
+            width: 100%;
+            height: auto;
+            max-height: 180px;
+            object-fit: contain;
+            border-radius: 15px;
+            pointer-events: none;
+        }
+
+        .color-label {
+            font-size: 20px;
+            font-weight: 700;
+            color: #495057;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        /* Modal celebrazione */
+        .celebration-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .celebration-modal.active {
+            display: flex;
+        }
+
+        .celebration-content {
+            background: linear-gradient(135deg, #fff 0%, #f0f8ff 100%);
+            border-radius: 40px;
+            padding: 80px 60px;
+            text-align: center;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+            max-width: 800px;
+            width: 90%;
+            animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0) rotate(-5deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.15) rotate(2deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .celebration-content h2 {
+            color: #28a745;
+            font-size: 72px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .celebration-gif {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        /* Animazione stelle che cadono */
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .celebration-modal.active::before,
+        .celebration-modal.active::after {
+            content: '⭐';
+            position: absolute;
+            font-size: 48px;
+            animation: fall 2s linear infinite;
+        }
+
+        .celebration-modal.active::before {
+            left: 20%;
+            animation-delay: 0.2s;
+        }
+
+        .celebration-modal.active::after {
+            left: 80%;
+            animation-delay: 0.5s;
+            content: '✨';
+        }
+
+        /* Timer display */
+        .timer-display {
+            position: fixed;
+            top: 80px;
+            right: 30px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+            z-index: 90;
+        }
+
+        .timer-display.running {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .game-area {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto;
+            }
+
+            .left-column, .right-column {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            .target-card {
+                max-width: 350px;
+            }
+
+            .color-card {
+                max-width: 220px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .exercise-header {
+                flex-direction: column;
+                gap: 10px;
+                padding: 15px;
+            }
+
+            .header-title {
+                font-size: 20px;
+            }
+
+            .target-card {
+                max-width: 280px;
+                padding: 30px;
+            }
+
+            .color-card {
+                max-width: 180px;
+            }
+
+            .color-card img {
+                max-height: 140px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="exercise-container">
+        <!-- Header -->
+        <div class="exercise-header">
+            <div class="header-title">
+                <i class="bi bi-palette-fill me-2"></i>
+                Cerca il Colore: <span id="targetColorName">-</span>
+            </div>
+            <button id="startBtn" class="btn btn-success btn-lg" style="font-weight: bold; border-radius: 50px; padding: 12px 40px; box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);">
+                <i class="bi bi-play-circle-fill me-2"></i>START
+            </button>
+            <div class="trial-counter">
+                Prova <span class="current" id="currentTrial">1</span> / <span id="totalTrials">5</span>
+            </div>
+        </div>
+
+        <!-- Timer -->
+        <div class="timer-display" id="timerDisplay">
+            <i class="bi bi-stopwatch me-2"></i>
+            <span id="timerValue">0.00</span>s
+        </div>
+
+        <!-- Area di gioco -->
+        <div class="game-area">
+            <!-- Riga superiore - distrattori -->
+            <div class="top-row" id="topRow"></div>
+
+            <!-- Colonna sinistra - distrattori -->
+            <div class="left-column" id="leftColumn"></div>
+
+            <!-- Colonna centrale - target -->
+            <div class="center-column">
+                <div class="target-card" id="targetCard">
+                    <img id="targetImage" src="" alt="Target">
+                    <div class="target-label" id="targetLabel">Trascina qui</div>
+                </div>
+            </div>
+
+            <!-- Colonna destra - distrattori -->
+            <div class="right-column" id="rightColumn"></div>
+
+            <!-- Riga inferiore - distrattori -->
+            <div class="bottom-row" id="bottomRow"></div>
+        </div>
+    </div>
+
+    <!-- Modal celebrazione -->
+    <div class="celebration-modal" id="celebrationModal">
+        <div class="celebration-content">
+            <h2><i class="bi bi-star-fill"></i> BRAVO! <i class="bi bi-star-fill"></i></h2>
+            <img class="celebration-gif" src="https://media.giphy.com/media/g5R9dok94mrIvplmZd/giphy.gif" alt="Fuochi d'artificio">
+            <h3 id="celebrationMessage" style="margin-top: 30px; font-size: 36px; color: #667eea;">Ottimo lavoro!</h3>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Configurazione
+        // Auto-detection ambiente: localhost usa '/Assistivetech', produzione usa ''
+        const BASE_PATH = window.location.hostname === 'localhost' ? '/Assistivetech' : '';
+        const API_BASE = `${BASE_PATH}/api`;
+        const ARASAAC_API = 'https://api.arasaac.org/api';
+
+        // State
+        let config = null;
+        let currentTrial = 0;
+        let currentTargetColor = null;
+        let timerStart = null;
+        let timerInterval = null;
+        let freeTrials = 3;
+        let sessionId = null;
+        let isStarted = false;
+
+        // Scan state
+        let cardEls = [];
+        let currentScanIdx = 0;
+        let scanTimer = null;
+        let scanTimeout = null;
+        let scanIntervalMs = 3000;
+        let scanEnabled = true;
+
+        // Speech Synthesis
+        let synth = window.speechSynthesis;
+
+        // Inizializzazione
+        document.addEventListener('DOMContentLoaded', () => {
+            loadConfiguration();
+        });
+
+        // Carica configurazione da sessionStorage
+        function loadConfiguration() {
+            const configStr = sessionStorage.getItem('cercaColoreConfig');
+
+            if (!configStr) {
+                // Redirect silenzioso al setup se non c'è configurazione
+                console.log('Configurazione mancante, redirect al setup...');
+                window.location.href = 'setup.html';
+                return;
+            }
+
+            try {
+                config = JSON.parse(configStr);
+                console.log('Configurazione caricata:', config);
+
+                // Imposta UI
+                document.getElementById('totalTrials').textContent = config.numeroProve;
+
+                // Carica modalità interazione
+                const interactionMode = config.interactionMode || 'timer'; // 'timer', 'click', 'drag'
+                scanEnabled = interactionMode === 'timer'; // Scansione solo se modalità timer
+                scanIntervalMs = config.scanIntervalMs || 3000;
+                console.log('Modalità:', interactionMode.toUpperCase(), '- Scansione:', scanEnabled ? 'ATTIVA' : 'DISATTIVA', '- Timer:', scanIntervalMs + 'ms');
+
+                // Inizia esercizio
+                startExercise();
+            } catch (error) {
+                console.error('Errore parsing configurazione:', error);
+                // Redirect silenzioso al setup in caso di errore
+                window.location.href = 'setup.html';
+            }
+        }
+
+        // Inizia esercizio
+        async function startExercise() {
+            // Avvia sessione nel database
+            await startSession();
+
+            // Prima prova
+            nextTrial();
+        }
+
+        // Avvia sessione nel database
+        async function startSession() {
+            try {
+                const response = await fetch(`${API_BASE}/api_risultati_esercizi.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'start_session',
+                        nome_educatore: config.educatore,
+                        nome_paziente: config.paziente,
+                        categoria_esercizio: 'clicca immagine',
+                        nome_esercizio: 'cerca il colore corrispondente',
+                        tempo_latenza: 0,
+                        items_totali_utilizzati: config.colors.length,
+                        session_started_at: Date.now()
+                    })
+                });
+
+                // DEBUG: Vedi risposta raw
+                const responseText = await response.text();
+                console.log('start_session risposta raw:', responseText);
+                const result = JSON.parse(responseText);
+
+                if (result.success) {
+                    sessionId = result.data.id_risultato;
+                    console.log('Sessione avviata, ID:', sessionId);
+                } else {
+                    console.error('Errore avvio sessione:', result.message);
+                }
+            } catch (error) {
+                console.error('Errore chiamata API start_session:', error);
+            }
+        }
+
+        // Prossima prova
+        function nextTrial(skipAnnouncement = false) {
+            currentTrial++;
+
+            if (currentTrial > config.numeroProve) {
+                endExercise();
+                return;
+            }
+
+            // Aggiorna UI
+            document.getElementById('currentTrial').textContent = currentTrial;
+
+            // Seleziona nuovo target
+            currentTargetColor = config.targetColor;
+
+            // Shuffle colori distrattori
+            const shuffledColors = shuffleArray([...config.colorData]);
+
+            // Renderizza UI
+            renderTrial(shuffledColors);
+
+            // Reset stato START
+            isStarted = false;
+            const startBtn = document.getElementById('startBtn');
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="bi bi-play-circle-fill me-2"></i>START';
+            startBtn.classList.remove('btn-secondary');
+            startBtn.classList.add('btn-success');
+
+            // Annuncia target con TTS solo se non è una riprova
+            if (!skipAnnouncement) {
+                speak(`Cerca il colore ${currentTargetColor}`);
+            }
+        }
+
+        // Renderizza prova
+        function renderTrial(colors) {
+            const topRow = document.getElementById('topRow');
+            const leftColumn = document.getElementById('leftColumn');
+            const rightColumn = document.getElementById('rightColumn');
+            const bottomRow = document.getElementById('bottomRow');
+            const targetCard = document.getElementById('targetCard');
+            const targetImage = document.getElementById('targetImage');
+            const targetLabel = document.getElementById('targetLabel');
+            const targetColorName = document.getElementById('targetColorName');
+
+            // Svuota tutte le aree
+            topRow.innerHTML = '';
+            leftColumn.innerHTML = '';
+            rightColumn.innerHTML = '';
+            bottomRow.innerHTML = '';
+
+            // Setup target
+            const targetData = config.colorData.find(c => c.name === currentTargetColor);
+            targetImage.src = targetData.imageUrl;
+            targetLabel.textContent = currentTargetColor.toUpperCase();
+            targetColorName.textContent = currentTargetColor.toUpperCase();
+
+            // Click: target non ha bisogno di setup speciale
+
+            // Distribuisci colori in modo equilibrato con ALMENO 3 elementi nella riga superiore
+            const totalColors = colors.length;
+            let index = 0;
+            cardEls = []; // Reset array cards
+
+            // SOPRA: distribuisci almeno 3 elementi (o meno se non ce ne sono abbastanza)
+            const itemsTop = Math.min(totalColors, Math.max(3, Math.ceil(totalColors * 0.4)));
+            for (let i = 0; i < itemsTop && index < totalColors; i++, index++) {
+                const card = createColorCard(colors[index]);
+                topRow.appendChild(card);
+                cardEls.push(card);
+            }
+
+            // Calcola rimanenti elementi da distribuire
+            const remaining = totalColors - index;
+
+            if (remaining > 0) {
+                // SINISTRA: circa 1/3 dei rimanenti
+                const itemsLeft = Math.ceil(remaining / 3);
+                for (let i = 0; i < itemsLeft && index < totalColors; i++, index++) {
+                    const card = createColorCard(colors[index]);
+                    leftColumn.appendChild(card);
+                    cardEls.push(card);
+                }
+
+                // DESTRA: circa 1/3 dei rimanenti
+                const itemsRight = Math.ceil(remaining / 3);
+                for (let i = 0; i < itemsRight && index < totalColors; i++, index++) {
+                    const card = createColorCard(colors[index]);
+                    rightColumn.appendChild(card);
+                    cardEls.push(card);
+                }
+
+                // SOTTO: tutti i rimanenti
+                while (index < totalColors) {
+                    const card = createColorCard(colors[index]);
+                    bottomRow.appendChild(card);
+                    cardEls.push(card);
+                    index++;
+                }
+            }
+
+            // Setup drag & drop sul target (se modalità drag)
+            setupTargetDropZone();
+        }
+
+        // Crea card colore cliccabile/draggable
+        function createColorCard(color) {
+            const card = document.createElement('div');
+            card.className = 'color-card';
+            card.dataset.colorName = color.name;
+
+            card.innerHTML = `
+                <img src="${color.imageUrl}" alt="${color.name}">
+                <div class="color-label">${color.name}</div>
+            `;
+
+            // Abilita drag & drop SOLO se modalità è 'drag'
+            if (config.interactionMode === 'drag') {
+                card.draggable = true;
+                card.classList.add('draggable');
+                
+                // Eventi drag
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragend', handleDragEnd);
+            }
+
+            // Click event (funziona sia per 'click' che per 'timer')
+            card.addEventListener('click', () => {
+                handleColorClick(color.name);
+            });
+
+            return card;
+        }
+
+        // === DRAG & DROP HANDLERS ===
+        
+        let draggedColorName = null;
+
+        // Quando inizia il drag
+        function handleDragStart(e) {
+            if (!isStarted) {
+                e.preventDefault();
+                speak('Premi START per iniziare');
+                return;
+            }
+
+            // Salva il colore trascinato
+            draggedColorName = e.target.dataset.colorName;
+            e.target.classList.add('dragging');
+            
+            // Imposta dati per il transfer
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', draggedColorName);
+            
+            console.log('🎨 Drag iniziato:', draggedColorName);
+        }
+
+        // Quando finisce il drag (rilascio o annullo)
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            draggedColorName = null;
+        }
+
+        // Configura il target come drop zone
+        function setupTargetDropZone() {
+            const targetCard = document.getElementById('targetCard');
+            
+            if (!targetCard || config.interactionMode !== 'drag') return;
+
+            // Previeni comportamento default (non permette drop)
+            targetCard.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                targetCard.classList.add('drag-over');
+            });
+
+            // Quando il colore esce dall'area target
+            targetCard.addEventListener('dragleave', () => {
+                targetCard.classList.remove('drag-over');
+            });
+
+            // Quando rilascio il colore sul target
+            targetCard.addEventListener('drop', (e) => {
+                e.preventDefault();
+                targetCard.classList.remove('drag-over');
+                
+                const droppedColor = e.dataTransfer.getData('text/plain');
+                handleDrop(droppedColor);
+            });
+
+            console.log('✅ Target configurato come drop zone');
+        }
+
+        // Gestisce il drop sul target
+        async function handleDrop(droppedColor) {
+            // Ferma scansione (se attiva)
+            stopScan();
+
+            // Ferma timer
+            const latency = stopTimer();
+
+            const isCorrect = droppedColor === currentTargetColor;
+
+            console.log('🎯 Drop:', droppedColor, '- Target:', currentTargetColor, '- Corretto:', isCorrect);
+
+            // Registra risultato (se non prova gratuita)
+            if (currentTrial > freeTrials) {
+                await saveResult(isCorrect, droppedColor, latency);
+            }
+
+            if (isCorrect) {
+                // ✅ CORRETTO: mostra celebrazione (fuochi d'artificio già presenti)
+                showCelebration();
+            } else {
+                // ❌ SBAGLIATO: feedback voce + animazione ritorno
+                const wrongCard = document.querySelector(`[data-color-name="${droppedColor}"]`);
+                
+                if (wrongCard) {
+                    // Animazione ritorno al posto
+                    wrongCard.classList.add('return-to-place');
+                    setTimeout(() => {
+                        wrongCard.classList.remove('return-to-place');
+                    }, 600);
+                }
+
+                // Voce TTS: "Fai attenzione"
+                speak('Fai attenzione! Riprova.', () => {
+                    // Passa alla prova successiva dopo il feedback
+                    nextTrial();
+                });
+            }
+        }
+
+        // Funzioni scansione automatica
+        function highlight(idx) {
+            cardEls.forEach((el, i) => {
+                el.classList.toggle('active', i === idx);
+            });
+        }
+
+        function stepScan() {
+            if (!cardEls.length || !scanEnabled) {
+                stopScan();
+                return;
+            }
+
+            highlight(currentScanIdx);
+
+            // TTS pronuncia il colore corrente
+            const currentCard = cardEls[currentScanIdx];
+            if (currentCard) {
+                const colorName = currentCard.dataset.colorName;
+                speak(colorName);
+            }
+
+            currentScanIdx = (currentScanIdx + 1) % cardEls.length;
+        }
+
+        function restartScan() {
+            stopScan();
+
+            if (!scanEnabled || !cardEls.length) {
+                highlight(-1);
+                return;
+            }
+
+            currentScanIdx = 0;
+            highlight(currentScanIdx);
+
+            // Avvia primo step dopo l'intervallo
+            scanTimeout = setTimeout(() => {
+                stepScan();
+                scanTimer = setInterval(stepScan, scanIntervalMs);
+            }, scanIntervalMs);
+        }
+
+        function stopScan() {
+            if (scanTimer) {
+                clearInterval(scanTimer);
+                scanTimer = null;
+            }
+            if (scanTimeout) {
+                clearTimeout(scanTimeout);
+                scanTimeout = null;
+            }
+            highlight(-1);
+        }
+
+        // Gestisce click su colore
+        async function handleColorClick(clickedColor) {
+            // Controlla se il gioco è stato avviato
+            if (!isStarted) {
+                speak('Premi START per iniziare');
+                return;
+            }
+
+            // Ferma scansione
+            stopScan();
+
+            // Feedback visivo click
+            const clickedCard = document.querySelector(`[data-color-name="${clickedColor}"]`);
+            if (clickedCard) {
+                clickedCard.classList.add('clicked');
+            }
+
+            // Ferma timer
+            const latency = stopTimer();
+
+            const isCorrect = clickedColor === currentTargetColor;
+
+            // Registra risultato (se non prova gratuita)
+            if (currentTrial > freeTrials) {
+                await saveResult(isCorrect, clickedColor, latency);
+            }
+
+            if (isCorrect) {
+                // Corretto: mostra celebrazione e passa alla prova successiva
+                showCelebration();
+            } else {
+                // Sbagliato: feedback e passa alla prova successiva
+                speak('Riprova! Cerca ancora il colore giusto.', () => {
+                    // Passa alla prova successiva anche se sbagliato
+                    nextTrial();
+                });
+            }
+        }
+
+        // Salva risultato nel database
+        async function saveResult(isCorrect, clickedColor, latency) {
+            try {
+                const now = new Date();
+                const dataEsecuzione = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+                const oraEsecuzione = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+                const data = {
+                    action: 'save_result',
+                    nome_educatore: config.educatore || 'Sviluppatore',
+                    nome_paziente: config.paziente || 'Anonimo',
+                    categoria_esercizio: 'clicca immagine',
+                    nome_esercizio: 'cerca il colore corrispondente',
+                    tempo_latenza: latency,
+                    items_totali_utilizzati: config.colors.length,
+                    item_corretto: isCorrect ? 1 : 0,
+                    item_errato: isCorrect ? 0 : 1,
+                    item_nome: isCorrect ? currentTargetColor : clickedColor,
+                    data_esecuzione: dataEsecuzione,
+                    ora_inizio_esercizio: oraEsecuzione,
+                    ora_fine_esercizio: oraEsecuzione,
+                    sessione_numero: currentTrial - freeTrials
+                };
+
+                console.log('Salvataggio risultato:', data);
+
+                const response = await fetch(`${API_BASE}/api_risultati_esercizi.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    console.error('Errore salvataggio risultato:', result.message);
+                } else {
+                    console.log('✓ Risultato salvato con successo:', result);
+                }
+            } catch (error) {
+                console.error('Errore chiamata API save_result:', error);
+            }
+        }
+
+        // Mostra celebrazione
+        function showCelebration() {
+            // Ferma il timer e la scansione immediatamente
+            stopTimer();
+            stopScan();
+
+            const modal = document.getElementById('celebrationModal');
+            const message = document.getElementById('celebrationMessage');
+
+            message.textContent = config.feedbackMessage || 'Ottimo lavoro!';
+            modal.classList.add('active');
+
+            // Parla messaggio solo BREVEMENTE
+            speak('Bravo!');
+
+            // Chiudi dopo 2 secondi
+            setTimeout(() => {
+                modal.classList.remove('active');
+
+                // Controlla se è l'ultima prova
+                if (currentTrial >= config.numeroProve) {
+                    endExercise();
+                } else {
+                    nextTrial();
+                }
+            }, 2000);
+        }
+
+        // Termina esercizio
+        async function endExercise() {
+            // Ferma il timer e la scansione
+            stopTimer();
+            stopScan();
+
+            // Chiudi sessione nel database
+            if (sessionId) {
+                try {
+                    await fetch(`${API_BASE}/api_risultati_esercizi.php`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'end_session',
+                            id_risultato: sessionId,
+                            timestamp_click: Date.now()
+                        })
+                    });
+                } catch (error) {
+                    console.error('Errore chiusura sessione:', error);
+                }
+            }
+
+            // Annuncia fine e torna al setup
+            speak('Esercizio completato. Ben fatto!', () => {
+                setTimeout(() => {
+                    window.location.href = 'setup.html';
+                }, 2000);
+            });
+        }
+
+        // Timer
+        function startTimer() {
+            timerStart = Date.now();
+            const display = document.getElementById('timerDisplay');
+            display.classList.add('running');
+
+            timerInterval = setInterval(() => {
+                const elapsed = (Date.now() - timerStart) / 1000;
+                document.getElementById('timerValue').textContent = elapsed.toFixed(2);
+            }, 10);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            const display = document.getElementById('timerDisplay');
+            display.classList.remove('running');
+
+            let latency = 0;
+            if (timerStart) {
+                latency = (Date.now() - timerStart) / 1000;
+            }
+
+            // Azzera visivamente il display dopo aver calcolato la latenza
+            setTimeout(() => {
+                document.getElementById('timerValue').textContent = '0.00';
+            }, 100);
+
+            return parseFloat(latency.toFixed(2));
+        }
+
+        // Text-to-Speech
+        function speak(text, callback) {
+            if (!synth) {
+                console.warn('Speech Synthesis non supportato');
+                if (callback) callback();
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'it-IT';
+            utterance.rate = 0.9;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+
+            if (callback) {
+                utterance.onend = callback;
+            }
+
+            synth.speak(utterance);
+        }
+
+        // Utility: shuffle array
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Event listener pulsante START
+        document.addEventListener('DOMContentLoaded', () => {
+            const startBtn = document.getElementById('startBtn');
+            if (startBtn) {
+                startBtn.addEventListener('click', () => {
+                    if (isStarted) return; // Già avviato
+
+                    isStarted = true;
+
+                    // Cambia aspetto pulsante
+                    startBtn.disabled = true;
+                    startBtn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>IN CORSO';
+                    startBtn.classList.remove('btn-success');
+                    startBtn.classList.add('btn-secondary');
+
+                    // Avvia timer e scansione
+                    startTimer();
+                    restartScan();
+                });
+            }
+        });
+
+        // Event listener barra spaziatrice per selezionare colore evidenziato
+        document.addEventListener('keydown', (event) => {
+            // Spazio = codice 32 o key === ' '
+            if (event.code === 'Space' || event.keyCode === 32 || event.key === ' ') {
+                event.preventDefault(); // Evita scroll della pagina
+
+                if (!isStarted) {
+                    speak('Premi START per iniziare');
+                    return;
+                }
+
+                // Trova la card attualmente evidenziata (con classe 'active')
+                const activeCard = document.querySelector('.color-card.active');
+
+                if (activeCard) {
+                    const colorName = activeCard.dataset.colorName;
+                    handleColorClick(colorName);
+                } else {
+                    // FALLBACK: usa currentScanIdx per trovare la card
+                    if (cardEls.length > 0 && currentScanIdx >= 0 && currentScanIdx < cardEls.length) {
+                        const fallbackCard = cardEls[currentScanIdx];
+                        const colorName = fallbackCard.dataset.colorName;
+                        handleColorClick(colorName);
+                    }
+                }
+            }
+        });
+
+        // Registrazione Service Worker per PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then((registration) => {
+                        console.log('✓ Service Worker registrato:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('✗ Service Worker registrazione fallita:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

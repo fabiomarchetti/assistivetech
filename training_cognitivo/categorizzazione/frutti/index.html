@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Categorizzazione – Cerca Frutti</title>
+
+  <!-- PWA Meta Tags -->
+  <meta name="description" content="Esercizio di categorizzazione - Cerca Frutti - Training Cognitivo AssistiveTech">
+  <meta name="theme-color" content="#22c55e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cerca Frutti">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="./manifest.json">
+
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192x192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512x512.png">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body{background:#f5f7fb}
+    .header{background:#ef4444;color:#fff}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+    .card-item{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);user-select:none;opacity:0.6;pointer-events:none}
+    .card-item.enabled{opacity:1;cursor:pointer;pointer-events:auto}
+    .card-item img{width:100%;height:220px;object-fit:contain;padding:6px}
+    .card-item .label{padding:8px 10px;text-align:center;font-weight:600}
+    .card-item.active{outline:3px dashed #0ea5e9}
+    .hud-badge{border-radius:999px;background:#fff;color:#ef4444;padding:6px 12px;font-weight:700}
+    .start-btn{border-radius:999px;padding:8px 20px;font-weight:700;border:none;cursor:pointer}
+    .start-btn.ready{background:#22c55e;color:#fff}
+    .start-btn.running{background:#ef4444;color:#fff;cursor:default}
+    @media (max-width: 576px){ .card-item img{ height:140px; } }
+    @media (min-width: 577px) and (max-width: 768px){ .card-item img{ height:180px; } }
+  </style>
+</head>
+<body>
+  <div class="py-3 header">
+    <div class="container d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <a href="../" class="btn btn-light btn-sm"><i class="bi bi-arrow-left"></i></a>
+        <h5 class="mb-0">Cerca Frutti</h5>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button id="startBtn" class="start-btn ready">
+          <i class="bi bi-play-fill me-1"></i>START
+        </button>
+        <span class="hud-badge"><i class="bi bi-clock me-1"></i><span id="timer">0.0</span>s</span>
+        <div class="d-flex align-items-center ms-2" style="background:#fff;border-radius:999px;padding:6px 10px;color:#333">
+          <label for="speedRange" class="me-2 mb-0" style="font-weight:700">Timer</label>
+          <input id="speedRange" type="range" min="3000" max="60000" step="500" value="3000" class="form-range" style="width:180px">
+          <span id="speedLabel" class="ms-2" style="font-weight:700">3.0s</span>
+          <div class="form-check form-switch ms-3">
+            <input class="form-check-input" type="checkbox" id="scanToggle" checked>
+            <label class="form-check-label" for="scanToggle">Auto</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid px-3 px-md-4 my-3">
+    <div id="instruction" class="alert alert-info">
+      <strong>Istruzioni:</strong> Premi <strong>START</strong> per iniziare, poi seleziona solo i <strong>frutti</strong>.
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="d-flex justify-content-end gap-2 mt-3">
+      <button id="repeatBtn" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-clockwise me-1"></i>Ripeti</button>
+      <button id="endBtn" class="start-btn ready" style="background:#0ea5e9;color:#fff"><i class="bi bi-flag me-1"></i>TERMINA</button>
+    </div>
+  </div>
+
+  <script>
+    // AUTO-DETECTION BASE_PATH (locale MAMP vs produzione Aruba)
+    const BASE_PATH = window.location.pathname.includes('/Assistivetech/') ? '/Assistivetech' : '';
+    const API_BASE = `${BASE_PATH}/api`;
+    const config = JSON.parse(localStorage.getItem('exerciseConfig') || '{}');
+    const educatorName = config.educatorName || 'Sviluppatore';
+    const patientName = config.patientName || 'Anonimo';
+    const numItems = Number(config.numItems || config.numStimuli || 12);
+    const ttsEnabled = !!config.ttsFeedback;
+
+    const fruits = ["mela", "banana", "pera", "arancia", "uva", "fragola"]; // target
+    const nonFruits = ["sedia", "libro", "palla", "auto", "casa", "albero"]; // distrattori
+
+    function pictogramUrl(term) {
+      return `https://api.arasaac.org/api/pictograms/it/search/${encodeURIComponent(term)}`;
+    }
+
+    async function getFirstPictogram(term) {
+      try {
+        const r = await fetch(pictogramUrl(term));
+        const j = await r.json();
+        if (Array.isArray(j) && j.length) {
+          return `https://api.arasaac.org/api/pictograms/${j[0]._id}`;
+        }
+      } catch {}
+      return null;
+    }
+
+    function speak(t) {
+      if (!ttsEnabled) return;
+      try {
+        const u = new SpeechSynthesisUtterance(t);
+        u.lang = 'it-IT';
+        u.rate = 0.9;
+        speechSynthesis.speak(u);
+      } catch (e) {}
+    }
+
+    async function generateStimuli() {
+      const pool = [];
+      for (const v of fruits) { pool.push({ term: v, isTarget: true }); }
+      for (const x of nonFruits) { pool.push({ term: x, isTarget: false }); }
+      // Shuffle
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      // Costruisci fino a numItems anche se il pool base è più piccolo
+      const chosen = [];
+      while (chosen.length < numItems) {
+        for (const it of pool) {
+          if (chosen.length >= numItems) break;
+          chosen.push({ ...it });
+        }
+      }
+      for (const it of chosen) {
+        it.url = await getFirstPictogram(it.term);
+      }
+      return chosen;
+    }
+
+    // Variabili globali
+    let stimuli = [];
+    let startTs = 0;
+    let sessionStartedAt = 0; // impostato allo START
+    let currentIdx = 0;
+    let scanTimer = null;
+    let scanTimeout = null;
+    let scanIntervalMs = 3000;
+    let cardEls = [];
+    let isStarted = false;
+    let sessionRowId = null; // id_risultato creato allo START
+
+    function startTimer() {
+      startTs = performance.now();
+      updateTimer();
+    }
+
+    function updateTimer() {
+      const el = document.getElementById('timer');
+      if (!el) return;
+      const elapsed = ((performance.now() - startTs) / 1000).toFixed(1);
+      el.textContent = elapsed;
+      requestAnimationFrame(updateTimer);
+    }
+
+    // Salva click item
+    async function saveItemClick(itemName, isCorrect) {
+      const currentTime = Date.now();
+      const timerLatency = scanIntervalMs / 1000; // Timer impostato
+
+      const data = {
+        action: 'save_result',
+        nome_educatore: educatorName,
+        nome_paziente: patientName,
+        categoria_esercizio: 'categorizzazione',
+        nome_esercizio: 'cerca frutti',
+        tempo_latenza: timerLatency,
+        items_totali_utilizzati: numItems,
+        item_nome: itemName,
+        item_corretto: isCorrect ? 1 : 0,
+        session_started_at: sessionStartedAt,
+        timestamp_click: currentTime
+      };
+
+      console.log('📤 Salvataggio click item:', data);
+
+      try {
+        const response = await fetch(`${API_BASE}/api_risultati_esercizi.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (result.success) {
+          console.log('✅ Click salvato:', result);
+        } else {
+          console.error('❌ Errore salvataggio:', result.message);
+        }
+      } catch (e) {
+        console.error('❌ Errore fetch:', e);
+      }
+    }
+
+    // Inizio sessione: registra record di avvio (data/ora inizio, items)
+    async function saveSessionStart(){
+      const now = Date.now();
+      const timerLatency = scanIntervalMs / 1000;
+      const data = {
+        action: 'start_session',
+        nome_educatore: educatorName,
+        nome_paziente: patientName,
+        categoria_esercizio: 'categorizzazione',
+        nome_esercizio: 'cerca frutti',
+        tempo_latenza: timerLatency,
+        items_totali_utilizzati: numItems,
+        session_started_at: sessionStartedAt,
+        timestamp_click: now
+      };
+      try{
+        const res = await fetch(`${API_BASE}/api_risultati_esercizi.php`,{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)});
+        const j = await res.json();
+        if (j && j.success && j.data && j.data.id_risultato){ sessionRowId = j.data.id_risultato; }
+      }catch{}
+    }
+
+    // Fine sessione: registra data/ora fine
+    async function saveSessionEnd(){
+      const now = Date.now();
+      const timerLatency = scanIntervalMs / 1000;
+      if (!sessionRowId) return;
+      const data = { action: 'end_session', id_risultato: sessionRowId, timestamp_click: now };
+      try{ await fetch(`${API_BASE}/api_risultati_esercizi.php`,{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)}); }catch{}
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      cardEls = [];
+
+      stimuli.forEach((s, idx) => {
+        const card = document.createElement('div');
+        card.className = 'card-item';
+        if (isStarted) {
+          card.classList.add('enabled');
+        }
+        card.tabIndex = 0;
+
+        const img = document.createElement('img');
+        img.alt = s.term;
+        img.src = s.url || '';
+        img.onerror = () => {
+          img.onerror = null;
+          img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="100%25" height="100%25" fill="%23f3f4f6"/><text x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-family="Arial" font-size="14">immagine non disponibile</text></svg>';
+        };
+        card.appendChild(img);
+
+        const lab = document.createElement('div');
+        lab.className = 'label';
+        lab.textContent = s.term;
+        card.appendChild(lab);
+
+        card.addEventListener('click', () => onSelect(idx, card));
+        card.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onSelect(idx, card);
+          }
+        });
+
+        grid.appendChild(card);
+        cardEls.push(card);
+      });
+
+      currentIdx = 0;
+      if (isStarted) {
+        restartScan();
+      }
+    }
+
+    function highlight(idx) {
+      cardEls.forEach((el, i) => {
+        el.classList.toggle('active', i === idx);
+      });
+    }
+
+    function stepScan() {
+      if (!stimuli.length) {
+        if (scanTimer) clearInterval(scanTimer);
+        if (scanTimeout) clearTimeout(scanTimeout);
+        return;
+      }
+      highlight(currentIdx);
+      speak(stimuli[currentIdx].term);
+      currentIdx = (currentIdx + 1) % stimuli.length;
+    }
+
+    function restartScan() {
+      if (scanTimer) clearInterval(scanTimer);
+      if (scanTimeout) clearTimeout(scanTimeout);
+
+      const toggle = document.getElementById('scanToggle');
+      if (!toggle || !toggle.checked || !isStarted) {
+        highlight(-1);
+        return;
+      }
+
+      if (!stimuli.length) {
+        highlight(-1);
+        return;
+      }
+
+      highlight(currentIdx);
+      scanTimeout = setTimeout(() => {
+        stepScan();
+        scanTimer = setInterval(stepScan, scanIntervalMs);
+      }, scanIntervalMs);
+    }
+
+    function updateSpeed() {
+      const r = document.getElementById('speedRange');
+      const lab = document.getElementById('speedLabel');
+      if (!r || !lab) return;
+      scanIntervalMs = parseInt(r.value, 10) || 3000;
+      lab.textContent = (scanIntervalMs / 1000).toFixed(1) + 's';
+      if (isStarted) {
+        restartScan();
+      }
+    }
+
+    async function onSelect(idx, el) {
+      if (!isStarted) {
+        speak('Premi START per iniziare');
+        return;
+      }
+
+      const s = stimuli[idx];
+
+      try { speechSynthesis.cancel(); } catch (_) {}
+
+      // Salva record nel database
+      await saveItemClick(s.term, s.isTarget);
+
+      // Feedback TTS
+      if (s.isTarget) {
+        speak('Bravo! Corretto!');
+      } else {
+        speak('Ops! Riprova con un altro.');
+      }
+
+      // Rimuovi card cliccata
+      try {
+        el.parentElement.removeChild(el);
+        cardEls.splice(idx, 1);
+        stimuli.splice(idx, 1);
+        if (currentIdx >= stimuli.length) {
+          currentIdx = 0;
+        }
+      } catch (e) {}
+
+      // Se finiti tutti gli items
+      if (stimuli.length === 0) {
+        speak('Esercizio completato! Ottimo lavoro!');
+        stopExercise();
+      } else {
+        restartScan();
+      }
+    }
+
+    function stopExercise() {
+      isStarted = false;
+      if (scanTimer) clearInterval(scanTimer);
+      if (scanTimeout) clearTimeout(scanTimeout);
+      highlight(-1);
+    }
+
+    // START BUTTON
+    document.getElementById('startBtn').addEventListener('click', async function() {
+      if (isStarted) return; // Già avviato
+
+      isStarted = true;
+      this.classList.remove('ready');
+      this.classList.add('running');
+      this.innerHTML = '<i class="bi bi-record-fill me-1"></i>IN CORSO';
+
+      speak('Cerca tutti i frutti');
+
+      sessionStartedAt = Date.now();
+      // Non bloccare l'interfaccia: invia in background
+      saveSessionStart();
+
+      // Abilita cards
+      cardEls.forEach(card => card.classList.add('enabled'));
+
+      // Avvia timer e scan
+      startTimer();
+      restartScan();
+
+      console.log('✅ Esercizio avviato! Session:', sessionStartedAt);
+    });
+
+    // RIPETI
+    document.getElementById('repeatBtn').addEventListener('click', async () => {
+      stopExercise();
+
+      stimuli = await generateStimuli();
+      renderGrid();
+
+      // Reset START button
+      const startBtn = document.getElementById('startBtn');
+      startBtn.classList.remove('running');
+      startBtn.classList.add('ready');
+      startBtn.innerHTML = '<i class="bi bi-play-fill me-1"></i>START';
+      sessionRowId = null;
+      sessionStartedAt = 0;
+      console.log('🔄 Esercizio ripetuto, nuova sessione (in attesa di START)');
+    });
+
+    // TERMINA
+    document.getElementById('endBtn').addEventListener('click', async () => {
+      try { speechSynthesis.cancel(); } catch (_) {}
+      stopExercise();
+      speak('Sessione terminata');
+      await saveSessionEnd();
+      console.log('🏁 Esercizio terminato');
+      location.href = '../';
+    });
+
+    // SPACE BAR per selezionare item attivo
+    document.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        if (!isStarted || !stimuli.length || !cardEls.length) return;
+        const idx = (currentIdx - 1 + stimuli.length) % stimuli.length;
+        onSelect(idx, cardEls[idx]);
+      }
+    });
+
+    // INIT
+    (async function init() {
+      console.log('🚀 Inizializzazione esercizio Cerca Frutti');
+      console.log('📋 Config:', { educatorName, patientName, numItems, ttsEnabled });
+
+      const p = new URLSearchParams(location.search);
+      if (!p.has('fromSetup')) {
+        console.warn('⚠️ Manca parametro fromSetup, redirect a setup.html');
+        location.replace('setup.html');
+        return;
+      }
+
+      speak('Premi START per iniziare');
+
+      const r = document.getElementById('speedRange');
+      if (r) {
+        r.addEventListener('input', updateSpeed);
+        updateSpeed();
+      }
+
+      const t = document.getElementById('scanToggle');
+      if (t) {
+        t.addEventListener('change', restartScan);
+      }
+
+      console.log('🎬 Generazione stimoli...');
+      stimuli = await generateStimuli();
+      console.log('✅ Stimoli generati:', stimuli.length, 'items');
+      renderGrid();
+      console.log('✅ Pronto! Premi START per iniziare.');
+    })();
+
+    // Registrazione Service Worker per PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then((registration) => {
+            console.log('✓ Service Worker registrato:', registration.scope);
+          })
+          .catch((error) => {
+            console.log('✗ Service Worker registrazione fallita:', error);
+          });
+      });
+    }
+  </script>
+</body>
+</html>

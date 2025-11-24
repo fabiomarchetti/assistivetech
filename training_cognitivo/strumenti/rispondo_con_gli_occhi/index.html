@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rispondo con gli Occhi - Strumenti</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #4CAF50 0%, #2196F3 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+        .app-header {
+            background: rgba(255, 255, 255, 0.95);
+            color: #2196F3;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 900px;
+            margin: 2rem auto;
+        }
+        .interface-card {
+            background: white;
+            border: none;
+            border-radius: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+            height: 100%;
+        }
+        .interface-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        .interface-icon {
+            font-size: 80px;
+            margin: 2rem 0;
+        }
+        .icon-educatore {
+            color: #FF6B6B;
+        }
+        .icon-paziente {
+            color: #4ECDC4;
+        }
+        .interface-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .btn-access {
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: white;
+        }
+        .btn-educatore {
+            background: linear-gradient(135deg, #FF6B6B, #EE5A6F);
+        }
+        .btn-paziente {
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+        }
+        .btn-access:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+        .badge-role {
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
+        }
+        .back-btn:hover {
+            background: white;
+            color: #2196F3;
+        }
+        .feature-list {
+            text-align: left;
+            margin: 1.5rem 0;
+        }
+        .feature-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+        .feature-item i {
+            color: #2196F3;
+            margin-right: 8px;
+        }
+        .tech-badge {
+            display: inline-block;
+            background: rgba(33, 150, 243, 0.1);
+            color: #2196F3;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin: 5px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Bottone Indietro -->
+    <a href="../index.html" class="back-btn">
+        <i class="bi bi-arrow-left"></i> Torna a Strumenti
+    </a>
+
+    <div class="container">
+        <!-- Header Applicazione -->
+        <div class="app-header">
+            <h1 class="display-4 mb-3">
+                <i class="bi bi-eye"></i> Rispondo con gli Occhi
+            </h1>
+            <p class="lead text-muted mb-4">
+                Sistema di comunicazione alternativa basato su eye tracking e head pose estimation
+            </p>
+            
+            <!-- Tecnologie Utilizzate -->
+            <div class="mb-4">
+                <span class="tech-badge"><i class="bi bi-camera-video"></i> MediaPipe</span>
+                <span class="tech-badge"><i class="bi bi-bezier2"></i> OpenCV</span>
+                <span class="tech-badge"><i class="bi bi-eye-fill"></i> Iris Tracking</span>
+                <span class="tech-badge"><i class="bi bi-person-bounding-box"></i> Head Pose</span>
+                <span class="tech-badge"><i class="bi bi-megaphone"></i> Text-to-Speech</span>
+            </div>
+
+            <p class="text-muted">
+                Permette a utenti con deficit motori e del linguaggio di rispondere a domande 
+                utilizzando solo lo sguardo verso destra o sinistra.
+            </p>
+        </div>
+
+        <!-- Card Interfacce -->
+        <div class="row g-4 mt-4">
+            <!-- Card Educatore -->
+            <div class="col-md-6">
+                <a href="gestione.html" class="interface-link">
+                    <div class="interface-card">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-person-gear interface-icon icon-educatore"></i>
+                            <h3 class="card-title mb-3">Interfaccia Educatore</h3>
+                            <span class="badge bg-danger badge-role mb-3">
+                                <i class="bi bi-shield-lock"></i> Accesso Riservato
+                            </span>
+                            
+                            <div class="feature-list">
+                                <div class="feature-item">
+                                    <i class="bi bi-pencil-square"></i>
+                                    <strong>Crea domande personalizzate</strong>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="bi bi-images"></i>
+                                    <strong>Inserisci immagini ARASAAC</strong>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="bi bi-palette"></i>
+                                    <strong>Domande SI/NO, colori, immagini</strong>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="bi bi-graph-up"></i>
+                                    <strong>Visualizza risultati e statistiche</strong>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-access btn-educatore mt-3">
+                                <i class="bi bi-box-arrow-in-right"></i> Accedi come Educatore
+                            </button>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Card Paziente -->
+            <div class="col-md-6">
+                <a href="rispondo.html" class="interface-link">
+                    <div class="interface-card">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-eye-fill interface-icon icon-paziente"></i>
+                            <h3 class="card-title mb-3">Interfaccia Utente</h3>
+                            <span class="badge bg-info badge-role mb-3">
+                                <i class="bi bi-person-check"></i> Esperienza Semplificata
+                            </span>
+                            
+                            <div class="feature-list">
+                                <div class="feature-item">
+                                    <i class="bi bi-volume-up"></i>
+                                    <strong>Ascolto domande con TTS</strong>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="bi bi-eye"></i>
+                                    <strong>Rispondi con lo sguardo</strong>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="bi bi-camera-video"></i>
+                                    <strong>Feedback visivo in tempo reale</strong>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="bi bi-check-circle"></i>
+                                    <strong>Conferma automatica risposta</strong>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-access btn-paziente mt-3">
+                                <i class="bi bi-play-circle"></i> Inizia Esercizio
+                            </button>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="alert alert-light text-center" style="background: rgba(255,255,255,0.95); border-radius: 15px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <h5 class="mb-3">
+                        <i class="bi bi-info-circle text-info"></i> Come Funziona
+                    </h5>
+                    <p class="mb-2">
+                        <strong>1. Educatore:</strong> Crea domande e seleziona immagini dalla libreria ARASAAC
+                    </p>
+                    <p class="mb-2">
+                        <strong>2. Utente:</strong> Ascolta la domanda verbalizzata e guarda le due opzioni
+                    </p>
+                    <p class="mb-0">
+                        <strong>3. Sistema:</strong> Rileva automaticamente lo sguardo e registra la risposta
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requisiti Tecnici -->
+        <div class="row mt-4 mb-5">
+            <div class="col-12">
+                <div class="alert alert-warning" style="border-radius: 15px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <h6 class="mb-2">
+                        <i class="bi bi-exclamation-triangle"></i> Requisiti Tecnici
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li>Webcam funzionante e autorizzata</li>
+                        <li>Browser moderno (Chrome, Edge, Firefox)</li>
+                        <li>Illuminazione adeguata del viso</li>
+                        <li>Connessione internet per caricamento modelli</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

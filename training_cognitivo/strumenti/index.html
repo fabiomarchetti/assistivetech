@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strumenti - Training Cognitivo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        .category-header {
+            background: rgba(255, 255, 255, 0.95);
+            color: #673AB7;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .app-card {
+            background: white;
+            border: none;
+            border-radius: 12px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+            height: 100%;
+            padding: 1.5rem;
+        }
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .app-icon {
+            font-size: 3rem;
+            color: #2196F3;
+            margin-bottom: 1rem;
+        }
+        .app-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <!-- Bottone Indietro -->
+    <a href="../index.html" class="back-btn">
+        <i class="bi bi-arrow-left"></i> Torna alle Categorie
+    </a>
+
+    <div class="container">
+        <!-- Header Categoria -->
+        <div class="category-header">
+            <h1 class="mb-3">
+                <i class="bi bi-tools"></i> Strumenti
+            </h1>
+            <p class="lead mb-0">Applicazioni e strumenti per gestione assistive technology</p>
+        </div>
+
+        <!-- Griglia Applicazioni -->
+        <div class="row g-4" id="strumentiGrid">
+            <!-- Loading -->
+            <div class="col-12 text-center" id="loadingSpinner">
+                <div class="spinner-border text-white" role="status">
+                    <span class="visually-hidden">Caricamento strumenti...</span>
+                </div>
+                <p class="text-white mt-3">Caricamento strumenti...</p>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="alert alert-light text-center" style="background: rgba(255,255,255,0.95); border-radius: 15px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <h5 class="mb-3">
+                        <i class="bi bi-lightbulb text-warning"></i> Informazioni Categoria
+                    </h5>
+                    <p class="mb-0 text-muted">
+                        La categoria <strong>Strumenti</strong> raccoglie applicazioni pratiche
+                        per assistive technology, comunicazione aumentativa e supporto cognitivo.
+                        <br>
+                        Ogni applicazione è ottimizzata per educatori e pazienti con interfacce dedicate.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-4 mb-4">
+            <p class="text-white">
+                <small>
+                    <i class="bi bi-gear"></i> Training Cognitivo - Categoria Strumenti |
+                    <i class="bi bi-info-circle"></i> AssistiveTech.it
+                </small>
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // AUTO-DETECTION BASE_PATH
+        const BASE_PATH = window.location.pathname.includes('/Assistivetech/') ? '/Assistivetech' : '';
+
+        // Carica strumenti dalla categoria "Strumenti"
+        async function loadStrumenti() {
+            try {
+                // Prima ottieni l'ID della categoria Strumenti
+                const categorieResponse = await fetch(`${BASE_PATH}/api/api_categorie_esercizi.php?action=get_categorie`);
+                const categorieResult = await categorieResponse.json();
+
+                if (!categorieResult.success || !categorieResult.data) {
+                    throw new Error('Impossibile caricare le categorie');
+                }
+
+                // Trova la categoria Strumenti
+                const categoriaStrumenti = categorieResult.data.find(cat =>
+                    cat.nome_categoria.toLowerCase() === 'strumenti'
+                );
+
+                if (!categoriaStrumenti) {
+                    throw new Error('Categoria Strumenti non trovata');
+                }
+
+                // Carica gli esercizi/strumenti della categoria
+                const strumentiResponse = await fetch(`${BASE_PATH}/api/api_esercizi.php?action=get_esercizi&id_categoria=${categoriaStrumenti.id_categoria}`);
+                const strumentiResult = await strumentiResponse.json();
+
+                const grid = document.getElementById('strumentiGrid');
+                const spinner = document.getElementById('loadingSpinner');
+
+                if (strumentiResult.success && strumentiResult.data && strumentiResult.data.length > 0) {
+                    // Rimuovi spinner
+                    spinner.remove();
+
+                    // Genera le card per ogni strumento
+                    strumentiResult.data.forEach(strumento => {
+                        const col = document.createElement('div');
+                        col.className = 'col-md-6';
+
+                        // Estrai il nome della cartella dal link
+                        const linkParts = strumento.link.split('/').filter(p => p);
+                        const folderName = linkParts[linkParts.length - 1];
+
+                        // Badge stato
+                        const badgeClass = strumento.stato_esercizio === 'attivo' ? 'bg-success' :
+                                         strumento.stato_esercizio === 'sospeso' ? 'bg-warning' : 'bg-secondary';
+
+                        col.innerHTML = `
+                            <a href="${folderName}/" class="app-link">
+                                <div class="app-card text-center">
+                                    <div class="app-icon">
+                                        <i class="bi bi-${getIconForStrumento(strumento.nome_esercizio)}"></i>
+                                    </div>
+                                    <h5 class="mb-2">${strumento.nome_esercizio}</h5>
+                                    <p class="text-muted small mb-3" style="min-height: 60px;">
+                                        ${strumento.descrizione_esercizio.substring(0, 100)}${strumento.descrizione_esercizio.length > 100 ? '...' : ''}
+                                    </p>
+                                    <span class="badge ${badgeClass}">${strumento.stato_esercizio}</span>
+                                </div>
+                            </a>
+                        `;
+
+                        grid.appendChild(col);
+                    });
+                } else {
+                    spinner.innerHTML = `
+                        <div class="col-12">
+                            <div class="alert alert-warning text-center">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                Nessuno strumento disponibile al momento.
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Errore caricamento strumenti:', error);
+                document.getElementById('loadingSpinner').innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-danger text-center">
+                            <i class="bi bi-exclamation-circle"></i>
+                            Errore nel caricamento degli strumenti: ${error.message}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Mappa icone Bootstrap in base al nome dello strumento
+        function getIconForStrumento(nome) {
+            const nomeLC = nome.toLowerCase();
+            if (nomeLC.includes('agenda')) return 'calendar-week';
+            if (nomeLC.includes('leggi')) return 'book';
+            if (nomeLC.includes('timer')) return 'hourglass-split';
+            if (nomeLC.includes('comunicat')) return 'chat-square-text';
+            if (nomeLC.includes('video')) return 'camera-video';
+            if (nomeLC.includes('audio') || nomeLC.includes('music')) return 'music-note-beamed';
+            if (nomeLC.includes('gioco') || nomeLC.includes('game')) return 'controller';
+            return 'stars'; // Icona default
+        }
+
+        // Carica strumenti al caricamento della pagina
+        document.addEventListener('DOMContentLoaded', loadStrumenti);
+    </script>
+</body>
+</html>

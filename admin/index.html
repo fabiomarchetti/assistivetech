@@ -18,6 +18,10 @@
             background-color: var(--danger-color) !important;
         }
 
+        .navbar-developer {
+            background: linear-gradient(45deg, #6f42c1, #9c27b0) !important;
+        }
+
         .sidebar {
             background-color: #f8f9fa;
             min-height: calc(100vh - 56px);
@@ -67,6 +71,7 @@
             font-weight: 600;
         }
 
+        .role-sviluppatore { background-color: #6f42c1; color: white; }
         .role-amministratore { background-color: #dc3545; color: white; }
         .role-educatore { background-color: #007bff; color: white; }
         .role-paziente { background-color: #28a745; color: white; }
@@ -83,6 +88,21 @@
         .form-control:focus {
             border-color: var(--danger-color);
             box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+        /* Stili titoli cliccabili tabella amministratori */
+        #header-nome:hover,
+        #header-cognome:hover {
+            background-color: #e9ecef !important;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+
+        #header-nome span,
+        #header-cognome span {
+            font-weight: bold;
+            color: var(--danger-color);
+            margin-left: 0.3rem;
         }
     </style>
 </head>
@@ -105,6 +125,9 @@
                         <li><a class="dropdown-item" href="../index.html">
                             <i class="bi bi-house"></i> Sito Principale
                         </a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showChangePassword()" data-bs-toggle="modal" data-bs-target="#changePasswordModalAdmin">
+                            <i class="bi bi-key"></i> Modifica Password
+                        </a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="#" onclick="logout()">
                             <i class="bi bi-box-arrow-right"></i> Logout
@@ -126,16 +149,56 @@
                                 <i class="bi bi-bar-chart"></i> Panoramica
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showSection('users')">
-                                <i class="bi bi-people"></i> Gestione Utenti
-                            </a>
-                        </li>
+                        <li class="nav-item"><hr></li>
                         <li class="nav-item">
                             <a class="nav-link" href="#" onclick="showSection('sedi')">
                                 <i class="bi bi-buildings"></i> Gestione Sedi
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('settori')">
+                                <i class="bi bi-diagram-3"></i> Settori e Classi
+                            </a>
+                        </li>
+                        <li class="nav-item"><hr></li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('direttori')">
+                                <i class="bi bi-person-badge"></i> Gestione Direttori
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('casemanager')">
+                                <i class="bi bi-briefcase"></i> Gestione CaseManager
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('educatori')">
+                                <i class="bi bi-mortarboard"></i> Gestione Educatori
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('pazienti')">
+                                <i class="bi bi-heart"></i> Gestione Utenti
+                            </a>
+                        </li>
+                        <li class="nav-item"><hr></li>
+                        <li class="nav-item" id="developer-only-categorie" style="display:none;">
+                            <a class="nav-link" href="#" onclick="showSection('categorie')">
+                                <i class="bi bi-bookmark-star"></i> Categorie Esercizi
+                            </a>
+                        </li>
+                        <li class="nav-item" id="developer-only-esercizi" style="display:none;">
+                            <a class="nav-link" href="#" onclick="showSection('esercizi')">
+                                <i class="bi bi-puzzle"></i> Esercizi
+                            </a>
+                        </li>
+                        <li class="nav-item"><hr></li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../risultati/">
+                                <i class="bi bi-graph-up"></i> Risultati
+                            </a>
+                        </li>
+                        <li class="nav-item"><hr></li>
                         <li class="nav-item">
                             <a class="nav-link" href="#" onclick="showSection('system')">
                                 <i class="bi bi-gear"></i> Sistema
@@ -288,7 +351,9 @@
                                         <thead>
                                             <tr>
                                                 <th>ID</th>
-                                                <th>Nome</th>
+                                                <th style="cursor: pointer; user-select: none;" onclick="sortTable('users', 'nome')" id="header-users-nome">
+                                                    Nome <span id="arrow-users-nome"></span>
+                                                </th>
                                                 <th>Email/Username</th>
                                                 <th>Ruolo</th>
                                                 <th>Sede</th>
@@ -301,6 +366,141 @@
                                             <tr>
                                                 <td colspan="8" class="text-center">
                                                     <div class="spinner-border text-danger" role="status">
+                                                        <span class="visually-hidden">Caricamento...</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Amministratori Management Section -->
+                    <div id="amministratori-section" class="d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4>Gestione Amministratori</h4>
+                            <button class="btn btn-danger" onclick="showCreateAmministratore()">
+                                <i class="bi bi-shield-plus"></i> Nuovo Amministratore
+                            </button>
+                        </div>
+
+                        <div class="alert alert-warning" id="developer-warning-admin" style="display:none;">
+                            <i class="bi bi-shield-exclamation"></i>
+                            <strong>Sviluppatore:</strong> Hai accesso completo al sistema. Puoi creare, modificare ed eliminare tutti gli utenti, inclusi gli amministratori.
+                        </div>
+                        <div class="alert alert-info" id="admin-warning-admin" style="display:none;">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Amministratore:</strong> Puoi gestire educatori e pazienti, ma non altri amministratori.
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th style="cursor: pointer; user-select: none;" onclick="sortAmministratori('nome')" id="header-nome">
+                                                    Nome <span id="arrow-nome"></span>
+                                                </th>
+                                                <th style="cursor: pointer; user-select: none;" onclick="sortAmministratori('cognome')" id="header-cognome">
+                                                    Cognome <span id="arrow-cognome"></span>
+                                                </th>
+                                                <th>Email/Username</th>
+                                                <th>Data Registrazione</th>
+                                                <th>Ultimo Accesso</th>
+                                                <th>Stato</th>
+                                                <th>Azioni</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="amministratori-table-body">
+                                            <tr>
+                                                <td colspan="8" class="text-center">
+                                                    <div class="spinner-border text-danger" role="status">
+                                                        <span class="visually-hidden">Caricamento...</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Direttori Management Section -->
+                    <div id="direttori-section" class="d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4>Gestione Direttori</h4>
+                            <button class="btn btn-primary" onclick="showAddDirettore()">
+                                <i class="bi bi-person-plus"></i> Nuovo Direttore
+                            </button>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Nome</th>
+                                                <th>Cognome</th>
+                                                <th>Email/Username</th>
+                                                <th>Sede</th>
+                                                <th>Settore</th>
+                                                <th>Data Registrazione</th>
+                                                <th>Ultimo Accesso</th>
+                                                <th>Stato</th>
+                                                <th>Azioni</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="direttori-table-body">
+                                            <tr>
+                                                <td colspan="10" class="text-center">
+                                                    <div class="spinner-border text-info" role="status">
+                                                        <span class="visually-hidden">Caricamento...</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CaseManager Management Section -->
+                    <div id="casemanager-section" class="d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4>Gestione CaseManager</h4>
+                            <button class="btn btn-primary" onclick="showAddCaseManager()">
+                                <i class="bi bi-person-plus"></i> Nuovo CaseManager
+                            </button>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Nome</th>
+                                                <th>Cognome</th>
+                                                <th>Email/Username</th>
+                                                <th>Sede</th>
+                                                <th>Settore</th>
+                                                <th>Data Registrazione</th>
+                                                <th>Ultimo Accesso</th>
+                                                <th>Stato</th>
+                                                <th>Azioni</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="casemanager-table-body">
+                                            <tr>
+                                                <td colspan="10" class="text-center">
+                                                    <div class="spinner-border text-warning" role="status">
                                                         <span class="visually-hidden">Caricamento...</span>
                                                     </div>
                                                 </td>
@@ -350,6 +550,274 @@
                                             </tr>
                                         </tbody>
                                     </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Educatori Management Section -->
+                    <div id="educatori-section" class="d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4>Gestione Educatori</h4>
+                            <button class="btn btn-danger" onclick="showCreateEducatore()">
+                                <i class="bi bi-person-plus"></i> Nuovo Educatore
+                            </button>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th style="cursor: pointer; user-select: none;" onclick="sortTable('educatori', 'nome')" id="header-educatori-nome">
+                                                    Nome <span id="arrow-educatori-nome"></span>
+                                                </th>
+                                                <th style="cursor: pointer; user-select: none;" onclick="sortTable('educatori', 'cognome')" id="header-educatori-cognome">
+                                                    Cognome <span id="arrow-educatori-cognome"></span>
+                                                </th>
+                                                <th>Sede</th>
+                                                <th>Settore</th>
+                                                <th>Classe</th>
+                                                <th>Email</th>
+                                                <th>Stato</th>
+                                                <th>Azioni</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="educatori-table-body">
+                                            <tr>
+                                                <td colspan="9" class="text-center">
+                                                    <div class="spinner-border text-danger" role="status">
+                                                        <span class="visually-hidden">Caricamento...</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pazienti Management Section -->
+                    <div id="pazienti-section" class="d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4>Gestione Pazienti</h4>
+                            <button class="btn btn-danger" onclick="showCreatePaziente()">
+                                <i class="bi bi-person-plus"></i> Nuovo Paziente
+                            </button>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th style="cursor: pointer; user-select: none;" onclick="sortTable('pazienti', 'nome')" id="header-pazienti-nome">
+                                                    Nome <span id="arrow-pazienti-nome"></span>
+                                                </th>
+                                                <th style="cursor: pointer; user-select: none;" onclick="sortTable('pazienti', 'cognome')" id="header-pazienti-cognome">
+                                                    Cognome <span id="arrow-pazienti-cognome"></span>
+                                                </th>
+                                                <th>Sede</th>
+                                                <th>Settore</th>
+                                                <th>Classe</th>
+                                                <th>Educatore Assegnato</th>
+                                                <th>Azioni</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="pazienti-table-body">
+                                            <tr>
+                                                <td colspan="8" class="text-center">
+                                                    <div class="spinner-border text-danger" role="status">
+                                                        <span class="visually-hidden">Caricamento...</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settori e Classi Management Section -->
+                    <div id="settori-section" class="d-none">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Gestione Settori</h5>
+                                        <button class="btn btn-sm btn-danger" onclick="showCreateSettore()">
+                                            <i class="bi bi-plus"></i> Nuovo Settore
+                                        </button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Settore</th>
+                                                        <th>Utilizzi</th>
+                                                        <th>Azioni</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="settori-table-body">
+                                                    <tr>
+                                                        <td colspan="3" class="text-center">
+                                                            <div class="spinner-border text-danger" role="status">
+                                                                <span class="visually-hidden">Caricamento...</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Gestione Classi</h5>
+                                        <button class="btn btn-sm btn-danger" onclick="showCreateClasse()">
+                                            <i class="bi bi-plus"></i> Nuova Classe
+                                        </button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Classe</th>
+                                                        <th>Settore</th>
+                                                        <th>Utilizzi</th>
+                                                        <th>Azioni</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="classi-table-body">
+                                                    <tr>
+                                                        <td colspan="4" class="text-center">
+                                                            <div class="spinner-border text-danger" role="status">
+                                                                <span class="visually-hidden">Caricamento...</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Categorie Esercizi Section (Solo Sviluppatore) -->
+                    <div id="categorie-section" class="d-none">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">
+                                            <i class="bi bi-bookmark-star"></i> Gestione Categorie Esercizi
+                                        </h5>
+                                        <button class="btn btn-sm btn-danger" onclick="showCreateCategoria()">
+                                            <i class="bi bi-plus"></i> Nuova Categoria
+                                        </button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Nome Categoria</th>
+                                                        <th>Descrizione</th>
+                                                        <th>Note</th>
+                                                        <th>Link</th>
+                                                        <th>Azioni</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="categorie-table-body">
+                                                    <tr>
+                                                        <td colspan="6" class="text-center">
+                                                            <div class="spinner-border text-danger" role="status">
+                                                                <span class="visually-hidden">Caricamento...</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Esercizi Section (Solo Sviluppatore) -->
+                    <div id="esercizi-section" class="d-none">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">
+                                            <i class="bi bi-puzzle"></i> Gestione Esercizi
+                                        </h5>
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-danger" onclick="showCreateEsercizio()">
+                                                <i class="bi bi-plus"></i> Nuovo Esercizio
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary" onclick="resetFiltriEsercizi()" title="Reset Filtri">
+                                                <i class="bi bi-arrow-clockwise"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row mb-3">
+                                            <div class="col-md-4">
+                                                <label for="filtroCategoria" class="form-label">Filtra per Categoria:</label>
+                                                <select class="form-select" id="filtroCategoria" onchange="loadEsercizi()">
+                                                    <option value="">Tutte le categorie</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="filtroStato" class="form-label">Filtra per Stato:</label>
+                                                <select class="form-select" id="filtroStato" onchange="loadEsercizi()">
+                                                    <option value="">Tutti gli stati</option>
+                                                    <option value="attivo">Attivo</option>
+                                                    <option value="sospeso">Sospeso</option>
+                                                    <option value="archiviato">Archiviato</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Nome Esercizio</th>
+                                                        <th>Categoria</th>
+                                                        <th>Descrizione</th>
+                                                        <th>Stato</th>
+                                                        <th>Data Creazione</th>
+                                                        <th>Link</th>
+                                                        <th>Azioni</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="esercizi-table-body">
+                                                    <tr>
+                                                        <td colspan="8" class="text-center">
+                                                            <div class="spinner-border text-danger" role="status">
+                                                                <span class="visually-hidden">Caricamento...</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -549,8 +1017,645 @@
         </div>
     </div>
 
+    <!-- Amministratore Modal -->
+    <div class="modal fade" id="amministratoreModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="amministratoreModalTitle">Nuovo Amministratore</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="amministratoreForm">
+                        <input type="hidden" id="amministratoreId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="adminNome" class="form-label">Nome *</label>
+                                    <input type="text" class="form-control" id="adminNome" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="adminCognome" class="form-label">Cognome *</label>
+                                    <input type="text" class="form-control" id="adminCognome" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="adminUsername" class="form-label">Email/Username *</label>
+                            <input type="email" class="form-control" id="adminUsername" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="adminPassword" class="form-label">Password *</label>
+                            <input type="password" class="form-control" id="adminPassword" required>
+                            <div class="form-text">Minimo 6 caratteri</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="adminSettore" class="form-label">Settore</label>
+                                    <select class="form-select" id="adminSettore">
+                                        <option value="">Caricamento settori...</option>
+                                    </select>
+                                    <div class="form-text">Settore di competenza</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="adminSede" class="form-label">Sede</label>
+                                    <select class="form-select" id="adminSede">
+                                        <option value="">Caricamento sedi...</option>
+                                    </select>
+                                    <div class="form-text">Sede di riferimento</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-danger" onclick="saveAmministratore()">Salva Amministratore</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per Direttore -->
+    <div class="modal fade" id="direttoreModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="direttoreModalTitle">Modifica Direttore</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="direttoreForm">
+                        <input type="hidden" id="direttoreId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="direttoreNome" class="form-label">Nome *</label>
+                                    <input type="text" class="form-control" id="direttoreNome" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="direttoreCognome" class="form-label">Cognome *</label>
+                                    <input type="text" class="form-control" id="direttoreCognome" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="direttoreUsername" class="form-label">Email/Username *</label>
+                            <input type="email" class="form-control" id="direttoreUsername" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="direttoreSede" class="form-label">Sede</label>
+                                    <select class="form-select" id="direttoreSede">
+                                        <option value="">Caricamento sedi...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="direttoreSettore" class="form-label">Settore</label>
+                                    <select class="form-select" id="direttoreSettore">
+                                        <option value="">Caricamento settori...</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="direttoreStato" class="form-label">Stato Account</label>
+                            <select class="form-select" id="direttoreStato">
+                                <option value="attivo">Attivo</option>
+                                <option value="sospeso">Sospeso</option>
+                                <option value="eliminato">Eliminato</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-warning" onclick="saveDirettore()">Salva Direttore</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per CaseManager -->
+    <div class="modal fade" id="casemanagerModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="casemanagerModalTitle">Modifica CaseManager</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="casemanagerForm">
+                        <input type="hidden" id="casemanagerId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="casemanagerNome" class="form-label">Nome *</label>
+                                    <input type="text" class="form-control" id="casemanagerNome" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="casemanagerCognome" class="form-label">Cognome *</label>
+                                    <input type="text" class="form-control" id="casemanagerCognome" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="casemanagerUsername" class="form-label">Email/Username *</label>
+                            <input type="email" class="form-control" id="casemanagerUsername" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="casemanagerSede" class="form-label">Sede</label>
+                                    <select class="form-select" id="casemanagerSede">
+                                        <option value="">Caricamento sedi...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="casemanagerSettore" class="form-label">Settore</label>
+                                    <select class="form-select" id="casemanagerSettore">
+                                        <option value="">Caricamento settori...</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="casemanagerStato" class="form-label">Stato Account</label>
+                            <select class="form-select" id="casemanagerStato">
+                                <option value="attivo">Attivo</option>
+                                <option value="sospeso">Sospeso</option>
+                                <option value="eliminato">Eliminato</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-warning" onclick="saveCaseManager()">Salva CaseManager</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per Settore -->
+    <div class="modal fade" id="settoreModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nuovo Settore</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="settoreForm">
+                        <input type="hidden" id="settoreId" value="">
+                        <div class="mb-3">
+                            <label for="settoreNome" class="form-label">Nome Settore *</label>
+                            <input type="text" class="form-control" id="settoreNome" required
+                                   placeholder="es. Primaria, Secondaria, Professionale">
+                            <div class="form-text">Il nome del settore sarà utilizzato per organizzare educatori e pazienti</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="settoreDescrizione" class="form-label">Descrizione</label>
+                            <textarea class="form-control" id="settoreDescrizione" rows="3"
+                                      placeholder="Descrizione opzionale del settore"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-danger" onclick="saveSettore()">Salva Settore</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per Classe -->
+    <div class="modal fade" id="classeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nuova Classe</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="classeForm">
+                        <input type="hidden" id="classeId" value="">
+                        <div class="mb-3">
+                            <label for="classeSettore" class="form-label">Settore di Riferimento *</label>
+                            <select class="form-select" id="classeSettore" required>
+                                <option value="">Caricamento settori...</option>
+                            </select>
+                            <div class="form-text">Le classi sono associate a un settore specifico</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="classeNome" class="form-label">Nome Classe *</label>
+                            <input type="text" class="form-control" id="classeNome" required
+                                   placeholder="es. 1A, 2B, 3C">
+                            <div class="form-text">Il nome della classe (può includere sezione)</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="classeDescrizione" class="form-label">Descrizione</label>
+                            <textarea class="form-control" id="classeDescrizione" rows="3"
+                                      placeholder="Descrizione opzionale della classe"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-danger" onclick="saveClasse()">Salva Classe</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per Educatore -->
+    <div class="modal fade" id="educatoreModal" tabindex="-1" aria-labelledby="educatoreModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="educatoreModalLabel">Nuovo Educatore</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="educatoreForm">
+                        <input type="hidden" id="educatoreId" value="">
+
+                        <div class="row">
+                            <!-- Dati personali -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="educatoreNome" class="form-label">Nome *</label>
+                                    <input type="text" class="form-control" id="educatoreNome" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="educatoreCognome" class="form-label">Cognome *</label>
+                                    <input type="text" class="form-control" id="educatoreCognome" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Credenziali -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="educatoreUsername" class="form-label">Username *</label>
+                                    <input type="text" class="form-control" id="educatoreUsername" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="educatorePassword" class="form-label">Password *</label>
+                                    <input type="password" class="form-control" id="educatorePassword" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Assegnazioni -->
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="educatoreSede" class="form-label">Sede</label>
+                                    <select class="form-select" id="educatoreSede">
+                                        <option value="">Seleziona sede...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="educatoreSettore" class="form-label">Settore</label>
+                                    <select class="form-select" id="educatoreSettore">
+                                        <option value="">Seleziona settore...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="educatoreClasse" class="form-label">Classe</label>
+                                    <select class="form-select" id="educatoreClasse">
+                                        <option value="">Seleziona classe...</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Contatti -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="educatoreTelefono" class="form-label">Telefono</label>
+                                    <input type="tel" class="form-control" id="educatoreTelefono">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="educatoreEmail" class="form-label">Email Contatto</label>
+                                    <input type="email" class="form-control" id="educatoreEmail">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" id="educatoreStatoContainer" style="display: none;">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="educatoreStato" class="form-label">Stato</label>
+                                    <select class="form-select" id="educatoreStato">
+                                        <option value="attivo">Attivo</option>
+                                        <option value="sospeso">Sospeso</option>
+                                        <option value="in_formazione">In Formazione</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="educatoreNote" class="form-label">Note Professionali</label>
+                            <textarea class="form-control" id="educatoreNote" rows="3"
+                                      placeholder="Note o informazioni aggiuntive sull'educatore"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-danger" onclick="saveEducatore()">Salva Educatore</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per Paziente -->
+    <div class="modal fade" id="pazienteModal" tabindex="-1" aria-labelledby="pazienteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pazienteModalLabel">Nuovo Paziente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="pazienteForm">
+                        <input type="hidden" id="pazienteId" value="">
+
+                        <div class="row">
+                            <!-- Dati personali -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="pazienteNome" class="form-label">Nome *</label>
+                                    <input type="text" class="form-control" id="pazienteNome" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="pazienteCognome" class="form-label">Cognome *</label>
+                                    <input type="text" class="form-control" id="pazienteCognome" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Credenziali -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="pazienteUsername" class="form-label">Username *</label>
+                                    <input type="text" class="form-control" id="pazienteUsername" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="pazientePassword" class="form-label">Password *</label>
+                                    <input type="password" class="form-control" id="pazientePassword" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Assegnazioni -->
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="pazienteSede" class="form-label">Sede</label>
+                                    <select class="form-select" id="pazienteSede">
+                                        <option value="">Seleziona sede...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="pazienteSettore" class="form-label">Settore</label>
+                                    <select class="form-select" id="pazienteSettore">
+                                        <option value="">Seleziona settore...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="pazienteClasse" class="form-label">Classe</label>
+                                    <select class="form-select" id="pazienteClasse">
+                                        <option value="">Seleziona classe...</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Educatore assegnato -->
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="pazienteEducatore" class="form-label">Educatore Assegnato</label>
+                                    <select class="form-select" id="pazienteEducatore">
+                                        <option value="">Nessun educatore assegnato</option>
+                                    </select>
+                                    <div class="form-text">Opzionale: seleziona l'educatore che seguirà questo paziente</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-danger" onclick="savePaziente()">Salva Paziente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Categoria Esercizi -->
+    <div class="modal fade" id="categoriaModal" tabindex="-1" aria-labelledby="categoriaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="categoriaModalLabel">Nuova Categoria Esercizio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="categoriaForm">
+                        <input type="hidden" id="categoriaId" name="id_categoria">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="nomeCategoria" class="form-label">Nome Categoria <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="nomeCategoria" name="nome_categoria" required maxlength="100">
+                                    <div class="form-text">Es: Comunicazione, Logica, Motricità Fine</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="descrizioneCategoria" class="form-label">Descrizione <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="descrizioneCategoria" name="descrizione_categoria" rows="3" required maxlength="255"></textarea>
+                                    <div class="form-text">Descrizione dettagliata degli obiettivi e contenuti della categoria</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="noteCategoria" class="form-label">Note Aggiuntive</label>
+                                    <textarea class="form-control" id="noteCategoria" name="note_categoria" rows="2" maxlength="255"></textarea>
+                                    <div class="form-text">Informazioni aggiuntive o indicazioni specifiche (opzionale)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-danger" onclick="saveCategoria()">Salva Categoria</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Esercizio -->
+    <div class="modal fade" id="esercizioModal" tabindex="-1" aria-labelledby="esercizioModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="esercizioModalLabel">Nuovo Esercizio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="esercizioForm">
+                        <input type="hidden" id="esercizioId" name="id_esercizio">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="nomeEsercizio" class="form-label">Nome Esercizio <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="nomeEsercizio" name="nome_esercizio" required maxlength="150">
+                                    <div class="form-text">Es: Riconoscimento Colori, Sequenze Logiche, Memoria Visiva</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="categoriaEsercizio" class="form-label">Categoria <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="categoriaEsercizio" name="id_categoria" required>
+                                        <option value="">Seleziona categoria...</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="descrizioneEsercizio" class="form-label">Descrizione Esercizio <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="descrizioneEsercizio" name="descrizione_esercizio" rows="4" required></textarea>
+                                    <div class="form-text">Descrizione dettagliata dell'esercizio: obiettivi, modalità di esecuzione, materiali necessari</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="statoEsercizio" class="form-label">Stato</label>
+                                    <select class="form-select" id="statoEsercizio" name="stato_esercizio">
+                                        <option value="attivo">Attivo</option>
+                                        <option value="sospeso">Sospeso</option>
+                                        <option value="archiviato">Archiviato</option>
+                                    </select>
+                                    <div class="form-text">Stato operativo dell'esercizio</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-danger" onclick="saveEsercizio()">Salva Esercizio</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Modifica Password Admin -->
+    <div class="modal fade" id="changePasswordModalAdmin" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-key"></i> Modifica Password
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="changePasswordUsernameAdmin" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="changePasswordUsernameAdmin" placeholder="Il tuo username">
+                        <small class="form-text text-muted">Puoi modificare il tuo username se desideri</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="changePasswordNewAdmin" class="form-label">Nuova Password</label>
+                        <input type="password" class="form-control" id="changePasswordNewAdmin" placeholder="Inserisci nuova password">
+                        <small class="form-text text-muted">Minimo 6 caratteri</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="changePasswordConfirmAdmin" class="form-label">Conferma Password</label>
+                        <input type="password" class="form-control" id="changePasswordConfirmAdmin" placeholder="Conferma la nuova password">
+                        <small class="form-text text-muted">Deve corrispondere alla password inserita sopra</small>
+                    </div>
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-info-circle"></i> La password verrà salvata in chiaro nel database per semplicità di accesso.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" onclick="saveChangePassword()">Salva Password</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // AUTO-DETECTION BASE_PATH (locale MAMP vs produzione Aruba)
+        const BASE_PATH = window.location.pathname.includes('/Assistivetech/') ? '/Assistivetech' : '';
+        
+        // Funzione per normalizzare i link rimuovendo duplicazioni di BASE_PATH
+        function normalizeLink(link) {
+            if (!link) return link;
+            
+            // Se siamo in produzione (BASE_PATH vuoto) e il link contiene /Assistivetech/
+            if (BASE_PATH === '' && link.includes('/Assistivetech/')) {
+                // Rimuovi /Assistivetech/ dal link
+                link = link.replace(/\/Assistivetech\//g, '/');
+            }
+            
+            return link;
+        }
+        
         let usersData = [];
         let sediData = [];
 
@@ -563,20 +1668,43 @@
             }
 
             const userData = JSON.parse(user);
-            if (userData.ruolo_registrazione !== 'amministratore') {
-                alert('Accesso negato: non sei un amministratore');
+            if (userData.ruolo_registrazione !== 'amministratore' && userData.ruolo_registrazione !== 'sviluppatore') {
+                alert('Accesso negato: non hai i permessi per accedere al pannello amministrativo');
                 window.location.href = '../dashboard.html';
                 return;
             }
 
-            document.getElementById('adminName').textContent = `${userData.nome_registrazione} ${userData.cognome_registrazione}`;
+            const ruoloDisplay = userData.ruolo_registrazione === 'sviluppatore' ? 'Sviluppatore' : 'Amministratore';
+            document.getElementById('adminName').textContent = `${userData.nome_registrazione} ${userData.cognome_registrazione} (${ruoloDisplay})`;
+
+            // Configura interfaccia in base al ruolo
+            if (userData.ruolo_registrazione === 'sviluppatore') {
+                const adminOnlySection = document.getElementById('admin-only-section');
+                if (adminOnlySection) adminOnlySection.style.display = 'block';
+
+                const devCategorie = document.getElementById('developer-only-categorie');
+                if (devCategorie) devCategorie.style.display = 'block';
+
+                const devEsercizi = document.getElementById('developer-only-esercizi');
+                if (devEsercizi) devEsercizi.style.display = 'block';
+
+                const devWarning = document.getElementById('developer-warning-admin');
+                if (devWarning) devWarning.style.display = 'block';
+
+                // Colore distintivo per sviluppatori
+                document.querySelector('.navbar').classList.add('navbar-developer');
+            } else if (userData.ruolo_registrazione === 'amministratore') {
+                const adminWarning = document.getElementById('admin-warning-admin');
+                if (adminWarning) adminWarning.style.display = 'block';
+            }
+
             loadData();
             loadSedi();
         });
 
         function showSection(sectionName) {
-            // Hide all sections
-            document.querySelectorAll('[id$="-section"]').forEach(section => {
+            // Hide all content sections (ma NON i menu!)
+            document.querySelectorAll('[id$="-section"]:not(#admin-only-section)').forEach(section => {
                 section.classList.add('d-none');
             });
 
@@ -594,6 +1722,32 @@
                 loadUsers();
             } else if (sectionName === 'sedi') {
                 loadSedi();
+            } else if (sectionName === 'educatori') {
+                loadEducatori();
+            } else if (sectionName === 'pazienti') {
+                loadPazienti();
+            } else if (sectionName === 'settori') {
+                loadSettoriEClassi();
+            } else if (sectionName === 'categorie') {
+                loadCategorie();
+            } else if (sectionName === 'esercizi') {
+                // Carica prima le categorie per il filtro e poi gli esercizi
+                loadCategorieForFilter().then(() => loadEsercizi());
+            } else if (sectionName === 'amministratori') {
+                loadAmministratori();
+                // Gli alert sono già configurati correttamente al caricamento della pagina
+                // Non modificarli qui per mantenere l'interfaccia coerente con il ruolo dell'utente loggato
+
+                // PROTEZIONE: Forza il mantenimento del menu da sviluppatore
+                const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                if (currentUser.ruolo_registrazione === 'sviluppatore') {
+                    // Assicurati che la sezione amministratori rimanga visibile
+                    document.getElementById('admin-only-section').style.display = 'block';
+                }
+            } else if (sectionName === 'direttori') {
+                loadDirettori();
+            } else if (sectionName === 'casemanager') {
+                loadCaseManager();
             }
         }
 
@@ -723,14 +1877,18 @@
             }
         }
 
-        function updateUsersTable() {
+        function updateUsersTable(data = null) {
+            const users = data || usersData;
+            tableCache.users = data || usersData;  // Salva in cache
+            updateTableArrows('users');  // Aggiorna le frecce
+
             const tbody = document.getElementById('usersTableBody');
-            if (usersData.length === 0) {
+            if (users.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" class="text-center">Nessun utente trovato</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = usersData.map(user => `
+            tbody.innerHTML = users.map(user => `
                 <tr>
                     <td>${user.id_registrazione}</td>
                     <td>${user.nome_registrazione} ${user.cognome_registrazione}</td>
@@ -782,8 +1940,35 @@
             document.getElementById('userForm').reset();
             document.getElementById('userId').value = '';
             document.getElementById('extraFields').classList.add('d-none');
+            initializeRoleDropdown(); // Inizializza dropdown ruoli in base all'utente corrente
             loadSediDropdown();
             new bootstrap.Modal(document.getElementById('userModal')).show();
+        }
+
+        function initializeRoleDropdown() {
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const currentUserRole = currentUser.ruolo_registrazione || '';
+            const ruoloSelect = document.getElementById('userRuolo');
+            
+            // Rimuovi tutte le opzioni esistenti tranne la prima
+            while (ruoloSelect.children.length > 1) {
+                ruoloSelect.removeChild(ruoloSelect.lastChild);
+            }
+            
+            // Aggiungi opzioni in base al ruolo dell'utente corrente
+            if (currentUserRole === 'sviluppatore') {
+                // Gli sviluppatori possono creare: amministratori, educatori, pazienti
+                ruoloSelect.innerHTML += '<option value="amministratore">Amministratore</option>';
+                ruoloSelect.innerHTML += '<option value="educatore">Educatore</option>';
+                ruoloSelect.innerHTML += '<option value="paziente">Paziente</option>';
+            } else if (currentUserRole === 'amministratore') {
+                // Gli amministratori possono creare: educatori, pazienti (NON altri amministratori)
+                ruoloSelect.innerHTML += '<option value="educatore">Educatore</option>';
+                ruoloSelect.innerHTML += '<option value="paziente">Paziente</option>';
+            } else {
+                // Altri ruoli non possono creare utenti (safety check)
+                ruoloSelect.innerHTML += '<option disabled>Accesso non autorizzato</option>';
+            }
         }
 
         function showCreateSede() {
@@ -889,13 +2074,18 @@
             const userId = document.getElementById('userId').value;
             const isEdit = userId !== '';
 
+            // Ottieni il ruolo dell'utente corrente dal localStorage
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const currentUserRole = currentUser.ruolo_registrazione || '';
+
             const userData = {
                 action: isEdit ? 'update' : 'create',
                 nome: document.getElementById('userNome').value.trim(),
                 cognome: document.getElementById('userCognome').value.trim(),
                 username: document.getElementById('userUsername').value.trim(),
                 password: document.getElementById('userPassword').value,
-                ruolo: document.getElementById('userRuolo').value
+                ruolo: document.getElementById('userRuolo').value,
+                calling_user_role: currentUserRole // Passa il ruolo per controlli autorizzazione
             };
 
             // Aggiungi campo sede per tutti i ruoli
@@ -953,7 +2143,9 @@
                 const result = await response.json();
                 if (result.success) {
                     showAlert('Utente eliminato con successo', 'success');
-                    await loadUsers();
+                    // Rimuovi l'utente dal cache e aggiorna la tabella
+                    tableCache.users = tableCache.users.filter(u => u.id !== id);
+                    updateUsersTable();
                 } else {
                     showAlert('Errore nell\'eliminazione: ' + result.message);
                 }
@@ -967,12 +2159,2271 @@
             showAlert('Dati aggiornati', 'success');
         }
 
+        function showChangePassword() {
+            // Carica il username precompilato
+            const userData = JSON.parse(localStorage.getItem('user'));
+            if (userData) {
+                document.getElementById('changePasswordUsernameAdmin').value = userData.username || '';
+            }
+            // Reset password fields
+            document.getElementById('changePasswordNewAdmin').value = '';
+            document.getElementById('changePasswordConfirmAdmin').value = '';
+        }
+
+        async function saveChangePassword() {
+            const username = document.getElementById('changePasswordUsernameAdmin').value.trim();
+            const newPassword = document.getElementById('changePasswordNewAdmin').value.trim();
+            const confirmPassword = document.getElementById('changePasswordConfirmAdmin').value.trim();
+
+            // Validazioni
+            if (!username) {
+                showAlert('Username obbligatorio', 'warning');
+                return;
+            }
+
+            if (!newPassword || !confirmPassword) {
+                showAlert('Inserisci e conferma la nuova password', 'warning');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showAlert('La password deve avere almeno 6 caratteri', 'warning');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showAlert('Le password non coincidono', 'warning');
+                return;
+            }
+
+            try {
+                const userData = JSON.parse(localStorage.getItem('user'));
+                const response = await fetch('./api/auth_registrazioni.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'change_password',
+                        id_registrazione: userData.id_registrazione,
+                        username_registrazione: username,
+                        password_registrazione: newPassword
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Password aggiornata con successo!', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('changePasswordModalAdmin')).hide();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                console.error('Errore:', error);
+                showAlert('Errore di connessione durante l\'aggiornamento della password', 'danger');
+            }
+        }
+
         function logout() {
             if (confirm('Sei sicuro di voler uscire dal pannello amministrativo?')) {
                 localStorage.removeItem('user');
                 window.location.href = '../index.html';
             }
         }
+
+        // ===================== FUNZIONI EDUCATORI =====================
+        async function loadEducatori() {
+            try {
+                const userData = JSON.parse(localStorage.getItem('user') || '{}');
+                console.log('🔍 DEBUG loadEducatori - userData:', userData);
+                console.log('🔍 DEBUG loadEducatori - ruolo:', userData.ruolo_registrazione);
+                console.log('🔍 DEBUG loadEducatori - id:', userData.id_registrazione);
+
+                const payload = {
+                    action: 'get_all',
+                    user_role: userData.ruolo_registrazione,
+                    user_id: userData.id_registrazione
+                };
+                console.log('🔍 DEBUG loadEducatori - payload inviato:', payload);
+
+                const response = await fetch('../api/api_educatori.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                console.log('🔍 DEBUG loadEducatori - risposta API:', result);
+
+                if (result.success) {
+                    console.log('✅ Educatori caricati:', result.data.length);
+                    tableCache.educatori = result.data;  // Salva in cache
+                    updateEducatoriTable(result.data);
+                } else {
+                    console.error('❌ Errore API:', result.message);
+                    document.getElementById('educatori-table-body').innerHTML = `<tr><td colspan="9" class="text-center text-danger">Errore: ${result.message}</td></tr>`;
+                }
+            } catch (error) {
+                console.error('❌ Errore loadEducatori:', error);
+                document.getElementById('educatori-table-body').innerHTML = `<tr><td colspan="9" class="text-center text-danger">Errore di connessione: ${error.message}</td></tr>`;
+            }
+        }
+
+        function updateEducatoriTable(data = null) {
+            const educatori = data || tableCache.educatori;
+            tableCache.educatori = data || tableCache.educatori;  // Salva in cache
+            updateTableArrows('educatori');  // Aggiorna le frecce
+
+            const tbody = document.getElementById('educatori-table-body');
+
+            if (!educatori || educatori.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center">Nessun educatore trovato</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            educatori.forEach(educatore => {
+                const row = `
+                    <tr>
+                        <td>${educatore.id_educatore}</td>
+                        <td>${educatore.nome}</td>
+                        <td>${educatore.cognome}</td>
+                        <td>${educatore.nome_sede || 'Non assegnata'}</td>
+                        <td>${educatore.nome_settore || 'Non specificato'}</td>
+                        <td>${educatore.nome_classe || 'Non specificata'}</td>
+                        <td>${educatore.email_contatto || 'Non specificata'}</td>
+                        <td><span class="badge bg-${educatore.stato_educatore === 'attivo' ? 'success' : 'warning'}">${educatore.stato_educatore}</span></td>
+                        <td class="action-buttons">
+                            <button class="btn btn-sm btn-outline-primary" onclick="editEducatore(${educatore.id_educatore})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteEducatore(${educatore.id_educatore}, '${educatore.nome} ${educatore.cognome}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        async function showCreateEducatore() {
+            // Reset form
+            document.getElementById('educatoreForm').reset();
+            document.getElementById('educatoreId').value = '';
+            document.getElementById('educatoreModalLabel').textContent = 'Nuovo Educatore';
+            document.getElementById('educatoreStatoContainer').style.display = 'none';
+
+            // Carica dropdown
+            await loadEducatoreDropdowns();
+
+            // Mostra modal
+            const modal = new bootstrap.Modal(document.getElementById('educatoreModal'));
+            modal.show();
+        }
+
+        async function editEducatore(id) {
+            try {
+                // Carica dati educatore
+                const response = await fetch(`../api/api_educatori.php?action=get_all`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const educatore = result.data.find(e => e.id_educatore == id);
+                    if (educatore) {
+                        // Carica dropdown
+                        await loadEducatoreDropdowns();
+
+                        // Popola form
+                        document.getElementById('educatoreId').value = educatore.id_educatore;
+                        document.getElementById('educatoreNome').value = educatore.nome;
+                        document.getElementById('educatoreCognome').value = educatore.cognome;
+                        document.getElementById('educatoreUsername').value = educatore.username_registrazione || '';
+                        document.getElementById('educatorePassword').value = '';
+                        document.getElementById('educatorePassword').placeholder = 'Lascia vuoto per non modificare';
+                        document.getElementById('educatoreSede').value = educatore.id_sede || '';
+                        document.getElementById('educatoreTelefono').value = educatore.telefono || '';
+                        document.getElementById('educatoreEmail').value = educatore.email_contatto || '';
+                        document.getElementById('educatoreNote').value = educatore.note_professionali || '';
+                        document.getElementById('educatoreStato').value = educatore.stato_educatore || 'attivo';
+
+                        // Gestisci settore e classe con filtro
+                        const settoreId = educatore.id_settore || '';
+                        const classeId = educatore.id_classe || '';
+
+                        document.getElementById('educatoreSettore').value = settoreId;
+
+                        // Filtra le classi per il settore selezionato
+                        if (settoreId) {
+                            filtraClassiPerSettore();
+                            // Aspetta un po' per permettere al DOM di aggiornarsi
+                            setTimeout(() => {
+                                document.getElementById('educatoreClasse').value = classeId;
+                            }, 100);
+                        } else {
+                            document.getElementById('educatoreClasse').innerHTML = '<option value="">Seleziona prima un settore...</option>';
+                        }
+
+                        // Mostra stato per modifica
+                        document.getElementById('educatoreStatoContainer').style.display = 'block';
+                        document.getElementById('educatoreModalLabel').textContent = 'Modifica Educatore';
+
+                        // Mostra modal
+                        const modal = new bootstrap.Modal(document.getElementById('educatoreModal'));
+                        modal.show();
+                    }
+                }
+            } catch (error) {
+                showAlert('Errore nel caricamento dei dati dell\'educatore', 'error');
+            }
+        }
+
+        async function deleteEducatore(id, nome) {
+            if (confirm(`Sei sicuro di voler eliminare l'educatore ${nome}?`)) {
+                try {
+                    const response = await fetch('../api/api_educatori.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            action: 'delete',
+                            id_educatore: id
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showAlert('Educatore eliminato con successo', 'success');
+                        // Rimuovi l'educatore dal cache e aggiorna la tabella
+                        tableCache.educatori = tableCache.educatori.filter(e => e.id_educatore !== id);
+                        updateEducatoriTable();
+                    } else {
+                        showAlert('Errore: ' + result.message, 'error');
+                    }
+                } catch (error) {
+                    showAlert('Errore di connessione', 'error');
+                }
+            }
+        }
+
+        // Variabile globale per memorizzare tutte le classi
+        let tutteLeClassi = [];
+
+        async function loadEducatoreDropdowns() {
+            try {
+                // Carica sedi
+                if (sediData.length > 0) {
+                    const sedeSelect = document.getElementById('educatoreSede');
+                    sedeSelect.innerHTML = '<option value="">Seleziona sede...</option>';
+                    sediData.forEach(sede => {
+                        sedeSelect.innerHTML += `<option value="${sede.id_sede}">${sede.nome_sede}</option>`;
+                    });
+                }
+
+                // Carica settori
+                const settoriResponse = await fetch('../api/api_settori_classi.php?action=get_settori');
+                const settoriResult = await settoriResponse.json();
+                if (settoriResult.success) {
+                    const settoreSelect = document.getElementById('educatoreSettore');
+                    settoreSelect.innerHTML = '<option value="">Seleziona settore...</option>';
+                    settoriResult.data.forEach(settore => {
+                        settoreSelect.innerHTML += `<option value="${settore.id_settore}">${settore.nome}</option>`;
+                    });
+
+                    // Aggiungi event listener per filtrare le classi
+                    settoreSelect.removeEventListener('change', filtraClassiPerSettore); // Rimuovi listener esistente
+                    settoreSelect.addEventListener('change', filtraClassiPerSettore);
+                }
+
+                // Carica tutte le classi e memorizzale
+                const classiResponse = await fetch('../api/api_settori_classi.php?action=get_classi');
+                const classiResult = await classiResponse.json();
+                if (classiResult.success) {
+                    tutteLeClassi = classiResult.data;
+
+                    // Inizialmente mostra tutte le classi
+                    const classeSelect = document.getElementById('educatoreClasse');
+                    classeSelect.innerHTML = '<option value="">Seleziona prima un settore...</option>';
+                }
+
+            } catch (error) {
+                console.error('Errore nel caricamento dei dropdown:', error);
+            }
+        }
+
+        function filtraClassiPerSettore() {
+            const settoreSelezionato = document.getElementById('educatoreSettore').value;
+            const classeSelect = document.getElementById('educatoreClasse');
+
+            // Reset selezione classe
+            classeSelect.value = '';
+
+            if (!settoreSelezionato) {
+                // Nessun settore selezionato
+                classeSelect.innerHTML = '<option value="">Seleziona prima un settore...</option>';
+                return;
+            }
+
+            // Filtra classi per settore selezionato
+            const classiFilterate = tutteLeClassi.filter(classe =>
+                classe.id_settore == settoreSelezionato
+            );
+
+            // Popola dropdown classi
+            classeSelect.innerHTML = '<option value="">Seleziona classe...</option>';
+
+            if (classiFilterate.length > 0) {
+                classiFilterate.forEach(classe => {
+                    classeSelect.innerHTML += `<option value="${classe.id_classe}">${classe.nome}</option>`;
+                });
+            } else {
+                classeSelect.innerHTML += '<option value="" disabled>Nessuna classe disponibile per questo settore</option>';
+            }
+        }
+
+        async function saveEducatore() {
+            const id = document.getElementById('educatoreId').value;
+            const isEdit = id !== '';
+
+            const data = {
+                action: isEdit ? 'update' : 'create',
+                nome: document.getElementById('educatoreNome').value.trim(),
+                cognome: document.getElementById('educatoreCognome').value.trim(),
+                id_settore: document.getElementById('educatoreSettore').value || null,
+                id_classe: document.getElementById('educatoreClasse').value || null,
+                id_sede: document.getElementById('educatoreSede').value || 1,
+                telefono: document.getElementById('educatoreTelefono').value.trim(),
+                email_contatto: document.getElementById('educatoreEmail').value.trim(),
+                note_professionali: document.getElementById('educatoreNote').value.trim()
+            };
+
+            if (isEdit) {
+                data.id_educatore = parseInt(id);
+                data.stato_educatore = document.getElementById('educatoreStato').value;
+
+                // Username opzionale in modifica
+                const username = document.getElementById('educatoreUsername').value.trim();
+                if (username) {
+                    data.username = username;
+                }
+
+                // Password opzionale in modifica
+                const password = document.getElementById('educatorePassword').value.trim();
+                if (password) {
+                    data.password = password;
+                }
+            } else {
+                // Campi obbligatori per creazione
+                data.username = document.getElementById('educatoreUsername').value.trim();
+                data.password = document.getElementById('educatorePassword').value.trim();
+            }
+
+            // Validazioni
+            if (!data.nome || !data.cognome) {
+                showAlert('Nome e cognome sono obbligatori', 'error');
+                return;
+            }
+
+            if (!isEdit && (!data.username || !data.password)) {
+                showAlert('Username e password sono obbligatori', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('../api/api_educatori.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(isEdit ? 'Educatore aggiornato con successo' : 'Educatore creato con successo', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('educatoreModal')).hide();
+                    loadEducatori();
+                } else {
+                    showAlert('Errore: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione', 'error');
+            }
+        }
+
+        // ===================== FUNZIONI PAZIENTI =====================
+        async function loadPazienti() {
+            try {
+                const userData = JSON.parse(localStorage.getItem('user') || '{}');
+                console.log('🔍 DEBUG loadPazienti - userData:', userData);
+                console.log('🔍 DEBUG loadPazienti - ruolo:', userData.ruolo_registrazione);
+                console.log('🔍 DEBUG loadPazienti - id:', userData.id_registrazione);
+
+                const payload = {
+                    action: 'get_all',
+                    user_role: userData.ruolo_registrazione,
+                    user_id: userData.id_registrazione
+                };
+                console.log('🔍 DEBUG loadPazienti - payload inviato:', payload);
+
+                const response = await fetch('../api/api_pazienti.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                console.log('🔍 DEBUG loadPazienti - risposta API:', result);
+
+                if (result.success) {
+                    console.log('✅ Pazienti caricati:', result.data.length);
+                    tableCache.pazienti = result.data;
+                    updatePazientiTable(result.data);
+                } else {
+                    console.error('❌ Errore API pazienti:', result.message);
+                    document.getElementById('pazienti-table-body').innerHTML =
+                        `<tr><td colspan="9" class="text-center text-danger">Errore: ${result.message}</td></tr>`;
+                }
+            } catch (error) {
+                console.error('❌ Errore loadPazienti:', error);
+                document.getElementById('pazienti-table-body').innerHTML =
+                    `<tr><td colspan="9" class="text-center text-danger">Errore di connessione: ${error.message}</td></tr>`;
+            }
+        }
+
+        function updatePazientiTable(data = null) {
+            const pazienti = data || tableCache.pazienti;
+            tableCache.pazienti = data || tableCache.pazienti;  // Salva in cache
+            updateTableArrows('pazienti');  // Aggiorna le frecce
+
+            const tbody = document.getElementById('pazienti-table-body');
+
+            if (!pazienti || pazienti.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center">Nessun paziente trovato</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            pazienti.forEach(paziente => {
+                const row = `
+                    <tr>
+                        <td>${paziente.id_paziente}</td>
+                        <td>${paziente.nome}</td>
+                        <td>${paziente.cognome}</td>
+                        <td>${paziente.nome_sede || 'Non assegnata'}</td>
+                        <td>${paziente.settore || 'Non specificato'}</td>
+                        <td>${paziente.classe || 'Non specificata'}</td>
+                        <td>${paziente.educatore_assegnato || 'Nessun educatore'}</td>
+                        <td class="action-buttons">
+                            <button class="btn btn-sm btn-outline-primary" onclick="editPaziente(${paziente.id_paziente})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deletePaziente(${paziente.id_paziente}, '${paziente.nome} ${paziente.cognome}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        async function showCreatePaziente() {
+            // Reset form
+            document.getElementById('pazienteForm').reset();
+            document.getElementById('pazienteId').value = '';
+            document.getElementById('pazienteModalLabel').textContent = 'Nuovo Paziente';
+
+            // Carica dropdown
+            await loadPazienteDropdowns();
+
+            // Mostra modal
+            const modal = new bootstrap.Modal(document.getElementById('pazienteModal'));
+            modal.show();
+        }
+
+        async function editPaziente(id) {
+            try {
+                // Carica dati paziente
+                const response = await fetch(`../api/api_pazienti.php?action=get_all`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const paziente = result.data.find(p => p.id_paziente == id);
+                    if (paziente) {
+                        // Carica dropdown
+                        await loadPazienteDropdowns();
+
+                        // Popola form
+                        document.getElementById('pazienteId').value = paziente.id_paziente;
+                        document.getElementById('pazienteNome').value = paziente.nome;
+                        document.getElementById('pazienteCognome').value = paziente.cognome;
+                        document.getElementById('pazienteUsername').value = paziente.username_registrazione || '';
+                        document.getElementById('pazientePassword').value = '';
+                        document.getElementById('pazientePassword').placeholder = 'Lascia vuoto per non modificare';
+                        document.getElementById('pazienteSede').value = paziente.id_sede || '';
+
+                        // Gestisci settore e classe con filtro
+                        const settoreId = paziente.id_settore || '';
+                        const classeId = paziente.id_classe || '';
+
+                        document.getElementById('pazienteSettore').value = settoreId;
+
+                        // Filtra le classi per il settore selezionato
+                        if (settoreId) {
+                            filtraClassiPerSettorePaziente();
+                            setTimeout(() => {
+                                document.getElementById('pazienteClasse').value = classeId;
+                            }, 100);
+                        } else {
+                            document.getElementById('pazienteClasse').innerHTML = '<option value="">Seleziona prima un settore...</option>';
+                        }
+
+                        document.getElementById('pazienteModalLabel').textContent = 'Modifica Paziente';
+
+                        // Mostra modal
+                        const modal = new bootstrap.Modal(document.getElementById('pazienteModal'));
+                        modal.show();
+                    }
+                }
+            } catch (error) {
+                showAlert('Errore nel caricamento dei dati del paziente', 'error');
+            }
+        }
+
+        async function deletePaziente(id, nome) {
+            if (confirm(`Sei sicuro di voler eliminare il paziente ${nome}?`)) {
+                try {
+                    const response = await fetch('../api/api_pazienti.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            action: 'delete',
+                            id_paziente: id
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        showAlert('Paziente eliminato con successo', 'success');
+                        // Rimuovi il paziente dal cache e aggiorna la tabella
+                        tableCache.pazienti = tableCache.pazienti.filter(p => p.id_paziente !== id);
+                        updatePazientiTable();
+                    } else {
+                        showAlert('Errore: ' + result.message, 'danger');
+                    }
+                } catch (error) {
+                    showAlert('Errore nella comunicazione con il server', 'danger');
+                }
+            }
+        }
+
+        // ===================== FUNZIONI SETTORI E CLASSI =====================
+        async function loadSettoriEClassi() {
+            try {
+                // Carica settori
+                const responseSettori = await fetch('../api/api_settori_classi.php?action=get_settori');
+                const resultSettori = await responseSettori.json();
+                
+                const settoriTableBody = document.getElementById('settori-table-body');
+
+                if (resultSettori.success) {
+                    if (resultSettori.data.length === 0) {
+                        settoriTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Nessun settore trovato nelle tabelle</td></tr>';
+                    } else {
+                        settoriTableBody.innerHTML = resultSettori.data.map(settore => `
+                            <tr>
+                                <td><strong>${settore.nome}</strong></td>
+                                <td>
+                                    <span class="badge bg-info">${settore.utilizzo}</span>
+                                    <small class="text-muted ms-1">utilizzi</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary btn-sm" onclick="editSettore('${settore.nome}')" title="Modifica">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm" onclick="deleteSettore('${settore.nome}')" title="Elimina">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                } else {
+                    settoriTableBody.innerHTML = `<tr><td colspan="3" class="text-center text-danger">Errore: ${resultSettori.message}</td></tr>`;
+                }
+
+                // Carica classi
+                const responseClassi = await fetch('../api/api_settori_classi.php?action=get_classi');
+                const resultClassi = await responseClassi.json();
+                
+                const classiTableBody = document.getElementById('classi-table-body');
+
+                if (resultClassi.success) {
+                    if (resultClassi.data.length === 0) {
+                        classiTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nessuna classe trovata nelle tabelle</td></tr>';
+                    } else {
+                        classiTableBody.innerHTML = resultClassi.data.map(classe => `
+                            <tr>
+                                <td><strong>${classe.nome}</strong></td>
+                                <td>
+                                    <span class="badge bg-secondary">${classe.settore || 'Non specificato'}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">${classe.utilizzo}</span>
+                                    <small class="text-muted ms-1">utilizzi</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary btn-sm" onclick="editClasse('${classe.nome}')" title="Modifica">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm" onclick="deleteClasse('${classe.nome}')" title="Elimina">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                } else {
+                    classiTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Errore: ${resultClassi.message}</td></tr>`;
+                }
+            } catch (error) {
+                document.getElementById('settori-table-body').innerHTML = '<tr><td colspan="3" class="text-center text-danger">Errore di connessione</td></tr>';
+                document.getElementById('classi-table-body').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Errore di connessione</td></tr>';
+            }
+        }
+
+        function showCreateSettore() {
+            const nome = prompt('Inserisci il nome del nuovo settore:');
+            if (nome && nome.trim()) {
+                createSettore(nome.trim());
+            }
+        }
+
+        function showCreateClasse() {
+            const nome = prompt('Inserisci il nome della nuova classe:');
+            if (nome && nome.trim()) {
+                createClasse(nome.trim());
+            }
+        }
+
+        async function createSettore(nome) {
+            try {
+                const response = await fetch('../api/api_settori_classi.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'create_settore', nome: nome })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Settore creato con successo', 'success');
+                    loadSettoriEClassi();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione', 'danger');
+            }
+        }
+
+        async function createClasse(nome) {
+            try {
+                const response = await fetch('../api/api_settori_classi.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'create_classe', nome: nome })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Classe creata con successo', 'success');
+                    loadSettoriEClassi();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione', 'danger');
+            }
+        }
+
+        async function deleteSettore(nome) {
+            if (confirm(`Sei sicuro di voler eliminare il settore "${nome}"?`)) {
+                try {
+                    const response = await fetch('../api/api_settori_classi.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'delete_settore', nome: nome })
+                    });
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showAlert('Settore eliminato con successo', 'success');
+                        loadSettoriEClassi();
+                    } else {
+                        showAlert('Errore: ' + result.message, 'danger');
+                    }
+                } catch (error) {
+                    showAlert('Errore di connessione', 'danger');
+                }
+            }
+        }
+
+        async function deleteClasse(nome) {
+            if (confirm(`Sei sicuro di voler eliminare la classe "${nome}"?`)) {
+                try {
+                    const response = await fetch('../api/api_settori_classi.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'delete_classe', nome: nome })
+                    });
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showAlert('Classe eliminata con successo', 'success');
+                        loadSettoriEClassi();
+                    } else {
+                        showAlert('Errore: ' + result.message, 'danger');
+                    }
+                } catch (error) {
+                    showAlert('Errore di connessione', 'danger');
+                }
+            }
+        }
+
+        // ===================== FUNZIONI PAZIENTI =====================
+        async function loadPazienteDropdowns() {
+            try {
+                // Carica sedi
+                if (sediData.length > 0) {
+                    const sedeSelect = document.getElementById('pazienteSede');
+                    sedeSelect.innerHTML = '<option value="">Seleziona sede...</option>';
+                    sediData.forEach(sede => {
+                        sedeSelect.innerHTML += `<option value="${sede.id_sede}">${sede.nome_sede}</option>`;
+                    });
+                }
+
+                // Carica settori
+                const settoriResponse = await fetch('../api/api_settori_classi.php?action=get_settori');
+                const settoriResult = await settoriResponse.json();
+                if (settoriResult.success) {
+                    const settoreSelect = document.getElementById('pazienteSettore');
+                    settoreSelect.innerHTML = '<option value="">Seleziona settore...</option>';
+                    settoriResult.data.forEach(settore => {
+                        settoreSelect.innerHTML += `<option value="${settore.id_settore}">${settore.nome}</option>`;
+                    });
+
+                    // Aggiungi event listener per filtrare le classi
+                    settoreSelect.removeEventListener('change', filtraClassiPerSettorePaziente);
+                    settoreSelect.addEventListener('change', filtraClassiPerSettorePaziente);
+                }
+
+                // Carica tutte le classi
+                const classiResponse = await fetch('../api/api_settori_classi.php?action=get_classi');
+                const classiResult = await classiResponse.json();
+                if (classiResult.success) {
+                    tutteLeClassi = classiResult.data;
+
+                    // Inizialmente mostra tutte le classi
+                    const classeSelect = document.getElementById('pazienteClasse');
+                    classeSelect.innerHTML = '<option value="">Seleziona prima un settore...</option>';
+                }
+
+                // Carica educatori per dropdown
+                const educatoriResponse = await fetch('../api/api_pazienti.php?action=get_educatori');
+                const educatoriResult = await educatoriResponse.json();
+                if (educatoriResult.success) {
+                    const educatoreSelect = document.getElementById('pazienteEducatore');
+                    educatoreSelect.innerHTML = '<option value="">Nessun educatore assegnato</option>';
+                    educatoriResult.data.forEach(educatore => {
+                        educatoreSelect.innerHTML += `<option value="${educatore.id_educatore}">${educatore.nome_completo}</option>`;
+                    });
+                }
+
+            } catch (error) {
+                console.error('Errore nel caricamento dei dropdown per pazienti:', error);
+            }
+        }
+
+        function filtraClassiPerSettorePaziente() {
+            const settoreSelezionato = document.getElementById('pazienteSettore').value;
+            const classeSelect = document.getElementById('pazienteClasse');
+
+            // Reset selezione classe
+            classeSelect.value = '';
+
+            if (!settoreSelezionato) {
+                // Nessun settore selezionato
+                classeSelect.innerHTML = '<option value="">Seleziona prima un settore...</option>';
+                return;
+            }
+
+            // Filtra classi per settore selezionato
+            const classiFilterate = tutteLeClassi.filter(classe =>
+                classe.id_settore == settoreSelezionato
+            );
+
+            // Popola dropdown classi filtrate
+            classeSelect.innerHTML = '<option value="">Seleziona classe...</option>';
+            classiFilterate.forEach(classe => {
+                classeSelect.innerHTML += `<option value="${classe.id_classe}">${classe.nome}</option>`;
+            });
+        }
+
+        async function savePaziente() {
+            const id = document.getElementById('pazienteId').value;
+            const isEdit = id !== '';
+
+            // Validazione
+            if (!document.getElementById('pazienteNome').value.trim() ||
+                !document.getElementById('pazienteCognome').value.trim() ||
+                !document.getElementById('pazienteUsername').value.trim() ||
+                (!isEdit && !document.getElementById('pazientePassword').value.trim())) {
+                showAlert('Nome, cognome, username e password sono obbligatori', 'danger');
+                return;
+            }
+
+            const data = {
+                action: isEdit ? 'update' : 'create',
+                nome: document.getElementById('pazienteNome').value.trim(),
+                cognome: document.getElementById('pazienteCognome').value.trim(),
+                id_settore: document.getElementById('pazienteSettore').value || null,
+                id_classe: document.getElementById('pazienteClasse').value || null,
+                id_sede: document.getElementById('pazienteSede').value || 1,
+                id_educatore: document.getElementById('pazienteEducatore').value || null
+            };
+
+            if (isEdit) {
+                data.id_paziente = parseInt(id);
+            } else {
+                data.username = document.getElementById('pazienteUsername').value.trim();
+                data.password = document.getElementById('pazientePassword').value.trim();
+            }
+
+            try {
+                const response = await fetch('../api/api_pazienti.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(isEdit ? 'Paziente aggiornato con successo' : 'Paziente creato con successo', 'success');
+
+                    // Chiudi modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('pazienteModal'));
+                    modal.hide();
+
+                    // Ricarica lista
+                    loadPazienti();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore nella comunicazione con il server', 'danger');
+            }
+        }
+
+        // Funzioni per gestione amministratori
+        async function showCreateAmministratore() {
+            document.getElementById('amministratoreForm').reset();
+            document.getElementById('amministratoreId').value = '';
+            document.querySelector('#amministratoreModal .modal-title').textContent = 'Nuovo Amministratore';
+
+            // Carica i settori e le sedi disponibili
+            await loadSettoriForAdmin();
+            await loadSediForAdmin();
+
+            new bootstrap.Modal(document.getElementById('amministratoreModal')).show();
+        }
+
+        async function loadSettoriForAdmin() {
+            try {
+                const response = await fetch('../api/admin_settori.php');
+                const result = await response.json();
+
+                const settoreSelect = document.getElementById('adminSettore');
+                settoreSelect.innerHTML = '<option value="">Seleziona settore...</option>';
+
+                if (result.success && result.data && Array.isArray(result.data)) {
+                    result.data.forEach(settore => {
+                        if (settore.stato_settore === 'attivo' || !settore.stato_settore) {
+                            const option = document.createElement('option');
+                            option.value = settore.id_settore;
+                            option.textContent = settore.nome_settore;
+                            settoreSelect.appendChild(option);
+                        }
+                    });
+                } else if (!result.success) {
+                    console.error('Errore API settori:', result.message);
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento settori:', error);
+            }
+        }
+
+        async function loadSediForAdmin() {
+            try {
+                const response = await fetch('../api/api_sedi.php');
+                const result = await response.json();
+
+                const sedeSelect = document.getElementById('adminSede');
+                sedeSelect.innerHTML = '<option value="">Seleziona sede...</option>';
+
+                if (result.success && result.sedi) {
+                    result.sedi.forEach(sede => {
+                        if (sede.stato_sede === 'attiva') {
+                            const option = document.createElement('option');
+                            option.value = sede.id_sede;
+                            option.textContent = sede.nome_sede;
+                            sedeSelect.appendChild(option);
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento sedi:', error);
+            }
+        }
+
+        async function saveAmministratore() {
+            const form = document.getElementById('amministratoreForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const userData = JSON.parse(localStorage.getItem('user'));
+            const adminId = document.getElementById('amministratoreId').value;
+            const isEdit = adminId !== '';
+
+            const adminData = {
+                action: isEdit ? 'update' : 'create',
+                nome: document.getElementById('adminNome').value.trim(),
+                cognome: document.getElementById('adminCognome').value.trim(),
+                username: document.getElementById('adminUsername').value.trim(),
+                password: document.getElementById('adminPassword').value,
+                ruolo: 'amministratore',
+                id_settore: document.getElementById('adminSettore').value || null,
+                id_sede: document.getElementById('adminSede').value || 1, // Default alla sede principale
+                calling_user_role: userData.ruolo_registrazione
+            };
+
+            if (isEdit) {
+                adminData.id = adminId;
+            }
+
+            try {
+                const response = await fetch('../api/auth_registrazioni.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(adminData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(isEdit ? 'Amministratore aggiornato con successo' : 'Amministratore creato con successo', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('amministratoreModal')).hide();
+                    loadAmministratori();
+                    // Ricarica anche la lista utenti generale per aggiornare le statistiche
+                    loadUsers();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione', 'danger');
+            }
+        }
+
+        // ===== ORDINAMENTO TABELLE GENERICHE =====
+        const tableSortState = {
+            users: { column: null, direction: 'asc' },
+            educatori: { column: null, direction: 'asc' },
+            pazienti: { column: null, direction: 'asc' },
+            amministratori: { column: null, direction: 'asc' }
+        };
+
+        const tableCache = {
+            users: [],
+            educatori: [],
+            pazienti: [],
+            amministratori: []
+        };
+
+        function sortTable(tableType, column) {
+            // Inverte l'ordine se clicchiamo la stessa colonna
+            if (tableSortState[tableType].column === column) {
+                tableSortState[tableType].direction = tableSortState[tableType].direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                // Nuova colonna, ordina ascendente
+                tableSortState[tableType].column = column;
+                tableSortState[tableType].direction = 'asc';
+            }
+
+            // Ordina il cache
+            const sorted = [...tableCache[tableType]].sort((a, b) => {
+                let valueA, valueB;
+
+                if (column === 'nome') {
+                    if (tableType === 'users') {
+                        valueA = a.nome_registrazione.toLowerCase();
+                        valueB = b.nome_registrazione.toLowerCase();
+                    } else {
+                        valueA = a.nome.toLowerCase();
+                        valueB = b.nome.toLowerCase();
+                    }
+                } else if (column === 'cognome') {
+                    valueA = a.cognome.toLowerCase();
+                    valueB = b.cognome.toLowerCase();
+                }
+
+                if (tableSortState[tableType].direction === 'asc') {
+                    return valueA.localeCompare(valueB, 'it');
+                } else {
+                    return valueB.localeCompare(valueA, 'it');
+                }
+            });
+
+            // Aggiorna la tabella appropriata
+            if (tableType === 'users') {
+                updateUsersTable(sorted);
+            } else if (tableType === 'educatori') {
+                updateEducatoriTable(sorted);
+            } else if (tableType === 'pazienti') {
+                updatePazientiTable(sorted);
+            }
+
+            // Aggiorna le frecce
+            updateTableArrows(tableType);
+        }
+
+        function updateTableArrows(tableType) {
+            // Pulisci tutte le frecce per questa tabella
+            const headers = document.querySelectorAll(`[id^="arrow-${tableType}-"]`);
+            headers.forEach(h => h.textContent = '');
+
+            // Aggiungi la freccia alla colonna ordinata
+            if (tableSortState[tableType].column) {
+                const arrowId = `arrow-${tableType}-${tableSortState[tableType].column}`;
+                const arrow = document.getElementById(arrowId);
+                if (arrow) {
+                    arrow.textContent = tableSortState[tableType].direction === 'asc' ? ' ↑' : ' ↓';
+                }
+            }
+        }
+
+        // ===== ORDINAMENTO AMMINISTRATORI =====
+        let amministratoriSortState = {
+            column: null,      // 'nome' o 'cognome'
+            direction: 'asc'   // 'asc' o 'desc'
+        };
+        let amministratoriCache = [];  // Cache per ordinamento rapido
+
+        function sortAmministratori(column) {
+            // Se clicchiamo la stessa colonna, inverti l'ordine
+            if (amministratoriSortState.column === column) {
+                amministratoriSortState.direction = amministratoriSortState.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                // Nuova colonna, ordina ascendente
+                amministratoriSortState.column = column;
+                amministratoriSortState.direction = 'asc';
+            }
+
+            // Ordina il cache
+            const sorted = [...amministratoriCache].sort((a, b) => {
+                let valueA, valueB;
+
+                if (column === 'nome') {
+                    valueA = a.nome_registrazione.toLowerCase();
+                    valueB = b.nome_registrazione.toLowerCase();
+                } else if (column === 'cognome') {
+                    valueA = a.cognome_registrazione.toLowerCase();
+                    valueB = b.cognome_registrazione.toLowerCase();
+                }
+
+                if (amministratoriSortState.direction === 'asc') {
+                    return valueA.localeCompare(valueB, 'it');
+                } else {
+                    return valueB.localeCompare(valueA, 'it');
+                }
+            });
+
+            // Aggiorna la tabella e le frecce
+            updateAmministratoriTable(sorted);
+        }
+
+        async function loadDirettori() {
+            try {
+                const response = await fetch('../api/auth_registrazioni.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_direttori_dettagli' })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    updateDirettoriTable(result.registrazioni);
+                } else {
+                    showAlert('Errore nel caricamento direttori: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione', 'danger');
+                console.error('Errore fetch:', error);
+            }
+        }
+
+        function updateDirettoriTable(direttori) {
+            window.direttoriList = direttori;
+            const tbody = document.getElementById('direttori-table-body');
+
+            if (direttori.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center">Nessun direttore trovato</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = direttori.map(dir => `
+                <tr>
+                    <td>${dir.id_registrazione}</td>
+                    <td>${dir.nome_registrazione}</td>
+                    <td>${dir.cognome_registrazione}</td>
+                    <td>${dir.username_registrazione}</td>
+                    <td>${dir.id_sede || '-'}</td>
+                    <td>${dir.settore || '-'}</td>
+                    <td>${formatDateFromDB(dir.data_registrazione)}</td>
+                    <td>${dir.ultimo_accesso ? formatDateFromDB(dir.ultimo_accesso) : 'Mai'}</td>
+                    <td><span class="badge bg-${dir.stato_account === 'attivo' ? 'success' : 'warning'}">${dir.stato_account || 'attivo'}</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-warning" onclick="editDirettore(${dir.id_registrazione})">
+                            <i class="bi bi-pencil"></i> Modifica
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteDirettore(${dir.id_registrazione})">
+                            <i class="bi bi-trash"></i> Elimina
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function showAddDirettore() {
+            // Carica le sedi
+            try {
+                const response = await fetch('../api/api_sedi.php?action=get_sedi', {
+                    method: 'GET'
+                });
+                const result = await response.json();
+
+                const sedeSelect = document.getElementById('direttoreSede');
+                if (result.success) {
+                    sedeSelect.innerHTML = '<option value="">Nessuna sede</option>' +
+                        result.sedi.map(sede => `<option value="${sede.id_sede}">${sede.nome_sede}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('Errore caricamento sedi:', error);
+            }
+
+            // Carica settori per la prima sede
+            try {
+                const response = await fetch('../api/api_sedi.php?action=get_settori_sede&id_sede=1', {
+                    method: 'GET'
+                });
+                const result = await response.json();
+
+                const settoreSelect = document.getElementById('direttoreSettore');
+                if (result.success && result.data && result.data.length > 0) {
+                    settoreSelect.innerHTML = '<option value="">Nessun settore</option>' +
+                        result.data.map(s => `<option value="${s.id_settore}">${s.nome_settore}</option>`).join('');
+                } else {
+                    settoreSelect.innerHTML = '<option value="">Nessun settore disponibile</option>';
+                }
+            } catch (error) {
+                console.error('Errore caricamento settori:', error);
+                document.getElementById('direttoreSettore').innerHTML = '<option value="">Errore caricamento</option>';
+            }
+
+            // Pulisci il form
+            document.getElementById('direttoreId').value = '';
+            document.getElementById('direttoreNome').value = '';
+            document.getElementById('direttoreCognome').value = '';
+            document.getElementById('direttoreUsername').value = '';
+            document.getElementById('direttoreSede').value = '';
+            document.getElementById('direttoreSettore').value = '';
+            document.getElementById('direttoreStato').value = 'attivo';
+
+            // Apri la modale
+            window.direttoreModal = new bootstrap.Modal(document.getElementById('direttoreModal'));
+            window.direttoreModal.show();
+        }
+
+        async function editDirettore(id) {
+            // Trova il direttore nella lista
+            const direttore = window.direttoriList.find(d => d.id_registrazione === id);
+            if (!direttore) {
+                showAlert('Direttore non trovato', 'danger');
+                return;
+            }
+
+            // Carica le sedi
+            try {
+                const response = await fetch('../api/api_sedi.php?action=get_sedi', {
+                    method: 'GET'
+                });
+                const result = await response.json();
+
+                const sedeSelect = document.getElementById('direttoreSede');
+                if (result.success) {
+                    sedeSelect.innerHTML = '<option value="">Nessuna sede</option>' +
+                        result.sedi.map(sede => `<option value="${sede.id_sede}">${sede.nome_sede}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('Errore caricamento sedi:', error);
+            }
+
+            // Carica i settori per la sede del direttore
+            const idSede = direttore.id_sede || 1;
+            try {
+                const response = await fetch(`../api/api_sedi.php?action=get_settori_sede&id_sede=${idSede}`, {
+                    method: 'GET'
+                });
+                const result = await response.json();
+
+                const settoreSelect = document.getElementById('direttoreSettore');
+                if (result.success && result.data && result.data.length > 0) {
+                    settoreSelect.innerHTML = '<option value="">Nessun settore</option>' +
+                        result.data.map(s => `<option value="${s.id_settore}">${s.nome_settore}</option>`).join('');
+                } else {
+                    settoreSelect.innerHTML = '<option value="">Nessun settore disponibile</option>';
+                }
+            } catch (error) {
+                console.error('Errore caricamento settori:', error);
+                const settoreSelect = document.getElementById('direttoreSettore');
+                settoreSelect.innerHTML = '<option value="">Errore caricamento</option>';
+            }
+
+            // Popola il form con i dati
+            document.getElementById('direttoreId').value = direttore.id_registrazione;
+            document.getElementById('direttoreNome').value = direttore.nome_registrazione;
+            document.getElementById('direttoreCognome').value = direttore.cognome_registrazione;
+            document.getElementById('direttoreUsername').value = direttore.username_registrazione;
+            document.getElementById('direttoreSede').value = direttore.id_sede || '';
+            document.getElementById('direttoreSettore').value = direttore.id_settore || '';
+            document.getElementById('direttoreStato').value = direttore.stato_account || 'attivo';
+
+            // Apri la modale
+            window.direttoreModal = new bootstrap.Modal(document.getElementById('direttoreModal'));
+            window.direttoreModal.show();
+        }
+
+        async function saveDirettore() {
+            const id = document.getElementById('direttoreId').value;
+            const nome = document.getElementById('direttoreNome').value;
+            const cognome = document.getElementById('direttoreCognome').value;
+            const username = document.getElementById('direttoreUsername').value;
+            const idSede = document.getElementById('direttoreSede').value;
+            const settore = document.getElementById('direttoreSettore').value;
+
+            if (!nome || !cognome || !username) {
+                showAlert('Compilare i campi obbligatori', 'warning');
+                return;
+            }
+
+            try {
+                let payload;
+                let successMessage;
+
+                if (id) {
+                    // UPDATE: Modifica direttore esistente
+                    payload = {
+                        action: 'update',
+                        id: id,
+                        nome: nome,
+                        cognome: cognome,
+                        username: username,
+                        password: 'nochange',
+                        ruolo: 'direttore',
+                        id_sede: idSede ? parseInt(idSede) : null,
+                        settore: settore || null
+                    };
+                    successMessage = 'Direttore aggiornato con successo';
+                } else {
+                    // CREATE: Nuovo direttore
+                    payload = {
+                        action: 'create',
+                        nome: nome,
+                        cognome: cognome,
+                        username: username,
+                        password: nome + '123456',  // Password di default
+                        ruolo: 'direttore',
+                        id_sede: idSede ? parseInt(idSede) : null,
+                        settore: settore || null
+                    };
+                    successMessage = 'Direttore creato con successo';
+                }
+
+                const response = await fetch('../api/auth_registrazioni.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                console.log('Risposta API:', result);
+
+                if (result.success) {
+                    showAlert(successMessage, 'success');
+                    // Chiudi la modale
+                    if (window.direttoreModal) {
+                        window.direttoreModal.hide();
+                    }
+                    // Attendi un momento prima di ricaricare
+                    setTimeout(() => {
+                        loadDirettori();
+                    }, 500);
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                    console.error('Errore API:', result);
+                }
+            } catch (error) {
+                showAlert('Errore di connessione: ' + error.message, 'danger');
+                console.error('Errore catch:', error);
+            }
+        }
+
+        async function deleteDirettore(id) {
+            if (confirm('Sei sicuro di voler eliminare questo direttore?')) {
+                try {
+                    const response = await fetch('../api/auth_registrazioni.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'delete',
+                            id_registrazione: id
+                        })
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showAlert('Direttore eliminato con successo', 'success');
+                        loadDirettori();
+                    } else {
+                        showAlert('Errore: ' + result.message, 'danger');
+                    }
+                } catch (error) {
+                    showAlert('Errore di connessione', 'danger');
+                    console.error(error);
+                }
+            }
+        }
+
+        async function loadCaseManager() {
+            try {
+                const response = await fetch('../api/auth_registrazioni.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_casemanager_dettagli' })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    updateCaseManagerTable(result.registrazioni);
+                } else {
+                    showAlert('Errore nel caricamento casemanager: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione', 'danger');
+                console.error('Errore fetch:', error);
+            }
+        }
+
+        function updateCaseManagerTable(casemanager) {
+            window.casemanagerList = casemanager;
+            const tbody = document.getElementById('casemanager-table-body');
+
+            if (casemanager.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center">Nessun casemanager trovato</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = casemanager.map(cm => `
+                <tr>
+                    <td>${cm.id_registrazione}</td>
+                    <td>${cm.nome_registrazione}</td>
+                    <td>${cm.cognome_registrazione}</td>
+                    <td>${cm.username_registrazione}</td>
+                    <td>${cm.id_sede || '-'}</td>
+                    <td>${cm.settore || '-'}</td>
+                    <td>${formatDateFromDB(cm.data_registrazione)}</td>
+                    <td>${cm.ultimo_accesso ? formatDateFromDB(cm.ultimo_accesso) : 'Mai'}</td>
+                    <td><span class="badge bg-${cm.stato_account === 'attivo' ? 'success' : 'warning'}">${cm.stato_account || 'attivo'}</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-warning" onclick="editCaseManager(${cm.id_registrazione})">
+                            <i class="bi bi-pencil"></i> Modifica
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCaseManager(${cm.id_registrazione})">
+                            <i class="bi bi-trash"></i> Elimina
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function showAddCaseManager() {
+            // Carica le sedi
+            try {
+                const response = await fetch('../api/api_sedi.php?action=get_sedi', {
+                    method: 'GET'
+                });
+                const result = await response.json();
+
+                const sedeSelect = document.getElementById('casemanagerSede');
+                if (result.success) {
+                    sedeSelect.innerHTML = '<option value="">Nessuna sede</option>' +
+                        result.sedi.map(sede => `<option value="${sede.id_sede}">${sede.nome_sede}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('Errore caricamento sedi:', error);
+            }
+
+            // Carica settori per la prima sede
+            try {
+                const response = await fetch('../api/api_sedi.php?action=get_settori_sede&id_sede=1', {
+                    method: 'GET'
+                });
+                const result = await response.json();
+
+                const settoreSelect = document.getElementById('casemanagerSettore');
+                if (result.success && result.data && result.data.length > 0) {
+                    settoreSelect.innerHTML = '<option value="">Nessun settore</option>' +
+                        result.data.map(s => `<option value="${s.id_settore}">${s.nome_settore}</option>`).join('');
+                } else {
+                    settoreSelect.innerHTML = '<option value="">Nessun settore disponibile</option>';
+                }
+            } catch (error) {
+                console.error('Errore caricamento settori:', error);
+                document.getElementById('casemanagerSettore').innerHTML = '<option value="">Errore caricamento</option>';
+            }
+
+            // Pulisci il form
+            document.getElementById('casemanagerId').value = '';
+            document.getElementById('casemanagerNome').value = '';
+            document.getElementById('casemanagerCognome').value = '';
+            document.getElementById('casemanagerUsername').value = '';
+            document.getElementById('casemanagerSede').value = '';
+            document.getElementById('casemanagerSettore').value = '';
+            document.getElementById('casemanagerStato').value = 'attivo';
+
+            // Apri la modale
+            window.casemanagerModal = new bootstrap.Modal(document.getElementById('casemanagerModal'));
+            window.casemanagerModal.show();
+        }
+
+        async function editCaseManager(id) {
+            // Trova il casemanager nella lista
+            const casemanager = window.casemanagerList.find(cm => cm.id_registrazione === id);
+            if (!casemanager) {
+                showAlert('CaseManager non trovato', 'danger');
+                return;
+            }
+
+            // Carica le sedi
+            try {
+                const response = await fetch('../api/api_sedi.php?action=get_sedi', {
+                    method: 'GET'
+                });
+                const result = await response.json();
+
+                const sedeSelect = document.getElementById('casemanagerSede');
+                if (result.success) {
+                    sedeSelect.innerHTML = '<option value="">Nessuna sede</option>' +
+                        result.sedi.map(sede => `<option value="${sede.id_sede}">${sede.nome_sede}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('Errore caricamento sedi:', error);
+            }
+
+            // Carica i settori per la sede del casemanager
+            const idSede = casemanager.id_sede || 1;
+            try {
+                const response = await fetch(`../api/api_sedi.php?action=get_settori_sede&id_sede=${idSede}`, {
+                    method: 'GET'
+                });
+                const result = await response.json();
+
+                const settoreSelect = document.getElementById('casemanagerSettore');
+                if (result.success && result.data && result.data.length > 0) {
+                    settoreSelect.innerHTML = '<option value="">Nessun settore</option>' +
+                        result.data.map(s => `<option value="${s.id_settore}">${s.nome_settore}</option>`).join('');
+                } else {
+                    settoreSelect.innerHTML = '<option value="">Nessun settore disponibile</option>';
+                }
+            } catch (error) {
+                console.error('Errore caricamento settori:', error);
+                const settoreSelect = document.getElementById('casemanagerSettore');
+                settoreSelect.innerHTML = '<option value="">Errore caricamento</option>';
+            }
+
+            // Popola il form con i dati
+            document.getElementById('casemanagerId').value = casemanager.id_registrazione;
+            document.getElementById('casemanagerNome').value = casemanager.nome_registrazione;
+            document.getElementById('casemanagerCognome').value = casemanager.cognome_registrazione;
+            document.getElementById('casemanagerUsername').value = casemanager.username_registrazione;
+            document.getElementById('casemanagerSede').value = casemanager.id_sede || '';
+            document.getElementById('casemanagerSettore').value = casemanager.id_settore || '';
+            document.getElementById('casemanagerStato').value = casemanager.stato_account || 'attivo';
+
+            // Apri la modale
+            window.casemanagerModal = new bootstrap.Modal(document.getElementById('casemanagerModal'));
+            window.casemanagerModal.show();
+        }
+
+        async function saveCaseManager() {
+            const id = document.getElementById('casemanagerId').value;
+            const nome = document.getElementById('casemanagerNome').value;
+            const cognome = document.getElementById('casemanagerCognome').value;
+            const username = document.getElementById('casemanagerUsername').value;
+            const idSede = document.getElementById('casemanagerSede').value;
+            const settore = document.getElementById('casemanagerSettore').value;
+
+            if (!nome || !cognome || !username) {
+                showAlert('Compilare i campi obbligatori', 'warning');
+                return;
+            }
+
+            try {
+                let payload;
+                let successMessage;
+
+                if (id) {
+                    // UPDATE: Modifica casemanager esistente
+                    payload = {
+                        action: 'update',
+                        id: id,
+                        nome: nome,
+                        cognome: cognome,
+                        username: username,
+                        password: 'nochange',
+                        ruolo: 'casemanager',
+                        id_sede: idSede ? parseInt(idSede) : null,
+                        settore: settore || null
+                    };
+                    successMessage = 'CaseManager aggiornato con successo';
+                } else {
+                    // CREATE: Nuovo casemanager
+                    payload = {
+                        action: 'create',
+                        nome: nome,
+                        cognome: cognome,
+                        username: username,
+                        password: nome + '123456',
+                        ruolo: 'casemanager',
+                        id_sede: idSede ? parseInt(idSede) : null,
+                        settore: settore || null
+                    };
+                    successMessage = 'CaseManager creato con successo';
+                }
+
+                const response = await fetch('../api/auth_registrazioni.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                console.log('Risposta API:', result);
+
+                if (result.success) {
+                    showAlert(successMessage, 'success');
+                    // Chiudi la modale
+                    if (window.casemanagerModal) {
+                        window.casemanagerModal.hide();
+                    }
+                    // Attendi un momento prima di ricaricare
+                    setTimeout(() => {
+                        loadCaseManager();
+                    }, 500);
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                    console.error('Errore API:', result);
+                }
+            } catch (error) {
+                showAlert('Errore di connessione: ' + error.message, 'danger');
+                console.error('Errore catch:', error);
+            }
+        }
+
+        async function deleteCaseManager(id) {
+            if (confirm('Sei sicuro di voler eliminare questo casemanager?')) {
+                try {
+                    const response = await fetch('../api/auth_registrazioni.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'delete',
+                            id_registrazione: id
+                        })
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showAlert('CaseManager eliminato con successo', 'success');
+                        loadCaseManager();
+                    } else {
+                        showAlert('Errore: ' + result.message, 'danger');
+                    }
+                } catch (error) {
+                    showAlert('Errore di connessione', 'danger');
+                    console.error(error);
+                }
+            }
+        }
+
+        async function loadAmministratori() {
+            try {
+                const response = await fetch('../api/auth_registrazioni.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_all' })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    // Filtra solo gli amministratori
+                    const amministratori = result.registrazioni.filter(user => user.ruolo_registrazione === 'amministratore');
+                    amministratoriCache = amministratori;  // Salva in cache
+                    updateAmministratoriTable(amministratori);
+                } else {
+                    showAlert('Errore nel caricamento amministratori: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione', 'danger');
+            }
+        }
+
+        function updateAmministratoriTable(amministratori) {
+            const tbody = document.getElementById('amministratori-table-body');
+
+            // Aggiorna le frecce nei titoli colonna
+            document.getElementById('arrow-nome').textContent = amministratoriSortState.column === 'nome'
+                ? (amministratoriSortState.direction === 'asc' ? ' ↑' : ' ↓')
+                : '';
+            document.getElementById('arrow-cognome').textContent = amministratoriSortState.column === 'cognome'
+                ? (amministratoriSortState.direction === 'asc' ? ' ↑' : ' ↓')
+                : '';
+
+            if (amministratori.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">Nessun amministratore trovato</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = amministratori.map(admin => `
+                <tr>
+                    <td>${admin.id_registrazione}</td>
+                    <td>${admin.nome_registrazione}</td>
+                    <td>${admin.cognome_registrazione}</td>
+                    <td>${admin.username_registrazione}</td>
+                    <td>${formatDateFromDB(admin.data_registrazione)}</td>
+                    <td>${admin.ultimo_accesso ? formatDateFromDB(admin.ultimo_accesso) : 'Mai'}</td>
+                    <td><span class="badge bg-${admin.stato_account === 'attivo' ? 'success' : 'warning'}">${admin.stato_account || 'attivo'}</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-warning" onclick="editAmministratore(${admin.id_registrazione})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteAmministratore(${admin.id_registrazione}, '${admin.username_registrazione}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function editAmministratore(id) {
+            const admin = usersData.find(u => u.id_registrazione == id && u.ruolo_registrazione === 'amministratore');
+            if (!admin) {
+                showAlert('Amministratore non trovato', 'danger');
+                return;
+            }
+
+            document.querySelector('#amministratoreModal .modal-title').textContent = 'Modifica Amministratore';
+            document.getElementById('amministratoreId').value = admin.id_registrazione;
+            document.getElementById('adminNome').value = admin.nome_registrazione;
+            document.getElementById('adminCognome').value = admin.cognome_registrazione;
+            document.getElementById('adminUsername').value = admin.username_registrazione;
+            document.getElementById('adminPassword').value = admin.password_registrazione;
+
+            // Carica i settori e le sedi, e poi imposta i valori dell'amministratore
+            await loadSettoriForAdmin();
+            await loadSediForAdmin();
+
+            // Imposta il settore e la sede dell'amministratore se disponibili
+            if (admin.id_settore) {
+                document.getElementById('adminSettore').value = admin.id_settore;
+            }
+            if (admin.id_sede) {
+                document.getElementById('adminSede').value = admin.id_sede;
+            }
+
+            new bootstrap.Modal(document.getElementById('amministratoreModal')).show();
+        }
+
+        async function deleteAmministratore(id, username) {
+            if (confirm(`Sei sicuro di voler eliminare l'amministratore ${username}?`)) {
+                try {
+                    const response = await fetch('../api/auth_registrazioni.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'delete', id: id })
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showAlert('Amministratore eliminato con successo', 'success');
+                        loadAmministratori();
+                    } else {
+                        showAlert('Errore: ' + result.message, 'danger');
+                    }
+                } catch (error) {
+                    showAlert('Errore di connessione', 'danger');
+                }
+            }
+        }
+
+        // ===================== NUOVE FUNZIONI SETTORI AVANZATE =====================
+        function editSettore(nome) {
+            document.getElementById('settoreForm').reset();
+            document.getElementById('settoreId').value = nome; // Usa il nome come ID per la modifica
+            document.getElementById('settoreNome').value = nome;
+            document.querySelector('#settoreModal .modal-title').textContent = 'Modifica Settore';
+            new bootstrap.Modal(document.getElementById('settoreModal')).show();
+        }
+
+        async function saveSettore() {
+            const form = document.getElementById('settoreForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const isEdit = document.getElementById('settoreId').value !== '';
+            const nome = document.getElementById('settoreNome').value.trim();
+
+            try {
+                const response = await fetch('../api/api_settori_classi.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'create_settore',
+                        nome: nome,
+                        descrizione: document.getElementById('settoreDescrizione').value.trim()
+                    })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(isEdit ? 'Settore aggiornato con successo' : 'Settore creato con successo', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('settoreModal')).hide();
+                    loadSettoriEClassi();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione', 'danger');
+            }
+        }
+
+        // ===================== NUOVE FUNZIONI CLASSI AVANZATE =====================
+        async function editClasse(nome) {
+            document.getElementById('classeForm').reset();
+            document.getElementById('classeId').value = nome; // Usa il nome come ID per la modifica
+            document.getElementById('classeNome').value = nome;
+            document.querySelector('#classeModal .modal-title').textContent = 'Modifica Classe';
+
+            // Carica i settori disponibili
+            await loadSettoriForClasse();
+
+            new bootstrap.Modal(document.getElementById('classeModal')).show();
+        }
+
+        async function loadSettoriForClasse() {
+            try {
+                const response = await fetch('../api/api_settori_classi.php?action=get_settori');
+                const result = await response.json();
+
+                const settoreSelect = document.getElementById('classeSettore');
+                settoreSelect.innerHTML = '<option value="">Seleziona settore...</option>';
+
+                if (result.success && result.data) {
+                    result.data.forEach(settore => {
+                        const option = document.createElement('option');
+                        option.value = settore.id_settore; // Usa l'ID invece del nome
+                        option.textContent = settore.nome;
+                        settoreSelect.appendChild(option);
+                    });
+                }
+
+                // Se non ci sono settori, informa l'utente
+                if (!result.data || result.data.length === 0) {
+                    settoreSelect.innerHTML = '<option value="">Prima crea almeno un settore</option>';
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento settori:', error);
+            }
+        }
+
+        async function saveClasse() {
+            const form = document.getElementById('classeForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const isEdit = document.getElementById('classeId').value !== '';
+            const nome = document.getElementById('classeNome').value.trim();
+            const settore = document.getElementById('classeSettore').value;
+
+            if (!settore) {
+                showAlert('Seleziona un settore per la classe', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('../api/api_settori_classi.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'create_classe',
+                        nome: nome,
+                        descrizione: document.getElementById('classeDescrizione').value.trim(),
+                        id_settore: settore // Invia l'ID del settore
+                    })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(isEdit ? 'Classe aggiornata con successo' : 'Classe creata con successo', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('classeModal')).hide();
+                    loadSettoriEClassi();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione', 'danger');
+            }
+        }
+
+        // Sovrascrive la funzione showCreateSettore esistente con modal
+        function showCreateSettore() {
+            document.getElementById('settoreForm').reset();
+            document.getElementById('settoreId').value = '';
+            document.querySelector('#settoreModal .modal-title').textContent = 'Nuovo Settore';
+            new bootstrap.Modal(document.getElementById('settoreModal')).show();
+        }
+
+        // Sovrascrive la funzione showCreateClasse esistente con modal
+        async function showCreateClasse() {
+            document.getElementById('classeForm').reset();
+            document.getElementById('classeId').value = '';
+            document.querySelector('#classeModal .modal-title').textContent = 'Nuova Classe';
+
+            // Carica i settori disponibili
+            await loadSettoriForClasse();
+
+            new bootstrap.Modal(document.getElementById('classeModal')).show();
+        }
+
+        // ===================== GESTIONE CATEGORIE ESERCIZI =====================
+        async function loadCategorie() {
+            try {
+                const response = await fetch('../api/api_categorie_esercizi.php?action=get_categorie');
+                const result = await response.json();
+
+                const tbody = document.getElementById('categorie-table-body');
+
+                if (result.success && result.data) {
+                    tbody.innerHTML = result.data.map(categoria => `
+                        <tr>
+                            <td>${categoria.id_categoria}</td>
+                            <td><strong>${categoria.nome_categoria}</strong></td>
+                            <td>${categoria.descrizione_categoria}</td>
+                            <td>${categoria.note_categoria || '<em class="text-muted">Nessuna nota</em>'}</td>
+                            <td>
+                                ${categoria.link ? `
+                                    <a href="${normalizeLink(categoria.link)}" target="_blank" class="btn btn-sm btn-outline-info" title="Apri categoria">
+                                        <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>
+                                ` : '<em class="text-muted">Non disponibile</em>'}
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editCategoria(${categoria.id_categoria})" title="Modifica">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCategoria(${categoria.id_categoria}, '${categoria.nome_categoria}')" title="Elimina">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">
+                                <i class="bi bi-bookmark-x"></i> Nessuna categoria trovata
+                            </td>
+                        </tr>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('categorie-table-body').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-danger">
+                            <i class="bi bi-exclamation-triangle"></i> Errore di connessione
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function showCreateCategoria() {
+            document.getElementById('categoriaForm').reset();
+            document.getElementById('categoriaId').value = '';
+            document.querySelector('#categoriaModal .modal-title').textContent = 'Nuova Categoria Esercizio';
+            new bootstrap.Modal(document.getElementById('categoriaModal')).show();
+        }
+
+        async function editCategoria(id) {
+            try {
+                const response = await fetch(`../api/api_categorie_esercizi.php?action=get_categoria&id=${id}`);
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const categoria = result.data;
+                    document.getElementById('categoriaId').value = categoria.id_categoria;
+                    document.getElementById('nomeCategoria').value = categoria.nome_categoria;
+                    document.getElementById('descrizioneCategoria').value = categoria.descrizione_categoria;
+                    document.getElementById('noteCategoria').value = categoria.note_categoria || '';
+                    document.querySelector('#categoriaModal .modal-title').textContent = 'Modifica Categoria Esercizio';
+                    new bootstrap.Modal(document.getElementById('categoriaModal')).show();
+                } else {
+                    showAlert('Errore nel caricamento della categoria', 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione', 'danger');
+            }
+        }
+
+        async function saveCategoria() {
+            const form = document.getElementById('categoriaForm');
+            const formData = new FormData(form);
+
+            const categoriaData = {
+                action: document.getElementById('categoriaId').value ? 'update_categoria' : 'create_categoria',
+                id_categoria: document.getElementById('categoriaId').value,
+                nome_categoria: formData.get('nome_categoria'),
+                descrizione_categoria: formData.get('descrizione_categoria'),
+                note_categoria: formData.get('note_categoria')
+            };
+
+            try {
+                const response = await fetch('../api/api_categorie_esercizi.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(categoriaData)
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    const isEdit = !!document.getElementById('categoriaId').value;
+                    showAlert(isEdit ? 'Categoria aggiornata con successo' : 'Categoria creata con successo', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('categoriaModal')).hide();
+                    loadCategorie();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione', 'danger');
+            }
+        }
+
+        async function deleteCategoria(id, nome) {
+            if (!confirm(`Sei sicuro di voler eliminare la categoria "${nome}"?\n\nQuesta azione non può essere annullata.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('../api/api_categorie_esercizi.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'delete_categoria',
+                        id_categoria: id
+                    })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Categoria eliminata con successo', 'success');
+                    loadCategorie();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione', 'danger');
+            }
+        }
+
+        // ===================== GESTIONE ESERCIZI =====================
+        async function loadEsercizi() {
+            try {
+                // Carica prima le categorie per il filtro se non sono già caricate
+                const filtroCategoria = document.getElementById('filtroCategoria');
+                if (!filtroCategoria || filtroCategoria.children.length <= 1) {
+                    await loadCategorieForFilter();
+                }
+
+                // Ottieni filtri selezionati
+                const filtroCategoriaSel = document.getElementById('filtroCategoria')?.value || '';
+                const filtroStato = document.getElementById('filtroStato')?.value || '';
+                console.log('Filtri selezionati - Categoria:', filtroCategoriaSel, 'Stato:', filtroStato);
+
+                let url = '../api/api_esercizi.php?action=get_esercizi';
+                const params = [];
+                if (filtroCategoriaSel) params.push(`id_categoria=${filtroCategoriaSel}`);
+                if (filtroStato) params.push(`stato=${filtroStato}`);
+                if (params.length > 0) url += '&' + params.join('&');
+                console.log('URL API esercizi:', url);
+
+                const response = await fetch(url);
+                const result = await response.json();
+                console.log('Risposta API esercizi:', result);
+
+                const tbody = document.getElementById('esercizi-table-body');
+
+                if (result.success && result.data) {
+                    tbody.innerHTML = result.data.map(esercizio => `
+                        <tr>
+                            <td>${esercizio.id_esercizio}</td>
+                            <td><strong>${esercizio.nome_esercizio}</strong></td>
+                            <td><span class="badge bg-primary">${esercizio.nome_categoria || 'N/A'}</span></td>
+                            <td>${esercizio.descrizione_esercizio.substring(0, 100)}${esercizio.descrizione_esercizio.length > 100 ? '...' : ''}</td>
+                            <td><span class="badge bg-${getStatoBadgeColor(esercizio.stato_esercizio)}">${esercizio.stato_esercizio}</span></td>
+                            <td>${esercizio.data_creazione || '<em class="text-muted">N/A</em>'}</td>
+                            <td>
+                                ${esercizio.link ? `
+                                    <a href="${normalizeLink(esercizio.link)}" target="_blank" class="btn btn-sm btn-outline-success" title="Apri esercizio">
+                                        <i class="bi bi-play-circle"></i>
+                                    </a>
+                                ` : '<em class="text-muted">Non disponibile</em>'}
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editEsercizio(${esercizio.id_esercizio})" title="Modifica">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteEsercizio(${esercizio.id_esercizio}, '${esercizio.nome_esercizio}')" title="Elimina">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">
+                                <i class="bi bi-puzzle"></i> Nessun esercizio trovato
+                            </td>
+                        </tr>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('esercizi-table-body').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-danger">
+                            <i class="bi bi-exclamation-triangle"></i> Errore di connessione
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        async function loadCategorieForFilter() {
+            try {
+                console.log('Caricamento categorie per filtro...');
+                const response = await fetch('../api/api_categorie_esercizi.php?action=get_categorie');
+                const result = await response.json();
+                console.log('Risposta API categorie:', result);
+
+                const filtroCategoria = document.getElementById('filtroCategoria');
+                const categoriaEsercizio = document.getElementById('categoriaEsercizio');
+
+                if (result.success && result.data) {
+                    const options = result.data.map(cat =>
+                        `<option value="${cat.id_categoria}">${cat.nome_categoria}</option>`
+                    ).join('');
+
+                    if (filtroCategoria) {
+                        filtroCategoria.innerHTML = '<option value="">Tutte le categorie</option>' + options;
+                        console.log('Categorie caricate nel filtro:', result.data.length);
+                    }
+                    if (categoriaEsercizio) {
+                        categoriaEsercizio.innerHTML = '<option value="">Seleziona categoria...</option>' + options;
+                    }
+                } else {
+                    console.error('Errore nel risultato categorie:', result);
+                }
+            } catch (error) {
+                console.error('Errore caricamento categorie:', error);
+            }
+        }
+
+        function getStatoBadgeColor(stato) {
+            switch(stato) {
+                case 'attivo': return 'success';
+                case 'sospeso': return 'warning';
+                case 'archiviato': return 'secondary';
+                default: return 'secondary';
+            }
+        }
+
+        // Funzione per resettare i filtri degli esercizi
+        function resetFiltriEsercizi() {
+            const filtroCategoria = document.getElementById('filtroCategoria');
+            const filtroStato = document.getElementById('filtroStato');
+
+            if (filtroCategoria) filtroCategoria.value = '';
+            if (filtroStato) filtroStato.value = '';
+
+            loadEsercizi();
+        }
+
+        async function showCreateEsercizio() {
+            document.getElementById('esercizioForm').reset();
+            document.getElementById('esercizioId').value = '';
+            document.querySelector('#esercizioModal .modal-title').textContent = 'Nuovo Esercizio';
+
+            // Carica categorie nel dropdown
+            await loadCategorieForFilter();
+
+            new bootstrap.Modal(document.getElementById('esercizioModal')).show();
+        }
+
+        async function editEsercizio(id) {
+            try {
+                const response = await fetch(`../api/api_esercizi.php?action=get_esercizio&id=${id}`);
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const esercizio = result.data;
+
+                    // Carica categorie prima di popolare il form
+                    await loadCategorieForFilter();
+
+                    document.getElementById('esercizioId').value = esercizio.id_esercizio;
+                    document.getElementById('nomeEsercizio').value = esercizio.nome_esercizio;
+                    document.getElementById('categoriaEsercizio').value = esercizio.id_categoria;
+                    document.getElementById('descrizioneEsercizio').value = esercizio.descrizione_esercizio;
+                    document.getElementById('statoEsercizio').value = esercizio.stato_esercizio;
+
+                    document.querySelector('#esercizioModal .modal-title').textContent = 'Modifica Esercizio';
+                    new bootstrap.Modal(document.getElementById('esercizioModal')).show();
+                } else {
+                    showAlert('Errore nel caricamento dell\'esercizio', 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione', 'danger');
+            }
+        }
+
+        async function saveEsercizio() {
+            const form = document.getElementById('esercizioForm');
+            const formData = new FormData(form);
+
+            const esercizioData = {
+                action: document.getElementById('esercizioId').value ? 'update_esercizio' : 'create_esercizio',
+                id_esercizio: document.getElementById('esercizioId').value,
+                nome_esercizio: formData.get('nome_esercizio'),
+                id_categoria: formData.get('id_categoria'),
+                descrizione_esercizio: formData.get('descrizione_esercizio'),
+                stato_esercizio: formData.get('stato_esercizio')
+            };
+
+            try {
+                const response = await fetch('../api/api_esercizi.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(esercizioData)
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    const isEdit = !!document.getElementById('esercizioId').value;
+                    showAlert(isEdit ? 'Esercizio aggiornato con successo' : 'Esercizio creato con successo', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('esercizioModal')).hide();
+                    loadEsercizi();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione', 'danger');
+            }
+        }
+
+        async function deleteEsercizio(id, nome) {
+            if (!confirm(`Sei sicuro di voler eliminare l'esercizio "${nome}"?\n\nQuesta azione non può essere annullata.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('../api/api_esercizi.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'delete_esercizio',
+                        id_esercizio: id
+                    })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Esercizio eliminato con successo', 'success');
+                    loadEsercizi();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione', 'danger');
+            }
+        }
+
+        // ===================== INIZIALIZZAZIONE PAGINA =====================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carica immediatamente le categorie per popolare il dropdown filtro
+            loadCategorieForFilter().then(() => {
+                // Dopo aver caricato le categorie, carica anche gli esercizi se la sezione è visibile
+                const esercizioSection = document.getElementById('esercizi-section');
+                if (esercizioSection && !esercizioSection.classList.contains('d-none')) {
+                    loadEsercizi();
+                }
+            });
+        });
     </script>
 </body>
 </html>

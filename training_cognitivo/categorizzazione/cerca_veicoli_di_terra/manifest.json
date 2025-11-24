@@ -1,0 +1,32 @@
+{
+    "name": "Cerca veicoli di terra - Categorizzazione",
+    "short_name": "Cerca veicoli di terra",
+    "description": "Esercizio di training cognitivo - Categorizzazione",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#FFFFFF",
+    "theme_color": "#673AB7",
+    "orientation": "any",
+    "scope": "./",
+    "icons": [
+        {
+            "src": "icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "education",
+        "health",
+        "accessibility"
+    ],
+    "lang": "it",
+    "dir": "ltr"
+}

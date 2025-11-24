@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor Eye Tracking</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-width: 1050px;
+        }
+        .video-monitor {
+            width: 100%;
+            background: #000;
+            border-radius: 10px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        #videoMonitor {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            transform: scaleX(-1);
+        }
+        #canvasMonitor {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: scaleX(-1);
+            pointer-events: none;
+        }
+        
+        /* Overlay Calibrazione */
+        .calibration-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        /* Mirino centrale */
+        .center-crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+        }
+        .crosshair-h {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        .crosshair-v {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        
+        /* Pulsanti Controllo */
+        .control-buttons {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            pointer-events: all;
+            z-index: 20;
+        }
+        
+        .btn-calibrate,
+        .btn-control {
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .btn-calibrate {
+            background: linear-gradient(135deg, #00ff00, #00cc00);
+            box-shadow: 0 4px 15px rgba(0, 255, 0, 0.4);
+        }
+        .btn-calibrate:hover {
+            background: linear-gradient(135deg, #00cc00, #009900);
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 255, 0, 0.6);
+        }
+        .btn-calibrate.calibrated {
+            background: linear-gradient(135deg, #4fc3f7, #0288d1);
+            box-shadow: 0 4px 15px rgba(79, 195, 247, 0.4);
+        }
+        
+        .btn-repeat {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+        }
+        .btn-repeat:hover {
+            background: linear-gradient(135deg, #f57c00, #e65100);
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.6);
+        }
+        
+        .btn-next {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+        .btn-next:hover {
+            background: linear-gradient(135deg, #388e3c, #2e7d32);
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
+        }
+        .btn-next:disabled {
+            background: linear-gradient(135deg, #9e9e9e, #757575);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        
+        /* Barra Simmetria */
+        .symmetry-bar-container {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 400px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            z-index: 15;
+        }
+        .symmetry-label {
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #4fc3f7;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+        .symmetry-bar {
+            position: relative;
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(to right, 
+                #f44336 0%, 
+                #ff9800 25%, 
+                #66bb6a 45%, 
+                #4caf50 50%, 
+                #66bb6a 55%, 
+                #ff9800 75%, 
+                #f44336 100%);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .symmetry-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 0%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: width 0.2s ease;
+        }
+        .symmetry-marker {
+            position: absolute;
+            left: 50%;
+            top: -5px;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 40px;
+            background: white;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            border-radius: 2px;
+        }
+        .symmetry-status {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        .symmetry-status.perfect {
+            color: #4caf50;
+            animation: pulse-text 0.6s ease-in-out infinite;
+        }
+        @keyframes pulse-text {
+            0%, 100% { 
+                transform: scale(1); 
+                text-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+            }
+            50% { 
+                transform: scale(1.1); 
+                text-shadow: 0 0 15px rgba(76, 175, 80, 1);
+            }
+        }
+        .info-card {
+            background: #2a2a2a;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .badge {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+        }
+        #debugInfo {
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+        .debug-highlight {
+            color: #4fc3f7;
+            font-weight: bold;
+        }
+        .debug-warning {
+            color: #ffa726;
+            font-weight: bold;
+        }
+        .debug-success {
+            color: #66bb6a;
+            font-weight: bold;
+        }
+        h5 {
+            color: #4fc3f7;
+            margin-bottom: 15px;
+        }
+        
+        /* Elenco Domande */
+        .domande-list {
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .domanda-item {
+            background: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+        .domanda-content {
+            flex: 1;
+            cursor: pointer;
+        }
+        .domanda-item:hover {
+            background: #3a3a3a;
+            border-color: #0d6efd;
+            transform: translateX(5px);
+        }
+        .domanda-item.active {
+            background: #1e3a5f;
+            border-color: #0d6efd;
+            box-shadow: 0 0 15px rgba(13, 110, 253, 0.5);
+        }
+        .domanda-numero {
+            display: inline-block;
+            background: #0d6efd;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 0.85rem;
+        }
+        .domanda-testo {
+            color: #fff;
+            font-size: 0.95rem;
+            margin-top: 5px;
+        }
+        .domanda-opzioni {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+        .domanda-opzione {
+            background: #1a1a1a;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid #555;
+        }
+        .btn-ripeti-domanda {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            box-shadow: 0 3px 10px rgba(255, 152, 0, 0.3);
+        }
+        .btn-ripeti-domanda:hover {
+            background: linear-gradient(135deg, #f57c00, #e65100);
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.5);
+        }
+        .btn-ripeti-domanda:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <h3 class="text-center mb-4">
+        <i class="bi bi-camera-video"></i> Monitor Eye Tracking
+    </h3>
+
+    <!-- Video Webcam con Overlay Canvas -->
+    <div class="video-monitor">
+        <video id="videoMonitor" autoplay playsinline></video>
+        <canvas id="canvasMonitor"></canvas>
+        
+        <!-- Overlay Calibrazione -->
+        <div id="calibrationOverlay" class="calibration-overlay">
+            <!-- Punto centrale di riferimento -->
+            <div class="center-crosshair">
+                <div class="crosshair-h"></div>
+                <div class="crosshair-v"></div>
+            </div>
+            
+            <!-- Barra Simmetria -->
+            <div class="symmetry-bar-container">
+                <div class="symmetry-label">SIMMETRIA</div>
+                <div class="symmetry-bar">
+                    <div class="symmetry-fill" id="symmetryFill"></div>
+                    <div class="symmetry-marker"></div>
+                </div>
+                <div class="symmetry-status" id="symmetryStatus">Posizionati al centro</div>
+            </div>
+        </div>
+        
+        <!-- Pulsanti Controllo -->
+        <div class="control-buttons">
+            <button id="btnCalibra" class="btn-calibrate">
+                <i class="bi bi-bullseye"></i> CALIBRA
+            </button>
+            <button id="btnRipeti" class="btn-control btn-repeat">
+                <i class="bi bi-arrow-clockwise"></i> RIPETI
+            </button>
+        </div>
+    </div>
+
+    <!-- Indicatori Stato -->
+    <div class="info-card">
+        <h5><i class="bi bi-info-circle"></i> Stato Rilevamento</h5>
+        <div class="mb-2">
+            <span class="badge bg-success me-2" id="badgeFaceMonitor">
+                <i class="bi bi-check-circle"></i> Volto Rilevato
+            </span>
+            <span class="badge bg-info" id="badgeGazeMonitor">
+                <i class="bi bi-eye"></i> Centro
+            </span>
+        </div>
+    </div>
+
+    <!-- Debug Info -->
+    <div class="info-card">
+        <h5><i class="bi bi-bar-chart"></i> Metriche</h5>
+        <div id="debugInfo">
+            FPS: <span id="debugFps">0</span><br>
+            <hr style="border-color: #444; margin: 10px 0;">
+            <strong>📍 Posizione Naso:</strong><br>
+            Naso X: <span id="debugNoseX" class="debug-highlight">0.500</span><br>
+            <hr style="border-color: #444; margin: 10px 0;">
+            <strong>📏 Distanze:</strong><br>
+            Dist. Sinistra: <span id="debugDistSx" class="debug-warning">0.000</span><br>
+            Dist. Destra: <span id="debugDistDx" class="debug-warning">0.000</span><br>
+            Differenza: <span id="debugDiff" class="debug-success">0.000</span><br>
+            <hr style="border-color: #444; margin: 10px 0;">
+            <strong>🎯 Centro Calibrato:</strong><br>
+            <span id="debugCalibrato" class="debug-highlight">NON CALIBRATO</span><br>
+            <hr style="border-color: #444; margin: 10px 0;">
+            Direzione: <span id="debugDirection">---</span><br>
+            Confidenza: <span id="debugConfidence">0</span>%
+        </div>
+    </div>
+
+    <!-- Elenco Domande -->
+    <div class="info-card">
+        <h5><i class="bi bi-list-check"></i> Seleziona Domanda</h5>
+        <div class="domande-list" id="domandeList">
+            <div class="text-center text-muted py-3">
+                <i class="bi bi-hourglass-split"></i> Caricamento domande...
+            </div>
+        </div>
+    </div>
+
+    <!-- Istruzioni -->
+    <div class="info-card">
+        <h5><i class="bi bi-lightbulb"></i> Istruzioni Educatore</h5>
+        <ul class="list-unstyled mb-0" style="font-size: 0.9rem;">
+                <li class="mb-2"><i class="bi bi-list-check text-info"></i> <strong>SELEZIONA:</strong> Clicca una domanda dall'elenco per mostrarla</li>
+                <li class="mb-2"><i class="bi bi-bullseye text-success"></i> <strong>CALIBRA:</strong> Centra il naso sul mirino verde</li>
+                <li class="mb-2"><i class="bi bi-arrow-clockwise text-warning"></i> <strong>RIPETI:</strong> Ripete la domanda e resetta la risposta (usa questo se l'utente cambia idea)</li>
+        </ul>
+            <hr style="border-color: #444; margin: 15px 0;">
+            <div style="font-size: 0.85rem; color: #aaa;">
+                <strong>Nota:</strong> L'utente può dare UNA SOLA risposta per domanda. Se cambia idea, usa <strong>RIPETI</strong> per resettare e consentire una nuova risposta.
+            </div>
+    </div>
+
+    <script>
+        let videoStream = null;
+        let calibratoX = parseFloat(localStorage.getItem('eyeTracking_calibratoX')) || null;
+        let canvasCtx = null;
+        
+        // Audio Context per beep
+        let audioContext = null;
+        let lastBeepTime = 0;
+        let isInCenterZone = false;
+        
+        // Inizializza audio
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+        
+        // Suona beep quando centrato
+        function playBeep() {
+            if (!audioContext) initAudio();
+            
+            const now = Date.now();
+            // Beep ogni 500ms per non essere troppo fastidioso
+            if (now - lastBeepTime < 500) return;
+            lastBeepTime = now;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800; // Frequenza Hz (suono piacevole)
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+        
+        // Mostra stato calibrazione all'avvio
+        updateCalibrazioneUI();
+        
+        // Ricevi video stream e dati dal parent
+        window.addEventListener('message', async (event) => {
+            if (event.data.type === 'VIDEO_STREAM') {
+                // Prova ad accedere alla webcam anche nel monitor (per visualizzazione)
+                try {
+                    videoStream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { 
+                            width: { ideal: 640 },
+                            height: { ideal: 480 }
+                        } 
+                    });
+                    
+                    const videoElement = document.getElementById('videoMonitor');
+                    const canvasElement = document.getElementById('canvasMonitor');
+                    canvasCtx = canvasElement.getContext('2d');
+                    
+                    videoElement.srcObject = videoStream;
+                    videoElement.style.display = 'block';
+                    
+                    // Imposta dimensioni canvas
+                    videoElement.onloadedmetadata = () => {
+                        canvasElement.width = videoElement.videoWidth;
+                        canvasElement.height = videoElement.videoHeight;
+                    };
+                    
+                    console.log('✅ Video stream attivo nel monitor');
+                } catch (error) {
+                    console.warn('⚠️ Impossibile accedere alla webcam nel monitor:', error.message);
+                    console.log('💡 Suggerimento: Chiudi altre app/tab che usano la webcam');
+                    
+                    // Fallback: mostra solo canvas
+                    const videoElement = document.getElementById('videoMonitor');
+                    const canvasElement = document.getElementById('canvasMonitor');
+                    canvasCtx = canvasElement.getContext('2d');
+                    
+                    videoElement.style.display = 'none';
+                    canvasElement.width = 640;
+                    canvasElement.height = 480;
+                    
+                    console.log('📊 Mostrerò solo i landmarks senza video');
+                }
+            } else if (event.data.type === 'GAZE_UPDATE') {
+                updateDebugInfo(event.data.data);
+                drawLandmarks(event.data.data);
+            } else if (event.data.type === 'FACE_DETECTION') {
+                updateFaceDetection(event.data.detected);
+            } else if (event.data.type === 'LANDMARKS') {
+                drawLandmarks(event.data.data);
+            }
+        });
+
+        function updateDebugInfo(data) {
+            document.getElementById('debugFps').textContent = data.fps || 0;
+            
+            // Debug info dettagliato
+            if (data.debug) {
+                const diff = data.debug.differenza;
+                
+                document.getElementById('debugNoseX').textContent = data.debug.noseX.toFixed(3);
+                document.getElementById('debugDistSx').textContent = data.debug.distanzaSinistra.toFixed(3);
+                document.getElementById('debugDistDx').textContent = data.debug.distanzaDestra.toFixed(3);
+                document.getElementById('debugDiff').textContent = diff.toFixed(3);
+                
+                // Aggiorna barra di simmetria
+                updateSymmetryBar(diff);
+                
+                // Colora in base alla simmetria (verde se vicino al centro)
+                if (diff < 0.05) {
+                    document.getElementById('debugDiff').className = 'debug-success';
+                    
+                    // Beep quando perfettamente centrato
+                    if (diff < 0.03) {
+                        if (!isInCenterZone) {
+                            isInCenterZone = true;
+                            playBeep();
+                        }
+                    }
+                } else {
+                    isInCenterZone = false;
+                    
+                    if (diff < 0.15) {
+                        document.getElementById('debugDiff').className = 'debug-warning';
+                    } else {
+                        document.getElementById('debugDiff').className = '';
+                    }
+                }
+            }
+            
+            document.getElementById('debugDirection').textContent = data.direction.toUpperCase();
+            
+            // Calcola confidenza
+            const confidence = data.confidence ? (data.confidence * 100).toFixed(0) : 0;
+            document.getElementById('debugConfidence').textContent = confidence;
+            
+            // Aggiorna badge direzione
+            const badge = document.getElementById('badgeGazeMonitor');
+            let badgeClass = 'badge bg-info';
+            let badgeText = 'Centro';
+            
+            if (data.direction === 'left') {
+                badgeClass = 'badge bg-primary';
+                badgeText = '← Sinistra';
+            } else if (data.direction === 'right') {
+                badgeClass = 'badge bg-success';
+                badgeText = 'Destra →';
+            }
+            
+            badge.className = badgeClass;
+            badge.innerHTML = `<i class="bi bi-eye"></i> ${badgeText}`;
+        }
+
+        function updateFaceDetection(detected) {
+            const badge = document.getElementById('badgeFaceMonitor');
+            if (detected) {
+                badge.className = 'badge bg-success me-2';
+                badge.innerHTML = '<i class="bi bi-check-circle"></i> Volto Rilevato';
+            } else {
+                badge.className = 'badge bg-danger me-2';
+                badge.innerHTML = '<i class="bi bi-x-circle"></i> Volto Non Rilevato';
+            }
+        }
+        
+        // Aggiorna barra di simmetria
+        function updateSymmetryBar(differenza) {
+            const fill = document.getElementById('symmetryFill');
+            const status = document.getElementById('symmetryStatus');
+            
+            // Converti differenza (0-0.5) in percentuale (0-100)
+            // 0 = perfetto centro, 0.5 = massimo sbilanciamento
+            const percentage = Math.min(differenza / 0.3 * 100, 100); // 0.3 = max utile
+            
+            fill.style.width = percentage + '%';
+            
+            // Aggiorna status
+            if (differenza < 0.03) {
+                status.textContent = '✅ PERFETTAMENTE CENTRATO!';
+                status.className = 'symmetry-status perfect';
+            } else if (differenza < 0.05) {
+                status.textContent = '✓ Ben centrato';
+                status.className = 'symmetry-status';
+                status.style.color = '#66bb6a';
+            } else if (differenza < 0.10) {
+                status.textContent = '⚠ Quasi centrato';
+                status.className = 'symmetry-status';
+                status.style.color = '#ff9800';
+            } else if (differenza < 0.15) {
+                status.textContent = '⚠ Spostati verso il centro';
+                status.className = 'symmetry-status';
+                status.style.color = '#ff9800';
+            } else {
+                status.textContent = '❌ Troppo sbilanciato';
+                status.className = 'symmetry-status';
+                status.style.color = '#f44336';
+            }
+        }
+        
+        // Disegna landmark sul canvas
+        function drawLandmarks(data) {
+            if (!canvasCtx || !data.landmarks) return;
+            
+            const canvas = document.getElementById('canvasMonitor');
+            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dimensioni canvas
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            // Disegna punti chiave
+            const landmarks = data.landmarks;
+            
+            // Naso (landmark 1) - GRANDE e VERDE
+            if (landmarks.nose) {
+                const x = landmarks.nose.x * w;
+                const y = landmarks.nose.y * h;
+                
+                canvasCtx.beginPath();
+                canvasCtx.arc(x, y, 8, 0, 2 * Math.PI);
+                canvasCtx.fillStyle = '#00ff00';
+                canvasCtx.fill();
+                canvasCtx.strokeStyle = '#ffffff';
+                canvasCtx.lineWidth = 2;
+                canvasCtx.stroke();
+                
+                // Linea verticale dal naso
+                canvasCtx.beginPath();
+                canvasCtx.moveTo(x, 0);
+                canvasCtx.lineTo(x, h);
+                canvasCtx.strokeStyle = 'rgba(0, 255, 0, 0.5)';
+                canvasCtx.lineWidth = 1;
+                canvasCtx.setLineDash([5, 5]);
+                canvasCtx.stroke();
+                canvasCtx.setLineDash([]);
+            }
+            
+            // Occhi (landmarks 33, 263) - CIANO
+            if (landmarks.leftEye) {
+                const x = landmarks.leftEye.x * w;
+                const y = landmarks.leftEye.y * h;
+                canvasCtx.beginPath();
+                canvasCtx.arc(x, y, 5, 0, 2 * Math.PI);
+                canvasCtx.fillStyle = '#00ffff';
+                canvasCtx.fill();
+            }
+            
+            if (landmarks.rightEye) {
+                const x = landmarks.rightEye.x * w;
+                const y = landmarks.rightEye.y * h;
+                canvasCtx.beginPath();
+                canvasCtx.arc(x, y, 5, 0, 2 * Math.PI);
+                canvasCtx.fillStyle = '#00ffff';
+                canvasCtx.fill();
+            }
+        }
+        
+        // Gestione calibrazione
+        document.getElementById('btnCalibra').addEventListener('click', () => {
+            // Inizializza audio al primo click (per policy browser)
+            initAudio();
+            
+            const noseX = parseFloat(document.getElementById('debugNoseX').textContent);
+            const diff = parseFloat(document.getElementById('debugDiff').textContent);
+            
+            if (noseX > 0 && noseX < 1) {
+                // Controlla se è ben centrato
+                if (diff > 0.05) {
+                    const conferma = confirm(
+                        `⚠️ ATTENZIONE!\n\n` +
+                        `La simmetria non è ottimale (${diff.toFixed(3)}).\n\n` +
+                        `Consiglio: Posizionati meglio al centro finché vedi "PERFETTAMENTE CENTRATO".\n\n` +
+                        `Vuoi comunque calibrare con questa posizione?`
+                    );
+                    
+                    if (!conferma) return;
+                }
+                
+                calibratoX = noseX;
+                localStorage.setItem('eyeTracking_calibratoX', calibratoX);
+                
+                // Invia al parent
+                window.opener.postMessage({
+                    type: 'CALIBRATION',
+                    centroCalibrato: calibratoX
+                }, '*');
+                
+                updateCalibrazioneUI();
+                
+                // Beep di conferma
+                playBeep();
+                setTimeout(playBeep, 150);
+                
+                alert(`✅ Calibrazione completata!\n\nCentro registrato: ${calibratoX.toFixed(3)}\nSimmetria: ${diff.toFixed(3)}`);
+            } else {
+                alert('⚠️ Nessun volto rilevato. Posiziona il naso al centro del mirino verde e riprova.');
+            }
+        });
+        
+        function updateCalibrazioneUI() {
+            const btn = document.getElementById('btnCalibra');
+            const debugEl = document.getElementById('debugCalibrato');
+            
+            if (calibratoX !== null) {
+                btn.classList.add('calibrated');
+                btn.innerHTML = '<i class="bi bi-check-circle"></i> RICALIBRA';
+                debugEl.innerHTML = `<span class="debug-success">${calibratoX.toFixed(3)}</span>`;
+            } else {
+                btn.classList.remove('calibrated');
+                btn.innerHTML = '<i class="bi bi-bullseye"></i> CALIBRA';
+                debugEl.innerHTML = '<span class="debug-warning">NON CALIBRATO</span>';
+            }
+        }
+        
+        // Gestione pulsante RIPETI
+        document.getElementById('btnRipeti').addEventListener('click', () => {
+            if (window.opener && !window.opener.closed) {
+                window.opener.postMessage({
+                    type: 'REPEAT_QUESTION'
+                }, '*');
+                console.log('🔄 Richiesta ripetizione domanda inviata');
+            }
+        });
+        
+        // === CARICA ELENCO DOMANDE === //
+        let domandeDisponibili = [];
+        let domandaCorrente = null;
+        
+        async function caricaDomande() {
+            try {
+                const response = await fetch('api/domande.php');
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    domandeDisponibili = data.data.filter(d => d.stato === 'attiva');
+                    renderDomande();
+                } else {
+                    document.getElementById('domandeList').innerHTML = 
+                        '<div class="text-center text-danger py-3"><i class="bi bi-exclamation-triangle"></i> Errore caricamento domande</div>';
+                }
+            } catch (error) {
+                console.error('Errore caricamento domande:', error);
+                document.getElementById('domandeList').innerHTML = 
+                    '<div class="text-center text-danger py-3"><i class="bi bi-exclamation-triangle"></i> Errore di rete</div>';
+            }
+        }
+        
+        function renderDomande() {
+            const container = document.getElementById('domandeList');
+            
+            if (domandeDisponibili.length === 0) {
+                container.innerHTML = 
+                    '<div class="text-center text-muted py-3"><i class="bi bi-inbox"></i> Nessuna domanda disponibile</div>';
+                return;
+            }
+            
+            container.innerHTML = domandeDisponibili.map((domanda, index) => `
+                <div class="domanda-item" data-index="${index}" data-id="${domanda.id_domanda}">
+                    <div class="domanda-content">
+                        <div>
+                            <span class="domanda-numero">#${index + 1}</span>
+                            <span class="domanda-testo">${domanda.testo_domanda}</span>
+                        </div>
+                        <div class="domanda-opzioni">
+                            <span class="domanda-opzione"><i class="bi bi-arrow-left"></i> ${domanda.etichetta_sinistra}</span>
+                            <span class="domanda-opzione"><i class="bi bi-arrow-right"></i> ${domanda.etichetta_destra}</span>
+                        </div>
+                    </div>
+                    <button class="btn-ripeti-domanda" data-index="${index}">
+                        <i class="bi bi-arrow-clockwise"></i> RIPETI
+                    </button>
+                </div>
+            `).join('');
+            
+            // Aggiungi event listeners per selezione domanda
+            container.querySelectorAll('.domanda-content').forEach(content => {
+                content.addEventListener('click', () => {
+                    const index = parseInt(content.parentElement.dataset.index);
+                    selezionaDomanda(index);
+                });
+            });
+            
+            // Aggiungi event listeners per pulsanti RIPETI
+            container.querySelectorAll('.btn-ripeti-domanda').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Previeni selezione domanda
+                    ripetiDomanda();
+                });
+            });
+        }
+        
+        function selezionaDomanda(index) {
+            // Rimuovi classe active da tutte
+            document.querySelectorAll('.domanda-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Aggiungi classe active alla selezionata
+            const selectedItem = document.querySelector(`.domanda-item[data-index="${index}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('active');
+            }
+            
+            domandaCorrente = index;
+            
+            // Invia messaggio al parent per mostrare la domanda
+            if (window.opener && !window.opener.closed) {
+                window.opener.postMessage({
+                    type: 'SELECT_QUESTION',
+                    index: index
+                }, '*');
+                console.log(`📋 Domanda #${index + 1} selezionata`);
+            }
+        }
+        
+        function ripetiDomanda() {
+            if (window.opener && !window.opener.closed) {
+                window.opener.postMessage({
+                    type: 'REPEAT_QUESTION'
+                }, '*');
+                console.log('🔄 Richiesta ripetizione domanda inviata (da elenco)');
+            }
+        }
+        
+        // Carica domande all'avvio
+        caricaDomande();
+    </script>
+</body>
+</html>
+

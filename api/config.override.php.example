@@ -1,0 +1,22 @@
+<?php
+/**
+ * Esempio override configurazione produzione/ambiente
+ * Copia questo file come `config.override.php` e PERSONALIZZA i valori.
+ * Non versionare il file copiato.
+ */
+
+// Credenziali DB (es. Aruba)
+$host = '31.11.39.242';
+$username = 'SqlXXXX';
+$password = '********';
+$database = 'SqlXXXX_1';
+$port = 3306;
+
+// Timezone applicativo (opzionale)
+if (!defined('APP_TZ')) {
+    define('APP_TZ', 'Europe/Rome');
+}
+
+// Puoi aggiungere altre costanti di ambiente se necessario
+
+

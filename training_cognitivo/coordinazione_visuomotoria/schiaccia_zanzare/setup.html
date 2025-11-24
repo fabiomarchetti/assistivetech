@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup - Schiaccia le Zanzare | AssistiveTech</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Configura parametri esercizio: numero zanzare, farfalle, dimensione per ipovisione e velocità movimento.">
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="./manifest.json">
+
+    <!-- iOS PWA Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Schiaccia Zanzare">
+    <link rel="apple-touch-icon" href="./icons/icon-152x152.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="./icons/icon-72x72.png">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .setup-container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .setup-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .setup-header h1 {
+            color: #2c3e50;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .setup-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .form-control, .form-range {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-range:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(46, 204, 113, 0.25);
+        }
+
+        .insect-preview {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            align-items: center;
+        }
+
+        .insect-icon {
+            font-size: 2rem;
+        }
+
+        .value-display {
+            display: inline-block;
+            background: #ecf0f1;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .speed-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, var(--primary-color), #27ae60);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 15px;
+            width: 100%;
+            margin-top: 2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .btn-start:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.6);
+        }
+
+        .btn-back {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            width: 100%;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background: #7f8c8d;
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .info-box strong {
+            color: #856404;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, #e0e0e0, transparent);
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-header">
+            <h1><i class="bi bi-gear-fill"></i> Configurazione Esercizio</h1>
+            <p>Schiaccia le Zanzare - Setup Parametri</p>
+        </div>
+
+        <form id="setupForm">
+            <!-- Numero Zanzare -->
+            <div class="mb-4">
+                <label for="numZanzare" class="form-label">
+                    <i class="bi bi-bug-fill text-danger"></i> Numero Zanzare (da colpire)
+                </label>
+                <input type="number" class="form-control" id="numZanzare"
+                       min="0" max="10" value="5" required>
+                <div class="insect-preview">
+                    <span class="value-display" id="zanzareDisplay">5</span>
+                    <span id="zanzareIcons"></span>
+                </div>
+            </div>
+
+            <!-- Numero Farfalle -->
+            <div class="mb-4">
+                <label for="numFarfalle" class="form-label">
+                    <i class="bi bi-mortarboard-fill" style="color: #9b59b6;"></i> Numero Farfalle (da evitare)
+                </label>
+                <input type="number" class="form-control" id="numFarfalle"
+                       min="0" max="10" value="5" required>
+                <div class="insect-preview">
+                    <span class="value-display" id="farfalleDisplay">5</span>
+                    <span id="farfalleIcons"></span>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Dimensione Insetti (per Ipovisione) -->
+            <div class="mb-4">
+                <label for="dimensione" class="form-label">
+                    <i class="bi bi-eye-fill" style="color: #9b59b6;"></i> Dimensione Insetti (per Ipovisione)
+                </label>
+                <input type="range" class="form-range" id="dimensione"
+                       min="1" max="4" value="2" step="1">
+                <div class="speed-indicator">
+                    <span><i class="bi bi-dash"></i> Piccola</span>
+                    <span><strong id="dimensioneDisplay">Media</strong></span>
+                    <span>Grande <i class="bi bi-plus-lg"></i></span>
+                    <span style="margin-left: auto;">Extra Large <i class="bi bi-plus-circle-fill"></i></span>
+                </div>
+                <div style="text-align: center; margin-top: 1rem; font-size: 3rem;" id="dimensionePreview">
+                    🦟 🦋
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Velocità -->
+            <div class="mb-4">
+                <label for="velocita" class="form-label">
+                    <i class="bi bi-speedometer2"></i> Velocità Movimento
+                </label>
+                <input type="range" class="form-range" id="velocita"
+                       min="1" max="3" value="2" step="1">
+                <div class="speed-indicator">
+                    <span><i class="bi bi-chevron-right"></i> Lenta</span>
+                    <span><strong id="velocitaDisplay">Media</strong></span>
+                    <span>Veloce <i class="bi bi-chevron-double-right"></i></span>
+                </div>
+            </div>
+
+            <!-- Info Box -->
+            <div class="info-box">
+                <strong><i class="bi bi-lightbulb-fill"></i> Suggerimenti:</strong><br>
+                • Per un apprendimento senza errori, imposta <strong>1 zanzara</strong> e <strong>0 farfalle</strong>.<br>
+                • Per utenti con <strong>ipovisione</strong>, aumenta la dimensione a <strong>Grande</strong> o <strong>Extra Large</strong>.
+            </div>
+
+            <!-- Bottone Avvia -->
+            <button type="submit" class="btn btn-start">
+                <i class="bi bi-play-circle-fill"></i> Avvia Esercizio
+            </button>
+
+            <!-- Bottone Gioca Direttamente -->
+            <button type="button" class="btn btn-back" onclick="window.location.href='gioca.html'" style="background: linear-gradient(135deg, #3498db, #2980b9); margin-top: 0.5rem;">
+                <i class="bi bi-controller"></i> Vai al Gioco (Salta Setup)
+            </button>
+
+            <!-- Bottone Indietro -->
+            <button type="button" class="btn btn-back" onclick="window.history.back()">
+                <i class="bi bi-arrow-left-circle"></i> Torna Indietro
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Elementi DOM
+        const numZanzare = document.getElementById('numZanzare');
+        const numFarfalle = document.getElementById('numFarfalle');
+        const dimensione = document.getElementById('dimensione');
+        const velocita = document.getElementById('velocita');
+        const zanzareDisplay = document.getElementById('zanzareDisplay');
+        const farfalleDisplay = document.getElementById('farfalleDisplay');
+        const dimensioneDisplay = document.getElementById('dimensioneDisplay');
+        const dimensionePreview = document.getElementById('dimensionePreview');
+        const velocitaDisplay = document.getElementById('velocitaDisplay');
+        const zanzareIcons = document.getElementById('zanzareIcons');
+        const farfalleIcons = document.getElementById('farfalleIcons');
+
+        // Aggiorna display zanzare
+        numZanzare.addEventListener('input', () => {
+            const value = parseInt(numZanzare.value) || 0;
+            zanzareDisplay.textContent = value;
+            zanzareIcons.innerHTML = '🦟'.repeat(Math.min(value, 10));
+        });
+
+        // Aggiorna display farfalle
+        numFarfalle.addEventListener('input', () => {
+            const value = parseInt(numFarfalle.value) || 0;
+            farfalleDisplay.textContent = value;
+            farfalleIcons.innerHTML = '🦋'.repeat(Math.min(value, 10));
+        });
+
+        // Aggiorna display dimensione
+        dimensione.addEventListener('input', () => {
+            const sizes = ['Piccola', 'Media', 'Grande', 'Extra Large'];
+            const fontSizes = ['2rem', '3rem', '4.5rem', '6rem'];
+            dimensioneDisplay.textContent = sizes[dimensione.value - 1];
+            dimensionePreview.style.fontSize = fontSizes[dimensione.value - 1];
+        });
+
+        // Aggiorna display velocità
+        velocita.addEventListener('input', () => {
+            const speeds = ['Lenta', 'Media', 'Veloce'];
+            velocitaDisplay.textContent = speeds[velocita.value - 1];
+        });
+
+        // Inizializza display
+        zanzareIcons.innerHTML = '🦟'.repeat(5);
+        farfalleIcons.innerHTML = '🦋'.repeat(5);
+
+        // Submit form
+        document.getElementById('setupForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const config = {
+                zanzare: parseInt(numZanzare.value),
+                farfalle: parseInt(numFarfalle.value),
+                dimensione: parseInt(dimensione.value),
+                velocita: parseInt(velocita.value)
+            };
+
+            // Salva configurazione in localStorage
+            localStorage.setItem('schiaccia_zanzare_config', JSON.stringify(config));
+
+            // Redirect all'esercizio
+            window.location.href = 'gioca.html';
+        });
+    </script>
+</body>
+</html>

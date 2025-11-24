@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>trascina immagini - Training Cognitivo</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Esercizi di trascinamento immagini - Training cognitivo">
+    <meta name="theme-color" content="#9C27B0">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .category-header {
+            background: linear-gradient(135deg, #673AB7, #9C27B0);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .exercise-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .exercise-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .exercise-link {
+            text-decoration: none;
+            color: inherit;
+        }
+        .exercise-link:hover {
+            color: inherit;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- Header Categoria -->
+        <div class="category-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-1">
+                        <i class="bi bi-bookmark-star"></i> trascina immagini
+                    </h1>
+                    <p class="mb-0">Esercizi di training cognitivo</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="../../admin/" class="btn btn-warning me-2">
+                        <i class="bi bi-gear-fill"></i> Admin
+                    </a>
+                    <a href="../" class="btn btn-light">
+                        <i class="bi bi-arrow-left"></i> Torna alle Categorie
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenuto Esercizi -->
+        <div id="exercises-container">
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Caricamento esercizi...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const CATEGORY_ID = 14;
+
+        async function loadExercises() {
+            try {
+                const response = await fetch(`../../api/api_esercizi.php?action=get_esercizi&id_categoria=${CATEGORY_ID}`);
+                const result = await response.json();
+
+                const container = document.getElementById('exercises-container');
+
+                if (result.success && result.data && result.data.length > 0) {
+                    container.innerHTML = `
+                        <div class="row">
+                            ${result.data.map(exercise => `
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <a href="${exercise.link || '#'}" class="exercise-link">
+                                        <div class="exercise-card p-4 h-100">
+                                            <div class="text-center mb-3">
+                                                <i class="bi bi-puzzle display-4 text-primary"></i>
+                                            </div>
+                                            <h5 class="card-title text-center mb-3">${exercise.nome_esercizio}</h5>
+                                            <p class="card-text text-muted">${exercise.descrizione_esercizio.substring(0, 100)}${exercise.descrizione_esercizio.length > 100 ? '...' : ''}</p>
+                                            <div class="text-center mt-3">
+                                                <span class="badge bg-${getStatusColor(exercise.stato_esercizio)}">${exercise.stato_esercizio}</span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="bi bi-puzzle display-1 text-muted"></i>
+                            <h3 class="mt-3 text-muted">Nessun esercizio disponibile</h3>
+                            <p class="text-muted">Gli esercizi per questa categoria verranno aggiunti presto.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('exercises-container').innerHTML = `
+                    <div class="alert alert-danger text-center">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Errore nel caricamento degli esercizi
+                    </div>
+                `;
+            }
+        }
+
+        function getStatusColor(status) {
+            switch(status) {
+                case 'attivo': return 'success';
+                case 'sospeso': return 'warning';
+                case 'archiviato': return 'secondary';
+                default: return 'secondary';
+            }
+        }
+
+        // Carica esercizi al caricamento della pagina
+        document.addEventListener('DOMContentLoaded', loadExercises);
+
+        // Registrazione Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('Service Worker registrato:', reg))
+                    .catch(err => console.log('Errore Service Worker:', err));
+            });
+        }
+    </script>
+</body>
+</html>

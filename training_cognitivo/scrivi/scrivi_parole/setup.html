@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup - Scrivi con le Sillabe</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body { background: #f5f7fb; }
+    .setup-card { max-width: 560px; margin: 6vh auto; }
+  </style>
+</head>
+<body>
+  <div class="card shadow setup-card">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Setup Esercizio - Scrivi con le Sillabe</h5>
+    </div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label class="form-label">Educatore</label>
+        <input id="educatorName" type="text" class="form-control" placeholder="Nome educatore" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Paziente/Utente</label>
+        <select id="patientSelect" class="form-select" required>
+          <option value="" selected>Seleziona paziente...</option>
+        </select>
+        <div class="form-text">Solo i pazienti assegnati all'educatore.</div>
+      </div>
+      <div class="d-flex gap-2">
+        <button id="startBtn" class="btn btn-success w-100">
+          <i class="bi bi-play-fill me-1"></i>Inizia Esercizio
+        </button>
+        <a href="../" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // AUTO-DETECTION BASE_PATH (locale MAMP vs produzione Aruba)
+    const BASE_PATH = window.location.pathname.includes('/Assistivetech/') ? '/Assistivetech' : '';
+    const API_BASE = `${BASE_PATH}/api`;
+
+    function getLoggedUser() {
+      try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; }
+    }
+
+    async function loadPatientsForEducator(fullName) {
+      try {
+        const res = await fetch(`${API_BASE}/api_pazienti.php?action=get_all`);
+        const json = await res.json();
+        if (!json.success || !Array.isArray(json.data)) return [];
+        return json.data.filter(p => (p.educatore_assegnato || '').toLowerCase() === fullName.toLowerCase() && String(p.is_attiva) === '1');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    async function init() {
+      const user = getLoggedUser();
+      const educatorInput = document.getElementById('educatorName');
+      const patientSelect = document.getElementById('patientSelect');
+
+      let educatorFullName = 'Sviluppatore';
+      let role = (user && (user.ruolo_registrazione || user.role)) ? (user.ruolo_registrazione || user.role) : 'sviluppatore';
+      role = String(role).toLowerCase();
+
+      if (user && user.nome_registrazione && user.cognome_registrazione) {
+        educatorFullName = `${user.nome_registrazione} ${user.cognome_registrazione}`.trim();
+      }
+
+      // Sviluppatore o admin: default Anonimo e lista minima
+      if (role.includes('sviluppatore') || role.includes('developer') || role.includes('admin') || role.includes('amministratore')) {
+        educatorInput.value = educatorFullName || 'Sviluppatore';
+        patientSelect.innerHTML = '<option value="Anonimo" selected>Anonimo</option>';
+        return;
+      }
+
+      // Educatore: carica pazienti assegnati
+      educatorInput.value = educatorFullName || '';
+      const patients = await loadPatientsForEducator(educatorFullName);
+      if (!patients.length) {
+        patientSelect.innerHTML = '<option value="Anonimo" selected>Anonimo</option>';
+      } else {
+        patientSelect.innerHTML = '<option value="" selected>Seleziona paziente...</option>' +
+          patients.map(p => `<option value="${(p.nome || p.nome_paziente || '').trim()} ${(p.cognome || p.cognome_paziente || '').trim()}">${(p.nome || p.nome_paziente || '').trim()} ${(p.cognome || p.cognome_paziente || '').trim()}</option>`).join('');
+      }
+    }
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      const educator = document.getElementById('educatorName').value.trim();
+      const patient = (document.getElementById('patientSelect').value || '').trim() || 'Anonimo';
+      if (!educator) { alert('Inserisci il nome dell\'educatore'); return; }
+      const config = { educatorName: educator, patientName: patient };
+      localStorage.setItem('exerciseConfig', JSON.stringify(config));
+      location.href = 'index.html';
+    });
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
+
+
+
+

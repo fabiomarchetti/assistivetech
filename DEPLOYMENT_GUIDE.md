@@ -1,13 +1,9 @@
 # Guida al Deployment su Server Aruba
 
-## Credenziali Server Aruba
-- **Host FTP**: ftp.assistivetech.it
-- **Username**: assistivetech.it
-- **Password**: [Verificare nel file dati_aruba.txt]
-- **Database Host**: 31.11.39.242
-- **Database Username**: Sql1073852
-- **Database Password**: 5k58326940
-- **Database Name**: Sql1073852_1
+## Configurazione Ambiente
+- Il backend PHP usa `api/config.php` con auto-rilevamento locale/produzione.
+- Per override in produzione, crea `api/config.override.php` (non versionato) con credenziali Aruba e opzionale `APP_TZ`.
+- Timezone di default: Europe/Rome. Puoi impostare `APP_TZ` via env o override.
 
 ## Files da Caricare
 
@@ -19,9 +15,9 @@
 - `style.css` - CSS personalizzato (se presente)
 
 ### 2. Directory /api/
-- `auth_login.php` - API per login
-- `auth_registrazioni.php` - API per gestione utenti
-- `create_database.sql` - Script creazione database
+- `config.php` (auto ambiente) e opzionale `config.override.php`
+- API PHP (tutte richiedono `config.php` e usano `getDbConnection()`)
+- Script SQL di creazione/migrazione (`create_table_*`, `DEPLOY_*.sql`)
 
 ### 3. Directory /admin/
 - `index.html` - Pannello amministrativo
@@ -39,9 +35,19 @@
 ```
 
 ### Step 2: Configurazione Database
-1. Accedere al pannello MySQL di Aruba
-2. Eseguire lo script `api/create_database.sql`
-3. Verificare che le tabelle siano state create correttamente
+1. Accedi al pannello MySQL di Aruba
+2. Esegui `api/create_database.sql` o `api/DEPLOY_COMPLETE.sql`
+3. Opzionale: applica fix/migrazioni `FIX_*.sql` in ordine se necessario
+4. Crea `api/config.override.php` con:
+```php
+<?php
+$host='31.11.39.242';
+$username='SqlXXXX';
+$password='********';
+$database='SqlXXXX_1';
+$port=3306;
+define('APP_TZ','Europe/Rome');
+```
 
 ### Step 3: Test delle Funzionalità
 1. **Test Homepage**: `https://assistivetech.it/`
@@ -50,6 +56,7 @@
 3. **Test Registrazione**: `https://assistivetech.it/register.html`
 4. **Test Agenda**: `https://assistivetech.it/agenda/`
 5. **Test Admin Panel**: `https://assistivetech.it/admin/`
+6. **Healthcheck API**: `https://assistivetech.it/api/health.php` (verifica connessione DB e timezone)
 
 ### Step 4: Verifiche Finali
 - [ ] Homepage carica correttamente
@@ -80,10 +87,11 @@ assistivetech.it/
 ```
 
 ## Note Importanti
-- Le password sono attualmente in chiaro (line 36-38 in auth_registrazioni.php)
-- In futuro implementare hashing con password_hash()
-- Log degli accessi salvati in `/logs/` (creare directory)
-- CORS configurato per accettare tutte le origini (*)
+- Le API usano `config.php`; evitare credenziali hardcoded.
+- Attiva hashing password con `password_hash()` (to-do security).
+- Directory `/logs/` deve esistere in produzione e avere permessi di scrittura (644/755).
+- CORS aperto per sviluppo; restringere in produzione se necessario.
+- Usa `api/config.override.php` (basato su `config.override.php.example`) per configurare Aruba senza toccare i sorgenti.
 
 ## Credenziali di Test
 - **Admin**: marchettisoft@gmail.com / Filohori11!

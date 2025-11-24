@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sistema Audio - AssistiveTech.it</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .test-container {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        .test-btn {
+            margin: 0.5rem;
+            min-width: 200px;
+        }
+        .status-indicator {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .audio-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="text-center mb-4">
+            <h2><i class="bi bi-volume-up-fill text-primary"></i> Test Sistema Audio</h2>
+            <p class="text-muted">Verifica il funzionamento delle notifiche sonore di AssistiveTech.it</p>
+        </div>
+
+        <div id="status" class="status-indicator bg-warning text-dark">
+            <i class="bi bi-exclamation-triangle"></i>
+            <strong>Audio non ancora attivato</strong>
+            <br><small>Clicca su qualsiasi pulsante per attivare l'audio</small>
+        </div>
+
+        <div class="audio-info" id="audioInfo">
+            Caricamento informazioni audio...
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 text-center">
+                <h5>Test Suoni Individuali</h5>
+                <button class="btn btn-primary test-btn" onclick="testNotification()">
+                    <i class="bi bi-bell"></i> Notifica
+                </button>
+                <br>
+                <button class="btn btn-success test-btn" onclick="testSuccess()">
+                    <i class="bi bi-check-circle"></i> Successo
+                </button>
+                <br>
+                <button class="btn btn-danger test-btn" onclick="testError()">
+                    <i class="bi bi-x-circle"></i> Errore
+                </button>
+                <br>
+                <button class="btn btn-warning test-btn" onclick="testConfirmation()">
+                    <i class="bi bi-question-circle"></i> Conferma
+                </button>
+            </div>
+            <div class="col-md-6 text-center">
+                <h5>Test Completo</h5>
+                <button class="btn btn-dark test-btn" onclick="testAll()">
+                    <i class="bi bi-play-circle"></i> Test Tutti i Suoni
+                </button>
+                <br>
+                <button class="btn btn-info test-btn" onclick="showAudioStatus()">
+                    <i class="bi bi-info-circle"></i> Info Sistema
+                </button>
+                <br>
+                <button class="btn btn-secondary test-btn" onclick="toggleVolume()">
+                    <i class="bi bi-volume-mute"></i> Volume 10% / 30%
+                </button>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="index.html" class="btn btn-outline-primary">
+                <i class="bi bi-house"></i> Torna alla Homepage
+            </a>
+            <a href="admin/" class="btn btn-outline-danger">
+                <i class="bi bi-gear"></i> Pannello Admin
+            </a>
+            <a href="dashboard.html" class="btn btn-outline-success">
+                <i class="bi bi-person-badge"></i> Dashboard Educatori
+            </a>
+        </div>
+    </div>
+
+    <script src="js/simple-beep.js"></script>
+    <script>
+        let isLowVolume = false;
+
+        // Aggiorna status quando l'audio viene sbloccato
+        document.addEventListener('click', function() {
+            setTimeout(updateAudioStatus, 100);
+        }, { once: true });
+
+        function updateAudioStatus() {
+            const status = document.getElementById('status');
+            const info = document.getElementById('audioInfo');
+
+            if (window.simpleBeep) {
+                const audioStatus = window.simpleBeep.getStatus ? window.simpleBeep.getStatus() : {
+                    unlocked: window.simpleBeep.unlocked || false,
+                    contextState: window.simpleBeep.audioContext?.state,
+                    volume: window.simpleBeep.volume
+                };
+
+                if (audioStatus.unlocked || (audioStatus.contextState && audioStatus.contextState === 'running')) {
+                    status.className = 'status-indicator bg-success text-white';
+                    status.innerHTML = '<i class="bi bi-check-circle"></i> <strong>Audio attivo e funzionante!</strong>';
+                } else {
+                    status.className = 'status-indicator bg-warning text-dark';
+                    status.innerHTML = '<i class="bi bi-exclamation-triangle"></i> <strong>Audio in attesa di attivazione</strong><br><small>Clicca su un pulsante per attivare</small>';
+                }
+
+                info.innerHTML = `
+                    <strong>Informazioni Sistema Audio:</strong><br>
+                    • Stato: ${audioStatus.unlocked ? '🟢 Attivo' : '🟡 In attesa'}<br>
+                    • AudioContext: ${audioStatus.contextState || 'Non disponibile'}<br>
+                    • Volume: ${Math.round((audioStatus.volume || 0.3) * 100)}%<br>
+                    • Strategie: Web Audio API, HTML5 Audio, Speech Synthesis
+                `;
+            } else {
+                status.className = 'status-indicator bg-danger text-white';
+                status.innerHTML = '<i class="bi bi-x-circle"></i> <strong>Sistema audio non caricato</strong>';
+                info.innerHTML = 'Errore: Sistema audio non disponibile';
+            }
+        }
+
+        function testNotification() {
+            if (window.playNotificationBeep) {
+                window.playNotificationBeep();
+                showTestResult('Notifica', 'info');
+            }
+            updateAudioStatus();
+        }
+
+        function testSuccess() {
+            if (window.playSuccessBeep) {
+                window.playSuccessBeep();
+                showTestResult('Successo', 'success');
+            }
+            updateAudioStatus();
+        }
+
+        function testError() {
+            if (window.playErrorBeep) {
+                window.playErrorBeep();
+                showTestResult('Errore', 'danger');
+            }
+            updateAudioStatus();
+        }
+
+        function testConfirmation() {
+            if (window.playConfirmationBeep) {
+                window.playConfirmationBeep();
+                showTestResult('Conferma', 'warning');
+            }
+            updateAudioStatus();
+        }
+
+        function testAll() {
+            if (window.simpleBeep && window.simpleBeep.test) {
+                window.simpleBeep.test();
+                showTestResult('Test Completo', 'dark');
+            }
+            updateAudioStatus();
+        }
+
+        function showAudioStatus() {
+            if (window.simpleBeep) {
+                console.log('🔊 Status Sistema Audio:', window.simpleBeep.getStatus ? window.simpleBeep.getStatus() : 'Info non disponibile');
+
+                // Test rapido
+                if (window.simpleBeep.beep) {
+                    window.simpleBeep.beep(1000, 100);
+                }
+            }
+            updateAudioStatus();
+        }
+
+        function toggleVolume() {
+            if (window.simpleBeep) {
+                isLowVolume = !isLowVolume;
+                window.simpleBeep.volume = isLowVolume ? 0.1 : 0.3;
+                showTestResult(`Volume impostato a ${isLowVolume ? '10' : '30'}%`, 'info');
+
+                // Test audio
+                setTimeout(() => {
+                    if (window.playNotificationBeep) {
+                        window.playNotificationBeep();
+                    }
+                }, 200);
+            }
+            updateAudioStatus();
+        }
+
+        function showTestResult(test, type) {
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type} position-fixed`;
+            toast.style.cssText = `
+                top: 20px; right: 20px; z-index: 9999;
+                min-width: 250px; opacity: 0.9;
+                border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            toast.innerHTML = `<strong>${test}</strong> - Test eseguito!`;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 2000);
+        }
+
+        // Inizializzazione
+        window.addEventListener('load', function() {
+            updateAudioStatus();
+
+            // Aggiorna lo status ogni 2 secondi per i primi 10 secondi
+            let updateCount = 0;
+            const updateInterval = setInterval(() => {
+                updateAudioStatus();
+                updateCount++;
+                if (updateCount >= 5) {
+                    clearInterval(updateInterval);
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

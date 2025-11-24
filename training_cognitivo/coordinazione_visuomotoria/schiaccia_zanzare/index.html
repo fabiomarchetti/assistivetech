@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schiaccia le Zanzare | AssistiveTech</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Esercizio di coordinazione visuomotoria con tracking webcam. Schiaccia le zanzare ed evita le farfalle usando la mano.">
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="./manifest.json">
+
+    <!-- iOS PWA Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Schiaccia Zanzare">
+    <link rel="apple-touch-icon" href="./icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="./icons/icon-192x192.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="./icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./icons/icon-72x72.png">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 2rem;
+        }
+
+        .landing-container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .area-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .area-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+        }
+
+        .area-card .icon {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .area-card h2 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .area-card p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .area-card .btn {
+            padding: 1rem 2.5rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .educatore-card {
+            border-top: 5px solid #f39c12;
+        }
+
+        .educatore-card .icon {
+            color: #f39c12;
+        }
+
+        .educatore-card .btn {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+        }
+
+        .educatore-card .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(243, 156, 18, 0.6);
+        }
+
+        .utente-card {
+            border-top: 5px solid #2ecc71;
+        }
+
+        .utente-card .icon {
+            color: #2ecc71;
+        }
+
+        .utente-card .btn {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .utente-card .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.6);
+        }
+
+        .back-button {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .back-button a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+
+        .back-button a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="landing-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🦟 Schiaccia le Zanzare</h1>
+            <p>Esercizio di Coordinazione Visuomotoria</p>
+        </div>
+
+        <!-- Cards Container -->
+        <div class="cards-container">
+            <!-- Card Educatore -->
+            <div class="area-card educatore-card" onclick="window.location.href='setup.html'">
+                <div class="icon">
+                    <i class="bi bi-gear-fill"></i>
+                </div>
+                <h2>Area Educatore</h2>
+                <p>
+                    Configura i parametri dell'esercizio: numero di zanzare,
+                    farfalle e velocità di movimento.
+                </p>
+                <button class="btn" onclick="window.location.href='setup.html'">
+                    <i class="bi bi-gear-fill"></i> Vai al Setup
+                </button>
+            </div>
+
+            <!-- Card Utente -->
+            <div class="area-card utente-card" onclick="window.location.href='gioca.html'">
+                <div class="icon">
+                    <i class="bi bi-controller"></i>
+                </div>
+                <h2>Area Utente</h2>
+                <p>
+                    Inizia subito a giocare! Usa la mano per schiacciare
+                    le zanzare ed evitare le farfalle.
+                </p>
+                <button class="btn" onclick="window.location.href='gioca.html'">
+                    <i class="bi bi-play-circle-fill"></i> Gioca Ora
+                </button>
+            </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="back-button">
+            <a href="../../" onclick="window.history.back(); return false;">
+                <i class="bi bi-arrow-left-circle"></i> Torna alla Lista Esercizi
+            </a>
+        </div>
+    </div>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((registration) => {
+                        console.log('✅ Service Worker registrato con successo:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('❌ Registrazione Service Worker fallita:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "Agenda PWA",
+  "short_name": "Agenda",
+  "start_url": "/agenda_timer/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "description": "App per gestire sequenze di attività con pittogrammi ARASAAC e sintesi vocale",
+  "icons": [
+    {"src": "icons/Icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icons/Icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "ascolto-la-musica",
+  "version": "2.4.1",
+  "description": "PWA - Strumento ascolto la musica per AssistiveTech",
+  "private": true,
+  "scripts": {
+    "generate-icons": "node generate-icons.js"
+  },
+  "devDependencies": {
+    "sharp": "^0.33.5"
+  }
+}

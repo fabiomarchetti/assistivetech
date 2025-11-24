@@ -1,7 +1,26 @@
+Options -Indexes
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set X-XSS-Protection "1; mode=block"
+  Header always set Referrer-Policy "no-referrer-when-downgrade"
+</IfModule>
+
+# Le direttive ServerSignature/ServerTokens non sono permesse in .htaccess su Apache
+# e causano errore 500 in locale; vanno messe nella configurazione globale se necessarie
+
+# Reindirizza eventuali richieste a file sensibili
+<FilesMatch "\.(ini|sh|bak|sql|md|toml|yml|yaml|lock)$">
+  Require all denied
+</FilesMatch>
+
 # Configurazione Apache per AssistiveTech.it
 
-# Abilita rewrite engine
-RewriteEngine On
+# Forza index.html come file di default (bypassare index.php di Aruba)
+DirectoryIndex index.html index.php
+
+# mod_rewrite disabilitato su MAMP/Aruba (evita 500)
+# RewriteEngine On
 
 # Forza HTTPS (se disponibile su Aruba)
 # RewriteCond %{HTTPS} off
@@ -50,18 +69,15 @@ AddType application/json .json
 
 # Blocca accesso ai file sensibili
 <Files "dati_aruba.txt">
-    Order allow,deny
-    Deny from all
+    Require all denied
 </Files>
 
 <Files "*.log">
-    Order allow,deny
-    Deny from all
+    Require all denied
 </Files>
 
 <Files ".env">
-    Order allow,deny
-    Deny from all
+    Require all denied
 </Files>
 
 # Redirect homepage per ruoli (se necessario)

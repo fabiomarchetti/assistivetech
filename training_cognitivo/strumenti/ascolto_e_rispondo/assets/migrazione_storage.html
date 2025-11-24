@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migrazione Storage - ascolto e rispondo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #673AB7;
+            margin-bottom: 20px;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .error {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        button {
+            background: #673AB7;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #5527a0;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-left: 4px solid #2196F3;
+            margin: 20px 0;
+        }
+        .log {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+        }
+        .log-info {
+            color: #2196F3;
+        }
+        .log-success {
+            color: #28a745;
+        }
+        .log-error {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Migrazione Storage - ascolto e rispondo</h1>
+        
+        <div class="warning">
+            <strong>⚠️ ATTENZIONE:</strong>
+            <p>Questo script migrerà i dati esistenti da "ascolto la musica" a "ascolto e rispondo" con chiavi separate nel localStorage.</p>
+            <p><strong>Questo script va eseguito UNA SOLA VOLTA.</strong></p>
+        </div>
+        
+        <div class="info">
+            <strong>ℹ️ Cosa fa questo script:</strong>
+            <ol>
+                <li>Cerca tutte le chiavi del localStorage che iniziano con <code>localBrani_</code> e <code>localUser</code></li>
+                <li>Crea nuove chiavi con prefisso <code>ascolto_rispondo_</code></li>
+                <li>Copia i dati nelle nuove chiavi</li>
+                <li><strong>NON elimina</strong> le vecchie chiavi (per sicurezza)</li>
+            </ol>
+        </div>
+        
+        <h3>📊 Stato Migrazione:</h3>
+        <div id="status">
+            <p>Clicca su "Avvia Migrazione" per iniziare...</p>
+        </div>
+        
+        <button onclick="avviaMigrazione()" id="btnMigra">🚀 Avvia Migrazione</button>
+        <button onclick="verificaStorage()" id="btnVerifica">🔍 Verifica Storage</button>
+        <button onclick="pulisciVecchieChiavi()" id="btnPulisci" disabled>🗑️ Elimina Vecchie Chiavi</button>
+        
+        <h3>📝 Log Operazioni:</h3>
+        <div class="log" id="logContainer"></div>
+    </div>
+
+    <script>
+        const STORAGE_PREFIX = 'ascolto_rispondo_';
+        
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function avviaMigrazione() {
+            const btnMigra = document.getElementById('btnMigra');
+            btnMigra.disabled = true;
+            
+            log('🚀 Inizio migrazione...', 'info');
+            
+            let migratedCount = 0;
+            let errorCount = 0;
+            
+            try {
+                // Trova tutte le chiavi da migrare
+                const keysToMigrate = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    
+                    // Cerca solo chiavi che NON hanno già il prefisso "ascolto_rispondo_"
+                    if (key && !key.startsWith(STORAGE_PREFIX)) {
+                        if (key.startsWith('localBrani_') || key === 'localUser') {
+                            keysToMigrate.push(key);
+                        }
+                    }
+                }
+                
+                log(`📦 Trovate ${keysToMigrate.length} chiavi da migrare`, 'info');
+                
+                // Migra ogni chiave
+                keysToMigrate.forEach(oldKey => {
+                    try {
+                        const value = localStorage.getItem(oldKey);
+                        const newKey = STORAGE_PREFIX + oldKey;
+                        
+                        // Verifica se la nuova chiave esiste già
+                        if (localStorage.getItem(newKey)) {
+                            log(`⚠️ Chiave già esistente, skip: ${newKey}`, 'info');
+                            return;
+                        }
+                        
+                        // Copia nella nuova chiave
+                        localStorage.setItem(newKey, value);
+                        
+                        log(`✅ Migrata: ${oldKey} → ${newKey}`, 'success');
+                        migratedCount++;
+                        
+                    } catch (error) {
+                        log(`❌ Errore migrando ${oldKey}: ${error.message}`, 'error');
+                        errorCount++;
+                    }
+                });
+                
+                // Riepilogo
+                log('', 'info');
+                log('='.repeat(50), 'info');
+                log(`📊 RIEPILOGO MIGRAZIONE`, 'info');
+                log(`✅ Chiavi migrate: ${migratedCount}`, 'success');
+                if (errorCount > 0) {
+                    log(`❌ Errori: ${errorCount}`, 'error');
+                }
+                log('='.repeat(50), 'info');
+                
+                // Aggiorna stato
+                const statusDiv = document.getElementById('status');
+                if (migratedCount > 0) {
+                    statusDiv.innerHTML = `
+                        <div class="success">
+                            <strong>✅ Migrazione completata con successo!</strong>
+                            <p>${migratedCount} chiavi migrate correttamente.</p>
+                            <p>Ora puoi riavviare l'app "ascolto e rispondo" e i dati saranno separati da "ascolto la musica".</p>
+                        </div>
+                    `;
+                    
+                    // Abilita il pulsante per pulire le vecchie chiavi
+                    document.getElementById('btnPulisci').disabled = false;
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="info">
+                            <strong>ℹ️ Nessuna chiave da migrare</strong>
+                            <p>Non sono state trovate chiavi da migrare. Probabilmente la migrazione è già stata eseguita.</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                log(`❌ ERRORE CRITICO: ${error.message}`, 'error');
+                const statusDiv = document.getElementById('status');
+                statusDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Errore durante la migrazione</strong>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                btnMigra.disabled = false;
+            }
+        }
+        
+        function verificaStorage() {
+            log('🔍 Verifica storage in corso...', 'info');
+            
+            const vecchieChiavi = [];
+            const nuoveChiavi = [];
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                
+                if (key) {
+                    if (key.startsWith(STORAGE_PREFIX)) {
+                        nuoveChiavi.push(key);
+                    } else if (key.startsWith('localBrani_') || key === 'localUser') {
+                        vecchieChiavi.push(key);
+                    }
+                }
+            }
+            
+            log(`📊 Chiavi vecchie (senza prefisso): ${vecchieChiavi.length}`, 'info');
+            vecchieChiavi.forEach(key => log(`  - ${key}`, 'info'));
+            
+            log(`📊 Chiavi nuove (con prefisso): ${nuoveChiavi.length}`, 'success');
+            nuoveChiavi.forEach(key => log(`  - ${key}`, 'success'));
+        }
+        
+        function pulisciVecchieChiavi() {
+            if (!confirm('⚠️ ATTENZIONE!\n\nSei sicuro di voler eliminare le vecchie chiavi?\n\nQuesta operazione è IRREVERSIBILE.\n\nAssicurati che la migrazione sia stata completata con successo prima di procedere.')) {
+                return;
+            }
+            
+            log('🗑️ Pulizia vecchie chiavi in corso...', 'info');
+            
+            const keysToDelete = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && !key.startsWith(STORAGE_PREFIX)) {
+                    if (key.startsWith('localBrani_') || key === 'localUser') {
+                        keysToDelete.push(key);
+                    }
+                }
+            }
+            
+            let deletedCount = 0;
+            keysToDelete.forEach(key => {
+                try {
+                    localStorage.removeItem(key);
+                    log(`✅ Eliminata: ${key}`, 'success');
+                    deletedCount++;
+                } catch (error) {
+                    log(`❌ Errore eliminando ${key}: ${error.message}`, 'error');
+                }
+            });
+            
+            log(`📊 Totale chiavi eliminate: ${deletedCount}`, 'info');
+            
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `
+                <div class="success">
+                    <strong>✅ Pulizia completata!</strong>
+                    <p>${deletedCount} vecchie chiavi eliminate.</p>
+                    <p>Ora il localStorage contiene solo le chiavi di "ascolto e rispondo".</p>
+                </div>
+            `;
+            
+            document.getElementById('btnPulisci').disabled = true;
+        }
+    </script>
+</body>
+</html>
+

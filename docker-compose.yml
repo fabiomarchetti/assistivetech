@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # Server Web Apache + PHP
+  web:
+    image: php:8.2-apache
+    container_name: assistivetech_web
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - db
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html
+    networks:
+      - assistivetech_network
+
+  # Database MySQL
+  db:
+    image: mysql:8.0
+    container_name: assistivetech_db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: assistivetech_local
+      MYSQL_USER: assistivetech
+      MYSQL_PASSWORD: assistivetech123
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./api:/docker-entrypoint-initdb.d
+    networks:
+      - assistivetech_network
+
+  # phpMyAdmin per gestione database
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: assistivetech_phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+    depends_on:
+      - db
+    networks:
+      - assistivetech_network
+
+networks:
+  assistivetech_network:
+    driver: bridge
+
+volumes:
+  db_data:

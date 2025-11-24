@@ -1,0 +1,11 @@
+<?php
+// Config override per produzione Aruba (NON versionare)
+// Tutti i commenti in italiano come da preferenze utente
+
+$host = '31.11.39.242';
+$username = 'Sql1073852';
+$password = '5k58326940';
+$database = 'Sql1073852_1';
+$port = 3306;
+
+define('APP_TZ', 'Europe/Rome');

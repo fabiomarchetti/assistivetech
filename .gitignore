@@ -1,17 +1,111 @@
-# File sensibili con credenziali
+# ==========================================
+# .gitignore per AssistiveTech.it
+# File da escludere dal versionamento Git
+# ==========================================
+
+# ===== FILE CONFIGURAZIONE LOCALE =====
+# NON versionare configurazioni specifiche del computer
+api/config.override.php
+api/config_local.php
+.vscode/ftp-sync.json
+
+# ===== FILE SENSIBILI CON CREDENZIALI =====
 dati_aruba.txt
 *.credentials
 .env
-.env.local
+.env.*
+credentials.json
+secrets.json
+*.pem
+*.key
 
-# Directory di sistema
-.DS_Store
-*/.DS_Store
+# ===== DATABASE DUMPS LOCALI =====
+# Escludi export database locali, mantieni script SQL di setup
+*.sql
+!api/create_*.sql
+!api/insert_*.sql
+!api/update_*.sql
+!api/add_*.sql
+!script_sql/*.sql
 
-# Log files
+# ===== LOG FILES =====
+logs/
 *.log
+api/logs/
+training_cognitivo/*/logs/
 
-# Editor temporanei
+# ===== FILE TEMPORANEI E BACKUP =====
 *.tmp
 *.temp
+*.bak
+*.swp
 *~
+
+# ===== FILE DI SISTEMA MAC =====
+.DS_Store
+*/.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ===== FILE DI SISTEMA WINDOWS =====
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ===== CACHE E BUILD =====
+.cache/
+*.cache
+opcache/
+api/.htaccess.disabled
+
+# ===== IDE E EDITOR =====
+.vscode/
+.idea/
+*.sublime-*
+.project
+.settings/
+
+# ===== DIPENDENZE FLUTTER (agenda) =====
+agenda/.dart_tool/
+agenda/.flutter-plugins
+agenda/.flutter-plugins-dependencies
+agenda/.packages
+agenda/build/
+agenda/pubspec.lock
+
+# ===== NODE MODULES (se presenti) =====
+node_modules/
+package-lock.json
+yarn.lock
+
+# ===== UPLOAD UTENTI =====
+# Immagini e file uploadati dagli utenti
+uploads/*
+!uploads/.gitkeep
+agenda/web/assets/images/user_*
+risultati/
+
+# ===== FILE TEST E DEBUG =====
+test_*.php
+test_*.html
+debug_*.php
+debug_*.html
+phpinfo.php
+test_db_connection.php
+
+# ===== DOCUMENTAZIONE PERSONALE (esclusa da Git) =====
+*_locale.md
+*_personale.md
+SETUP_LOCALE_*.md
+16_10_2025_*.md
+2025-*_riassunto_lavoro.md
+RIEPILOGO_*.md
+ANALISI_*.md
+account*.docx
+codici*.rtf
+caratteristiche_*.md
+migrazione_*.md
+proposte.md
+riassunto.txt

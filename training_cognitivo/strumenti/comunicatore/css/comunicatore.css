@@ -1,0 +1,533 @@
+/* ============================================================
+   CSS Interfaccia Paziente - Comunicatore
+   ============================================================ */
+
+:root {
+    --primary-color: #673AB7;
+    --primary-dark: #512DA8;
+    --text-color: #333;
+    --bg-light: #F5F5F5;
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-light);
+}
+
+/* Fullscreen Container */
+.fullscreen-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Screen Base */
+.screen {
+    display: none;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+}
+
+.screen.active {
+    display: flex;
+}
+
+/* Selezione Utente */
+.user-select-wrapper {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+    text-align: center;
+}
+
+.user-select-wrapper h1 {
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+}
+
+/* Pages Container (Swipe) */
+.pages-container {
+    flex: 1;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.page {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.page.active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.page.prev {
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+.page.next {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+/* Header Pagina */
+.page-header {
+    text-align: center;
+    padding: 15px 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.page-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.page-description {
+    font-size: 1rem;
+    color: #666;
+    margin: 5px 0 0 0;
+}
+
+/* Griglia Adattiva (1-4 items) */
+.griglia-comunicatore {
+    flex: 1;
+    display: grid;
+    gap: 15px;
+    padding: 10px;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Layout 1 item: centrato grande */
+.griglia-comunicatore.layout-1 {
+    grid-template-columns: 1fr;
+    place-items: center;
+}
+
+.griglia-comunicatore.layout-1 .item-box {
+    max-width: 600px;
+    max-height: 600px;
+}
+
+/* Layout 2 items: affiancati */
+.griglia-comunicatore.layout-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+/* Layout 3 items: 2 sopra, 1 sotto centrato */
+.griglia-comunicatore.layout-3 {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 1fr 1fr;
+}
+
+.griglia-comunicatore.layout-3 .item-box:nth-child(3) {
+    grid-column: 1 / -1;
+    max-width: 50%;
+    margin: 0 auto;
+}
+
+/* Layout 4 items: 2x2 */
+.griglia-comunicatore.layout-4 {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+}
+
+/* Item Box */
+.item-box {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+}
+
+.item-box:active {
+    transform: scale(0.95);
+}
+
+.item-box:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    transform: translateY(-5px);
+}
+
+/* Item Image */
+.item-image {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    max-height: 250px;
+    object-fit: contain;
+    margin-bottom: 15px;
+}
+
+.griglia-comunicatore.layout-1 .item-image {
+    max-height: 400px;
+}
+
+/* Item Label */
+.item-label {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    word-wrap: break-word;
+    margin: 0;
+}
+
+.griglia-comunicatore.layout-1 .item-label {
+    font-size: 2rem;
+}
+
+.griglia-comunicatore.layout-3 .item-box:nth-child(3) .item-label,
+.griglia-comunicatore.layout-4 .item-label {
+    font-size: 1.5rem;
+}
+
+/* Indicatori Pagina */
+.page-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px;
+    background: white;
+    border-radius: 15px 15px 0 0;
+}
+
+.page-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ddd;
+    transition: all 0.3s;
+}
+
+.page-indicator.active {
+    background: var(--primary-color);
+    width: 30px;
+    border-radius: 6px;
+}
+
+/* Loading / Error Screens */
+.loading-wrapper,
+.error-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 2rem;
+    text-align: center;
+}
+
+.spinner-border {
+    width: 4rem;
+    height: 4rem;
+    border-width: 0.4rem;
+    color: var(--primary-color);
+}
+
+.error-wrapper i {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+}
+
+/* Btn Home */
+.btn-home {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--primary-color);
+    color: var(--primary-color);
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    transition: all 0.3s;
+}
+
+.btn-home:hover {
+    transform: scale(1.1);
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Btn Educatore */
+.btn-educatore {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid #FF9800;
+    color: #FF9800;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    transition: all 0.3s;
+    text-decoration: none;
+}
+
+.btn-educatore:hover {
+    transform: scale(1.1);
+    background: #FF9800;
+    color: white;
+}
+
+/* Btn Back (sottopagine) */
+.btn-back {
+    position: fixed;
+    top: 20px;
+    left: 100px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid #2196F3;
+    color: #2196F3;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1001;
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    transform: scale(1.1);
+    background: #2196F3;
+    color: white;
+}
+
+/* Badge Sottopagina */
+.sottopagina-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    background: rgba(33, 150, 243, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Animazione Navigating */
+.item-box.navigating {
+    animation: navigate-pulse 0.3s ease;
+}
+
+@keyframes navigate-pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 10px rgba(33, 150, 243, 0.3);
+    }
+}
+
+/* Animazione Speaking */
+@keyframes pulse-speak {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 8px 24px rgba(103, 58, 183, 0.4);
+    }
+}
+
+.item-box.speaking {
+    animation: pulse-speak 1s infinite;
+    border: 4px solid var(--primary-color);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page-header {
+        padding: 10px 15px;
+    }
+
+    .page-title {
+        font-size: 1.4rem;
+    }
+
+    .griglia-comunicatore {
+        gap: 15px;
+        padding: 5px;
+    }
+
+    .item-box {
+        padding: 15px;
+    }
+
+    .item-label {
+        font-size: 1.4rem;
+    }
+
+    .griglia-comunicatore.layout-1 .item-label {
+        font-size: 2rem;
+    }
+
+    .item-image {
+        max-width: 200px;
+        max-height: 200px;
+    }
+
+    .btn-home {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+        top: 15px;
+        left: 15px;
+    }
+    
+    .btn-back {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+        top: 15px;
+        left: 80px;
+    }
+    
+    .btn-educatore {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+        top: 15px;
+        right: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-title {
+        font-size: 1.2rem;
+    }
+
+    .item-label {
+        font-size: 1.2rem;
+    }
+
+    .item-image {
+        max-width: 150px;
+        max-height: 150px;
+    }
+
+    .griglia-comunicatore {
+        gap: 10px;
+    }
+    
+    .btn-home,
+    .btn-back,
+    .btn-educatore {
+        width: 45px;
+        height: 45px;
+        font-size: 1.3rem;
+        top: 10px;
+    }
+    
+    .btn-home {
+        left: 10px;
+    }
+    
+    .btn-back {
+        left: 65px;
+    }
+    
+    .btn-educatore {
+        right: 10px;
+    }
+}
+
+/* Swipe Feedback */
+.swipe-hint {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 999;
+}
+
+.swipe-hint.show {
+    opacity: 1;
+}
+

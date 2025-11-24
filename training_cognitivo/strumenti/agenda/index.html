@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda Agende - Strumenti</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+        .app-header {
+            background: rgba(255, 255, 255, 0.95);
+            color: #673AB7;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 900px;
+            margin: 2rem auto;
+        }
+        .interface-card {
+            background: white;
+            border: none;
+            border-radius: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+            height: 100%;
+        }
+        .interface-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        .interface-icon {
+            font-size: 80px;
+            color: #673AB7;
+            margin: 2rem 0;
+        }
+        .interface-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .btn-access {
+            background: linear-gradient(135deg, #673AB7, #9C27B0);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-access:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(103, 58, 183, 0.4);
+            color: white;
+        }
+        .badge-role {
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        .feature-list {
+            text-align: left;
+            margin: 1.5rem 0;
+        }
+        .feature-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+        .feature-item i {
+            color: #673AB7;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Bottone Indietro -->
+    <a href="../index.html" class="back-btn">
+        <i class="bi bi-arrow-left"></i> Torna a Strumenti
+    </a>
+
+    <div class="container">
+        <!-- Header Applicazione -->
+        <div class="app-header">
+            <h1 class="mb-2">
+                <i class="bi bi-calendar-week"></i> Agenda Agende
+            </h1>
+            <p class="lead mb-4">Sistema di gestione agende con pittogrammi e video</p>
+            <p class="text-muted">
+                <i class="bi bi-info-circle"></i>
+                Seleziona l'interfaccia in base al tuo ruolo
+            </p>
+        </div>
+
+        <!-- Interfacce Cards -->
+        <div class="row g-4 mt-4">
+            <!-- Card Educatore -->
+            <div class="col-md-6">
+                <a href="gestione.html" class="interface-link">
+                    <div class="interface-card">
+                        <div class="card-body text-center p-4">
+                            <div class="interface-icon">
+                                <i class="bi bi-person-gear"></i>
+                            </div>
+                            <h3 class="card-title mb-3">Gestione Educatore</h3>
+                            <span class="badge badge-role bg-primary mb-3">
+                                <i class="bi bi-shield-check"></i> Educatori
+                            </span>
+
+                            <p class="text-muted mb-4">
+                                Interfaccia completa per creare e gestire agende personalizzate per i pazienti
+                            </p>
+
+                            <div class="feature-list">
+                                <div class="feature-item">
+                                    <i class="bi bi-folder-plus"></i> Crea agende multi-livello
+                                </div>
+                                <div class="feature-item">
+                                    <i class="bi bi-image"></i> Integrazione ARASAAC
+                                </div>
+                                <div class="feature-item">
+                                    <i class="bi bi-youtube"></i> Incorpora video YouTube
+                                </div>
+                                <div class="feature-item">
+                                    <i class="bi bi-arrows-move"></i> Riordina con drag & drop
+                                </div>
+                                <div class="feature-item">
+                                    <i class="bi bi-link-45deg"></i> Collega sub-agende
+                                </div>
+                            </div>
+
+                            <button class="btn btn-access mt-4">
+                                <i class="bi bi-box-arrow-in-right"></i> Accedi all'Area Educatore
+                            </button>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Card Paziente -->
+            <div class="col-md-6">
+                <a href="agenda.html" class="interface-link">
+                    <div class="interface-card">
+                        <div class="card-body text-center p-4">
+                            <div class="interface-icon">
+                                <i class="bi bi-person-circle"></i>
+                            </div>
+                            <h3 class="card-title mb-3">Agenda Paziente</h3>
+                            <span class="badge badge-role bg-success mb-3">
+                                <i class="bi bi-phone"></i> Pazienti
+                            </span>
+
+                            <p class="text-muted mb-4">
+                                App PWA ottimizzata per la navigazione semplice e intuitiva delle agende
+                            </p>
+
+                            <div class="feature-list">
+                                <div class="feature-item">
+                                    <i class="bi bi-hand-index-thumb"></i> Navigazione swipe touch
+                                </div>
+                                <div class="feature-item">
+                                    <i class="bi bi-arrows-fullscreen"></i> Modalità fullscreen
+                                </div>
+                                <div class="feature-item">
+                                    <i class="bi bi-wifi-off"></i> Funziona offline (PWA)
+                                </div>
+                                <div class="feature-item">
+                                    <i class="bi bi-download"></i> Installabile su smartphone
+                                </div>
+                                <div class="feature-item">
+                                    <i class="bi bi-house"></i> Tasto HOME sempre visibile
+                                </div>
+                            </div>
+
+                            <button class="btn btn-access mt-4">
+                                <i class="bi bi-play-circle"></i> Apri Agenda Paziente
+                            </button>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="alert alert-light text-center" style="background: rgba(255,255,255,0.95); border-radius: 15px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <h5 class="mb-3">
+                        <i class="bi bi-lightbulb text-warning"></i> Come Funziona
+                    </h5>
+                    <div class="row text-start">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">
+                                <i class="bi bi-1-circle-fill"></i> Educatore
+                            </h6>
+                            <p class="small text-muted">
+                                L'educatore crea agende personalizzate per ogni paziente,
+                                aggiunge item con pittogrammi ARASAAC o video YouTube,
+                                e collega sub-agende per creare percorsi navigabili.
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-success">
+                                <i class="bi bi-2-circle-fill"></i> Paziente
+                            </h6>
+                            <p class="small text-muted">
+                                Il paziente apre la sua agenda, naviga con swipe tra gli item,
+                                e può aprire sub-agende con un long-click (tenere premuto).
+                                Funziona anche offline!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-4 mb-4">
+            <p class="text-white">
+                <small>
+                    <i class="bi bi-gear"></i> Versione 1.0.0 |
+                    <i class="bi bi-info-circle"></i> Documentazione: <a href="README.md" class="text-white">README.md</a>
+                </small>
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

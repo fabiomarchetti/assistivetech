@@ -1,0 +1,38 @@
+{
+    "name": "Veicoli mare - Categorizzazione",
+    "short_name": "Veicoli mare",
+    "description": "Esercizio di categorizzazione - Identifica e seleziona i veicoli del mare",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#f5f7fb",
+    "theme_color": "#0ea5e9",
+    "orientation": "any",
+    "icons": [
+        {
+            "src": "./icons/icon-152x152.png",
+            "sizes": "152x152",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "./icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "./icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "education",
+        "games",
+        "medical"
+    ],
+    "lang": "it-IT",
+    "dir": "ltr",
+    "scope": "./"
+}

@@ -87,6 +87,9 @@
                         <li><a class="dropdown-item" href="#" onclick="showProfile()">
                             <i class="bi bi-person"></i> Profilo
                         </a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showChangePassword()" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                            <i class="bi bi-key"></i> Modifica Password
+                        </a></li>
                         <li><a class="dropdown-item" href="#" onclick="showSettings()">
                             <i class="bi bi-gear"></i> Impostazioni
                         </a></li>
@@ -105,32 +108,8 @@
             <!-- Sidebar -->
             <div class="col-md-3 col-lg-2 px-0">
                 <div class="sidebar">
-                    <ul class="nav nav-pills flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="#" onclick="showSection('dashboard')">
-                                <i class="bi bi-speedometer2"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showSection('pazienti')">
-                                <i class="bi bi-people"></i> I Miei Pazienti
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="agenda/" target="_blank">
-                                <i class="bi bi-calendar-check"></i> Agenda Pittogrammi
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showSection('reports')">
-                                <i class="bi bi-bar-chart"></i> Report
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showSection('help')">
-                                <i class="bi bi-question-circle"></i> Aiuto
-                            </a>
-                        </li>
+                    <ul class="nav nav-pills flex-column" id="sidebarMenu">
+                        <!-- Menu dinamico - generato da JavaScript -->
                     </ul>
                 </div>
             </div>
@@ -220,10 +199,10 @@
                             <div class="col-md-4 mb-3">
                                 <div class="card quick-action h-100">
                                     <div class="card-body text-center">
-                                        <i class="bi bi-plus-circle display-5 text-primary mb-3"></i>
-                                        <h6>Nuovo Paziente</h6>
-                                        <p class="small text-muted">Aggiungi un nuovo paziente al tuo gruppo</p>
-                                        <button class="btn btn-primary" onclick="showAddPatient()">
+                                        <i class="bi bi-person-badge display-5 text-info mb-3"></i>
+                                        <h6>Nuovo CaseManager</h6>
+                                        <p class="small text-muted">Aggiungi un nuovo case manager</p>
+                                        <button class="btn btn-info" onclick="showAddCaseManager()">
                                             <i class="bi bi-plus"></i> Aggiungi
                                         </button>
                                     </div>
@@ -232,11 +211,11 @@
                             <div class="col-md-4 mb-3">
                                 <div class="card quick-action h-100">
                                     <div class="card-body text-center">
-                                        <i class="bi bi-calendar-plus display-5 text-success mb-3"></i>
-                                        <h6>Crea Agenda</h6>
-                                        <p class="small text-muted">Crea una nuova agenda con pittogrammi</p>
-                                        <button class="btn btn-success" onclick="openAgenda()">
-                                            <i class="bi bi-arrow-right"></i> Apri Agenda
+                                        <i class="bi bi-mortarboard display-5 text-success mb-3"></i>
+                                        <h6>Nuovo Educatore</h6>
+                                        <p class="small text-muted">Aggiungi un nuovo educatore</p>
+                                        <button class="btn btn-success" onclick="showAddEducatore()">
+                                            <i class="bi bi-plus"></i> Aggiungi
                                         </button>
                                     </div>
                                 </div>
@@ -244,11 +223,11 @@
                             <div class="col-md-4 mb-3">
                                 <div class="card quick-action h-100">
                                     <div class="card-body text-center">
-                                        <i class="bi bi-bar-chart-line display-5 text-warning mb-3"></i>
-                                        <h6>Visualizza Report</h6>
-                                        <p class="small text-muted">Controlla i progressi dei tuoi pazienti</p>
-                                        <button class="btn btn-warning" onclick="showSection('reports')">
-                                            <i class="bi bi-eye"></i> Visualizza
+                                        <i class="bi bi-person-plus display-5 text-primary mb-3"></i>
+                                        <h6>Nuovo Utente</h6>
+                                        <p class="small text-muted">Aggiungi un nuovo utente al tuo gruppo</p>
+                                        <button class="btn btn-primary" onclick="showAddUtente()">
+                                            <i class="bi bi-plus"></i> Aggiungi
                                         </button>
                                     </div>
                                 </div>
@@ -277,6 +256,189 @@
                         <h4>I Miei Pazienti</h4>
                         <p>Gestione dei pazienti assegnati...</p>
                         <!-- Content will be populated by JavaScript -->
+                    </div>
+
+                    <div id="direttori-section" class="d-none">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h4><i class="bi bi-shield-check"></i> Gestione Direttori</h4>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button class="btn btn-primary" onclick="showAddDirettore()">
+                                    <i class="bi bi-plus-circle"></i> Nuovo Direttore
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Elenco Direttori</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="direttoriTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Nome</th>
+                                                <th>Email</th>
+                                                <th>Sede</th>
+                                                <th>Settore</th>
+                                                <th>CaseManager Assegnati</th>
+                                                <th>Stato</th>
+                                                <th>Azioni</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="direttoriTableBody">
+                                            <tr>
+                                                <td colspan="7" class="text-center text-muted">Caricamento direttori...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="casemanager-section" class="d-none">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h4><i class="bi bi-briefcase"></i> Gestione CaseManager</h4>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button class="btn btn-primary" onclick="showAddCaseManager()">
+                                    <i class="bi bi-plus-circle"></i> Nuovo CaseManager
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Elenco CaseManager</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="casemanagerTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Nome</th>
+                                                <th>Email</th>
+                                                <th>Direttore Assegnato</th>
+                                                <th>Sede</th>
+                                                <th>Specializzazione</th>
+                                                <th>Pazienti Assegnati</th>
+                                                <th>Stato</th>
+                                                <th>Azioni</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="casemanagerTableBody">
+                                            <tr>
+                                                <td colspan="8" class="text-center text-muted">Caricamento case manager...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="educatori-section" class="d-none">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h4><i class="bi bi-person-badge"></i> Gestione Educatori</h4>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button class="btn btn-primary" onclick="showAddEducatore()">
+                                    <i class="bi bi-plus-circle"></i> Nuovo Educatore
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Elenco Educatori</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="educatoriTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Nome</th>
+                                                <th>Email</th>
+                                                <th>Sede</th>
+                                                <th>Pazienti Assegnati</th>
+                                                <th>Stato</th>
+                                                <th>Azioni</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="educatoriTableBody">
+                                            <tr>
+                                                <td colspan="6" class="text-center text-muted">Caricamento educatori...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="utenti-section" class="d-none">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h4><i class="bi bi-people"></i> Gestione Utenti</h4>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button class="btn btn-primary" onclick="showAddUtente()">
+                                    <i class="bi bi-plus-circle"></i> Nuovo Utente
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Elenco Utenti</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="utentiTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Nome</th>
+                                                <th>Email</th>
+                                                <th>Educatore Assegnato</th>
+                                                <th>Sede</th>
+                                                <th>Training Cognitivo</th>
+                                                <th>Stato</th>
+                                                <th>Azioni</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="utentiTableBody">
+                                            <tr>
+                                                <td colspan="7" class="text-center text-muted">Caricamento utenti...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="esercizi-section" class="d-none">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h4><i class="bi bi-book"></i> I Miei Esercizi</h4>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Esercizi per Categoria</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="esercizi-categories" class="row">
+                                    <!-- Categorie esercizi generate dinamicamente -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="reports-section" class="d-none">
@@ -315,8 +477,442 @@
         </div>
     </div>
 
+    <!-- Modal per Creazione Paziente -->
+    <div class="modal fade" id="addPatientModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nuovo Paziente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="patientForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="patientNome" class="form-label">Nome *</label>
+                                    <input type="text" class="form-control" id="patientNome" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="patientCognome" class="form-label">Cognome *</label>
+                                    <input type="text" class="form-control" id="patientCognome" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="patientUsername" class="form-label">Email/Username *</label>
+                            <input type="email" class="form-control" id="patientUsername" required
+                                   placeholder="paziente@example.com">
+                        </div>
+                        <div class="mb-3">
+                            <label for="patientPassword" class="form-label">Password *</label>
+                            <input type="password" class="form-control" id="patientPassword" required
+                                   minlength="6" placeholder="Minimo 6 caratteri">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="patientSettore" class="form-label">Settore</label>
+                                    <input type="text" class="form-control" id="patientSettore"
+                                           placeholder="es. Primaria, Secondaria">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="patientClasse" class="form-label">Classe</label>
+                                    <input type="text" class="form-control" id="patientClasse"
+                                           placeholder="es. 1A, 2B">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="patientSede" class="form-label">Sede</label>
+                            <select class="form-select" id="patientSede">
+                                <option value="">Caricamento sedi...</option>
+                            </select>
+                            <div class="form-text">La sede sarà automaticamente impostata alla tua sede corrente</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" onclick="createPatient()">Crea Paziente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Aggiungi CaseManager -->
+    <div class="modal fade" id="addCaseManagerModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-briefcase"></i> Nuovo Case Manager
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="casemanagerForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="cmNome" class="form-label">Nome *</label>
+                                    <input type="text" class="form-control" id="cmNome" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="cmCognome" class="form-label">Cognome *</label>
+                                    <input type="text" class="form-control" id="cmCognome" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="cmSettore" class="form-label">Settore *</label>
+                                    <select class="form-select" id="cmSettore" required>
+                                        <option value="">Caricamento settori...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="cmEmail" class="form-label">Email Istituto *</label>
+                                    <input type="email" class="form-control" id="cmEmail" placeholder="es. mario.rossi@istituto.it" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password *</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="cmPassword" readonly>
+                                <button class="btn btn-outline-secondary" type="button" onclick="generatePasswordCaseManager()">
+                                    <i class="bi bi-arrow-repeat"></i> Genera
+                                </button>
+                            </div>
+                            <small class="text-muted">Password sarà: Nome + "123456" (es. Mario123456)</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cmSpecializzazione" class="form-label">Specializzazione</label>
+                            <input type="text" class="form-control" id="cmSpecializzazione" placeholder="es. Logopedia, Psicomotricità">
+                        </div>
+                        <div class="mb-3">
+                            <label for="cmTelefono" class="form-label">Telefono</label>
+                            <input type="tel" class="form-control" id="cmTelefono">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" onclick="createCaseManager()">Crea Case Manager</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Aggiungi Educatore -->
+    <div class="modal fade" id="addEducatoreModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-badge"></i> Nuovo Educatore
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="educatoreForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="edNome" class="form-label">Nome *</label>
+                                    <input type="text" class="form-control" id="edNome" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="edCognome" class="form-label">Cognome *</label>
+                                    <input type="text" class="form-control" id="edCognome" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edEmail" class="form-label">Email Istituto *</label>
+                            <input type="email" class="form-control" id="edEmail" placeholder="es. mario.rossi@istituto.it" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="edSettore" class="form-label">Settore *</label>
+                                    <select class="form-select" id="edSettore" required>
+                                        <option value="">Caricamento settori...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="edClasse" class="form-label">Classe</label>
+                                    <select class="form-select" id="edClasse">
+                                        <option value="">Caricamento classi...</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password *</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="edPassword" readonly>
+                                <button class="btn btn-outline-secondary" type="button" onclick="generatePasswordEducatore()">
+                                    <i class="bi bi-arrow-repeat"></i> Genera
+                                </button>
+                            </div>
+                            <small class="text-muted">Password sarà: Nome + "123456" (es. Mario123456)</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edTelefono" class="form-label">Telefono</label>
+                            <input type="tel" class="form-control" id="edTelefono">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edNote" class="form-label">Note Professionali</label>
+                            <textarea class="form-control" id="edNote" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" onclick="createEducatore()">Crea Educatore</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Aggiungi Utente/Paziente -->
+    <div class="modal fade" id="addUtenteModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-plus"></i> Nuovo Utente
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="utenteForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="utNome" class="form-label">Nome *</label>
+                                    <input type="text" class="form-control" id="utNome" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="utCognome" class="form-label">Cognome *</label>
+                                    <input type="text" class="form-control" id="utCognome" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="utEmail" class="form-label">Email Istituto *</label>
+                            <input type="email" class="form-control" id="utEmail" placeholder="es. mario.rossi@istituto.it" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="utSettore" class="form-label">Settore</label>
+                                    <select class="form-select" id="utSettore">
+                                        <option value="">Caricamento settori...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="utClasse" class="form-label">Classe</label>
+                                    <select class="form-select" id="utClasse">
+                                        <option value="">Caricamento classi...</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password *</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="utPassword" readonly>
+                                <button class="btn btn-outline-secondary" type="button" onclick="generatePasswordUtente()">
+                                    <i class="bi bi-arrow-repeat"></i> Genera
+                                </button>
+                            </div>
+                            <small class="text-muted">Password sarà: Nome + "123456" (es. Mario123456)</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="utEducatore" class="form-label">Assegna Educatore</label>
+                            <select class="form-select" id="utEducatore">
+                                <option value="">Seleziona educatore...</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" onclick="createUtente()">Crea Utente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Associa Educatore a Utente -->
+    <div class="modal fade" id="associaEducatoreModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-link"></i> Associa Educatore
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="associaUtenteNome" class="form-label">Utente</label>
+                        <input type="text" class="form-control" id="associaUtenteNome" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="associaEducatoreSelect" class="form-label">Seleziona Educatore *</label>
+                        <select class="form-select" id="associaEducatoreSelect">
+                            <option value="">Caricamento educatori...</option>
+                        </select>
+                    </div>
+                    <input type="hidden" id="associaUtenteId">
+                    <input type="hidden" id="associaPazienteId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" onclick="saveAssociazione()">Associa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Modifica Password -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-key"></i> Modifica Password
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="changePasswordUsername" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="changePasswordUsername" placeholder="Il tuo username">
+                        <small class="form-text text-muted">Puoi modificare il tuo username se desideri</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="changePasswordNew" class="form-label">Nuova Password</label>
+                        <input type="password" class="form-control" id="changePasswordNew" placeholder="Inserisci nuova password">
+                        <small class="form-text text-muted">Minimo 6 caratteri</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="changePasswordConfirm" class="form-label">Conferma Password</label>
+                        <input type="password" class="form-control" id="changePasswordConfirm" placeholder="Conferma la nuova password">
+                        <small class="form-text text-muted">Deve corrispondere alla password inserita sopra</small>
+                    </div>
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-info-circle"></i> La password verrà salvata in chiaro nel database per semplicità di accesso.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" onclick="saveChangePassword()">Salva Password</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Definizione menu basato su ruoli
+        const menuByRole = {
+            'sviluppatore': [
+                { name: 'dashboard', label: 'Dashboard', icon: 'speedometer2', action: 'onclick="showSection(\'dashboard\')"' },
+                { name: 'pazienti', label: 'I Miei Pazienti', icon: 'people', action: 'onclick="showSection(\'pazienti\')"' },
+                { name: 'direttori', label: 'Gestione Direttori', icon: 'shield-check', action: 'onclick="showSection(\'direttori\')"' },
+                { name: 'casemanager', label: 'Gestione CaseManager', icon: 'briefcase', action: 'onclick="showSection(\'casemanager\')"' },
+                { name: 'educatori', label: 'Gestione Educatori', icon: 'person-badge', action: 'onclick="showSection(\'educatori\')"' },
+                { name: 'utenti', label: 'Gestione Utenti', icon: 'people-fill', action: 'onclick="showSection(\'utenti\')"' },
+                { name: 'agenda', label: 'Agenda Pittogrammi', icon: 'calendar-check', action: 'href="agenda/" target="_blank"' },
+                { name: 'reports', label: 'Report', icon: 'bar-chart', action: 'onclick="showSection(\'reports\')"' },
+                { name: 'help', label: 'Aiuto', icon: 'question-circle', action: 'onclick="showSection(\'help\')"' }
+            ],
+            'direttore': [
+                { name: 'dashboard', label: 'Dashboard', icon: 'speedometer2', action: 'onclick="showSection(\'dashboard\')"' },
+                { name: 'pazienti', label: 'I Miei Pazienti', icon: 'people', action: 'onclick="showSection(\'pazienti\')"' },
+                { name: 'casemanager', label: 'Gestione CaseManager', icon: 'briefcase', action: 'onclick="showSection(\'casemanager\')"' },
+                { name: 'educatori', label: 'Gestione Educatori', icon: 'person-badge', action: 'onclick="showSection(\'educatori\')"' },
+                { name: 'utenti', label: 'Gestione Utenti', icon: 'people-fill', action: 'onclick="showSection(\'utenti\')"' },
+                { name: 'agenda', label: 'Agenda Pittogrammi', icon: 'calendar-check', action: 'href="agenda/" target="_blank"' },
+                { name: 'reports', label: 'Report', icon: 'bar-chart', action: 'onclick="showSection(\'reports\')"' },
+                { name: 'help', label: 'Aiuto', icon: 'question-circle', action: 'onclick="showSection(\'help\')"' }
+            ],
+            'casemanager': [
+                { name: 'dashboard', label: 'Dashboard', icon: 'speedometer2', action: 'onclick="showSection(\'dashboard\')"' },
+                { name: 'pazienti', label: 'I Miei Pazienti', icon: 'people', action: 'onclick="showSection(\'pazienti\')"' },
+                { name: 'casemanager', label: 'Gestione CaseManager', icon: 'briefcase', action: 'onclick="showSection(\'casemanager\')"' },
+                { name: 'educatori', label: 'Gestione Educatori', icon: 'person-badge', action: 'onclick="showSection(\'educatori\')"' },
+                { name: 'utenti', label: 'Gestione Utenti', icon: 'people-fill', action: 'onclick="showSection(\'utenti\')"' },
+                { name: 'agenda', label: 'Agenda Pittogrammi', icon: 'calendar-check', action: 'href="agenda/" target="_blank"' },
+                { name: 'reports', label: 'Report', icon: 'bar-chart', action: 'onclick="showSection(\'reports\')"' },
+                { name: 'help', label: 'Aiuto', icon: 'question-circle', action: 'onclick="showSection(\'help\')"' }
+            ],
+            'educatore': [
+                { name: 'dashboard', label: 'Dashboard', icon: 'speedometer2', action: 'onclick="showSection(\'dashboard\')"' },
+                { name: 'utenti', label: 'I Miei Utenti', icon: 'people', action: 'onclick="showSection(\'utenti\')"' },
+                { name: 'agenda', label: 'Agenda Pittogrammi', icon: 'calendar-check', action: 'href="agenda/" target="_blank"' },
+                { name: 'reports', label: 'Report', icon: 'bar-chart', action: 'onclick="showSection(\'reports\')"' },
+                { name: 'help', label: 'Aiuto', icon: 'question-circle', action: 'onclick="showSection(\'help\')"' }
+            ],
+            'utente': [
+                { name: 'dashboard', label: 'Dashboard', icon: 'speedometer2', action: 'onclick="showSection(\'dashboard\')"' },
+                { name: 'esercizi', label: 'I Miei Esercizi', icon: 'book', action: 'onclick="showSection(\'esercizi\')"' },
+                { name: 'agenda', label: 'Agenda Pittogrammi', icon: 'calendar-check', action: 'href="agenda/" target="_blank"' },
+                { name: 'help', label: 'Aiuto', icon: 'question-circle', action: 'onclick="showSection(\'help\')"' }
+            ]
+        };
+
+        // Rendering del menu dinamico
+        function renderSidebar(userRole) {
+            const menu = menuByRole[userRole] || menuByRole['paziente'];
+            const sidebarMenu = document.getElementById('sidebarMenu');
+
+            sidebarMenu.innerHTML = menu.map((item, index) => {
+                const isActive = index === 0 ? 'active' : '';
+                const isLink = item.action.includes('href=');
+
+                if (isLink) {
+                    return `
+                        <li class="nav-item">
+                            <a class="nav-link ${isActive}" ${item.action}>
+                                <i class="bi bi-${item.icon}"></i> ${item.label}
+                            </a>
+                        </li>
+                    `;
+                } else {
+                    return `
+                        <li class="nav-item">
+                            <a class="nav-link ${isActive}" href="#" ${item.action}>
+                                <i class="bi bi-${item.icon}"></i> ${item.label}
+                            </a>
+                        </li>
+                    `;
+                }
+            }).join('');
+        }
+
         // Check authentication
         window.addEventListener('load', function() {
             const user = localStorage.getItem('user');
@@ -330,33 +926,79 @@
             document.getElementById('welcomeUserName').textContent = userData.nome_registrazione;
             document.getElementById('userRole').textContent = getRoleDisplayName(userData.ruolo_registrazione);
 
+            // Render menu basato su ruolo
+            renderSidebar(userData.ruolo_registrazione);
+
             // Load dashboard data
             loadDashboardData();
         });
 
         function getRoleDisplayName(role) {
             switch(role) {
-                case 'amministratore': return 'Amministratore';
                 case 'educatore': return 'Educatore';
-                case 'paziente': return 'Paziente';
+                case 'utente': return 'Utente';
+                case 'direttore': return 'Direttore';
+                case 'casemanager': return 'Case Manager';
+                case 'sviluppatore': return 'Sviluppatore';
                 default: return role;
             }
         }
 
+        // Definizione permessi per sezioni
+        const sectionPermissions = {
+            'dashboard': ['educatore', 'casemanager', 'direttore', 'sviluppatore', 'utente'],
+            'pazienti': ['educatore', 'casemanager', 'direttore', 'sviluppatore'],
+            'direttori': ['sviluppatore'],
+            'casemanager': ['direttore', 'casemanager', 'sviluppatore'],
+            'educatori': ['direttore', 'casemanager', 'sviluppatore'],
+            'utenti': ['educatore', 'direttore', 'casemanager', 'sviluppatore'],
+            'esercizi': ['utente'],
+            'reports': ['educatore', 'casemanager', 'direttore', 'sviluppatore'],
+            'help': ['educatore', 'casemanager', 'direttore', 'sviluppatore', 'utente']
+        };
+
         function showSection(sectionName) {
+            // Verificar permessi
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const userRole = user.ruolo_registrazione;
+            const allowedRoles = sectionPermissions[sectionName] || [];
+
+            if (!allowedRoles.includes(userRole)) {
+                showAlert('Accesso negato: Non hai i permessi per visualizzare questa sezione', 'danger');
+                return;
+            }
+
             // Hide all sections
             document.querySelectorAll('[id$="-section"]').forEach(section => {
                 section.classList.add('d-none');
             });
 
             // Show selected section
-            document.getElementById(sectionName + '-section').classList.remove('d-none');
+            const sectionElement = document.getElementById(sectionName + '-section');
+            if (sectionElement) {
+                sectionElement.classList.remove('d-none');
+            }
 
             // Update active nav link
             document.querySelectorAll('.sidebar .nav-link').forEach(link => {
                 link.classList.remove('active');
             });
-            event.target.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+
+            // Carica dati se sono sezioni che richiedono dati
+            if (sectionName === 'direttori') {
+                loadDirettori();
+            } else if (sectionName === 'casemanager') {
+                loadCaseManager();
+            } else if (sectionName === 'educatori') {
+                loadEducatori();
+            } else if (sectionName === 'utenti') {
+                loadUtenti();
+            } else if (sectionName === 'esercizi') {
+                loadEsercizi();
+            }
         }
 
         function loadDashboardData() {
@@ -374,12 +1016,181 @@
             window.open('agenda/', '_blank');
         }
 
-        function showAddPatient() {
-            alert('Funzione in sviluppo: Aggiungi nuovo paziente');
+        async function showAddPatient() {
+            // Verifica che l'utente sia un educatore
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user.ruolo_registrazione !== 'educatore') {
+                showAlert('Solo gli educatori possono creare pazienti', 'warning');
+                return;
+            }
+
+            // Reset del form
+            document.getElementById('patientForm').reset();
+
+            // Carica le sedi disponibili
+            await loadSediForPatient();
+
+            // Mostra il modal
+            new bootstrap.Modal(document.getElementById('addPatientModal')).show();
+        }
+
+        async function loadSediForPatient() {
+            try {
+                const response = await fetch('api/api_sedi.php');
+                const result = await response.json();
+
+                const sedeSelect = document.getElementById('patientSede');
+                sedeSelect.innerHTML = '<option value="">Seleziona sede...</option>';
+
+                if (result.success && result.sedi) {
+                    result.sedi.forEach(sede => {
+                        if (sede.stato_sede === 'attiva') {
+                            const option = document.createElement('option');
+                            option.value = sede.id_sede;
+                            option.textContent = sede.nome_sede;
+                            sedeSelect.appendChild(option);
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento sedi:', error);
+            }
+        }
+
+        async function createPatient() {
+            const form = document.getElementById('patientForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+            const patientData = {
+                action: 'create',
+                nome: document.getElementById('patientNome').value.trim(),
+                cognome: document.getElementById('patientCognome').value.trim(),
+                username: document.getElementById('patientUsername').value.trim(),
+                password: document.getElementById('patientPassword').value,
+                ruolo: 'paziente',
+                settore: document.getElementById('patientSettore').value.trim(),
+                classe: document.getElementById('patientClasse').value.trim(),
+                id_sede: document.getElementById('patientSede').value || 1,
+                calling_user_role: currentUser.ruolo_registrazione
+            };
+
+            try {
+                const response = await fetch('api/auth_registrazioni.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(patientData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Paziente creato con successo!', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('addPatientModal')).hide();
+
+                    // Ricarica i dati del dashboard
+                    loadDashboardData();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione durante la creazione del paziente', 'danger');
+                console.error('Errore:', error);
+            }
+        }
+
+        function showAlert(message, type = 'info') {
+            // Crea un alert Bootstrap
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 1050; max-width: 400px;';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            document.body.appendChild(alertDiv);
+
+            // Rimuovi l'alert automaticamente dopo 5 secondi
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
         }
 
         function showProfile() {
             alert('Funzione in sviluppo: Modifica profilo');
+        }
+
+        function showChangePassword() {
+            // Carica il username precompilato
+            const userData = JSON.parse(localStorage.getItem('user'));
+            if (userData) {
+                document.getElementById('changePasswordUsername').value = userData.username || '';
+            }
+            // Reset password fields
+            document.getElementById('changePasswordNew').value = '';
+            document.getElementById('changePasswordConfirm').value = '';
+        }
+
+        async function saveChangePassword() {
+            const username = document.getElementById('changePasswordUsername').value.trim();
+            const newPassword = document.getElementById('changePasswordNew').value.trim();
+            const confirmPassword = document.getElementById('changePasswordConfirm').value.trim();
+
+            // Validazioni
+            if (!username) {
+                showAlert('Username obbligatorio', 'warning');
+                return;
+            }
+
+            if (!newPassword || !confirmPassword) {
+                showAlert('Inserisci e conferma la nuova password', 'warning');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showAlert('La password deve avere almeno 6 caratteri', 'warning');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showAlert('Le password non coincidono', 'warning');
+                return;
+            }
+
+            try {
+                const userData = JSON.parse(localStorage.getItem('user'));
+                const response = await fetch('api/auth_registrazioni.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'change_password',
+                        id_registrazione: userData.id_registrazione,
+                        username_registrazione: username,
+                        password_registrazione: newPassword
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Password aggiornata con successo!', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                console.error('Errore:', error);
+                showAlert('Errore di connessione durante l\'aggiornamento della password', 'danger');
+            }
         }
 
         function showSettings() {
@@ -390,6 +1201,754 @@
             if (confirm('Sei sicuro di voler uscire?')) {
                 localStorage.removeItem('user');
                 window.location.href = 'index.html';
+            }
+        }
+
+        /* ===== GESTIONE DIRETTORI ===== */
+        async function loadDirettori() {
+            try {
+                const response = await fetch('api/api_direttori.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_all' })
+                });
+
+                const result = await response.json();
+                const tbody = document.getElementById('direttoriTableBody');
+
+                if (result.success && result.data) {
+                    tbody.innerHTML = '';
+
+                    result.data.forEach(direttore => {
+                        const statoBadge = direttore.stato_direttore === 'attivo'
+                            ? '<span class="badge bg-success">Attivo</span>'
+                            : '<span class="badge bg-warning">Sospeso</span>';
+
+                        const row = `
+                            <tr>
+                                <td><strong>${direttore.nome} ${direttore.cognome}</strong></td>
+                                <td>${direttore.email_contatto || '-'}</td>
+                                <td>${direttore.nome_sede || '-'}</td>
+                                <td>${direttore.nome_settore || '-'}</td>
+                                <td><span class="badge bg-info">${direttore.numero_casemanager || 0}</span></td>
+                                <td>${statoBadge}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning" onclick="editDirettore(${direttore.id_direttore})">
+                                        <i class="bi bi-pencil"></i> Modifica
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteDirettore(${direttore.id_direttore})">
+                                        <i class="bi bi-trash"></i> Elimina
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nessun direttore trovato</td></tr>';
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento direttori:', error);
+                document.getElementById('direttoriTableBody').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Errore nel caricamento</td></tr>';
+            }
+        }
+
+        function showAddDirettore() {
+            alert('Funzione in sviluppo: Creazione nuovo direttore');
+        }
+
+        function editDirettore(id) {
+            alert('Funzione in sviluppo: Modifica direttore ' + id);
+        }
+
+        function deleteDirettore(id) {
+            if (confirm('Sei sicuro di voler eliminare questo direttore?')) {
+                alert('Funzione in sviluppo: Eliminazione direttore ' + id);
+            }
+        }
+
+        /* ===== GESTIONE CASEMANAGER ===== */
+        async function loadCaseManager() {
+            try {
+                const response = await fetch('api/api_casemanager.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_all' })
+                });
+
+                const result = await response.json();
+                const tbody = document.getElementById('casemanagerTableBody');
+
+                if (result.success && result.data) {
+                    tbody.innerHTML = '';
+
+                    result.data.forEach(cm => {
+                        const statoBadge = cm.stato_casemanager === 'attivo'
+                            ? '<span class="badge bg-success">Attivo</span>'
+                            : '<span class="badge bg-warning">Sospeso</span>';
+
+                        const row = `
+                            <tr>
+                                <td><strong>${cm.nome} ${cm.cognome}</strong></td>
+                                <td>${cm.email_contatto || '-'}</td>
+                                <td>${cm.direttore_nome || '-'}</td>
+                                <td>${cm.nome_sede || '-'}</td>
+                                <td>${cm.specializzazione || '-'}</td>
+                                <td><span class="badge bg-info">${cm.numero_pazienti || 0}</span></td>
+                                <td>${statoBadge}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning" onclick="editCaseManager(${cm.id_casemanager})">
+                                        <i class="bi bi-pencil"></i> Modifica
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteCaseManager(${cm.id_casemanager})">
+                                        <i class="bi bi-trash"></i> Elimina
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Nessun case manager trovato</td></tr>';
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento case manager:', error);
+                document.getElementById('casemanagerTableBody').innerHTML = '<tr><td colspan="8" class="text-center text-danger">Errore nel caricamento</td></tr>';
+            }
+        }
+
+        async function showAddCaseManager() {
+            // Reset del form
+            document.getElementById('casemanagerForm').reset();
+            document.getElementById('cmPassword').value = '';
+
+            // Carica settori della sede corrente
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+            try {
+                const response = await fetch('api/api_sedi.php?action=get_settori_sede&id_sede=' + (currentUser.id_sede || 1));
+                const result = await response.json();
+
+                const selectSettore = document.getElementById('cmSettore');
+                selectSettore.innerHTML = '<option value="">Seleziona settore...</option>';
+
+                if (result.success && result.data) {
+                    result.data.forEach(settore => {
+                        const option = document.createElement('option');
+                        option.value = settore.id_settore;
+                        option.textContent = settore.nome_settore;
+                        selectSettore.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento settori:', error);
+            }
+
+            // Mostra il modal
+            new bootstrap.Modal(document.getElementById('addCaseManagerModal')).show();
+        }
+
+        function generatePasswordCaseManager() {
+            const nome = document.getElementById('cmNome').value.trim();
+            if (!nome) {
+                showAlert('Inserisci il nome prima di generare la password', 'warning');
+                return;
+            }
+            const password = nome + '123456';
+            document.getElementById('cmPassword').value = password;
+        }
+
+        async function createCaseManager() {
+            const form = document.getElementById('casemanagerForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const password = document.getElementById('cmPassword').value.trim();
+            if (!password) {
+                showAlert('Genera una password prima di proseguire', 'warning');
+                return;
+            }
+
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+            const caseManagerData = {
+                action: 'create',
+                nome: document.getElementById('cmNome').value.trim(),
+                cognome: document.getElementById('cmCognome').value.trim(),
+                username: document.getElementById('cmEmail').value.trim(),
+                password: password,
+                id_sede: currentUser.id_sede || 1,
+                id_settore: intval(document.getElementById('cmSettore').value),
+                specializzazione: document.getElementById('cmSpecializzazione').value.trim(),
+                telefono: document.getElementById('cmTelefono').value.trim(),
+                user_role: currentUser.ruolo_registrazione,
+                user_id: currentUser.id_registrazione
+            };
+
+            try {
+                const response = await fetch('api/api_casemanager.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(caseManagerData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Case Manager creato con successo! Username: ' + caseManagerData.username + ', Password: ' + password, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('addCaseManagerModal')).hide();
+                    loadCaseManager();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione durante la creazione del case manager', 'danger');
+                console.error('Errore:', error);
+            }
+        }
+
+        function editCaseManager(id) {
+            alert('Funzione in sviluppo: Modifica case manager ' + id);
+        }
+
+        function deleteCaseManager(id) {
+            if (confirm('Sei sicuro di voler eliminare questo case manager?')) {
+                alert('Funzione in sviluppo: Eliminazione case manager ' + id);
+            }
+        }
+
+        /* ===== GESTIONE EDUCATORI ===== */
+        async function loadEducatori() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const response = await fetch('api/api_educatori.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'get_all',
+                        user_role: user.ruolo_registrazione,
+                        user_id: user.id_registrazione
+                    })
+                });
+
+                const result = await response.json();
+                const tbody = document.getElementById('educatoriTableBody');
+
+                if (result.success && result.data) {
+                    tbody.innerHTML = '';
+
+                    result.data.forEach(educatore => {
+                        const statoBadge = educatore.stato_educatore === 'attivo'
+                            ? '<span class="badge bg-success">Attivo</span>'
+                            : '<span class="badge bg-warning">Sospeso</span>';
+
+                        const row = `
+                            <tr>
+                                <td><strong>${educatore.nome} ${educatore.cognome}</strong></td>
+                                <td>${educatore.email_contatto || '-'}</td>
+                                <td>${educatore.nome_sede || '-'}</td>
+                                <td><span class="badge bg-info">${educatore.numero_pazienti || 0}</span></td>
+                                <td>${statoBadge}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning" onclick="editEducatore(${educatore.id_educatore})">
+                                        <i class="bi bi-pencil"></i> Modifica
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteEducatore(${educatore.id_educatore})">
+                                        <i class="bi bi-trash"></i> Elimina
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Nessun educatore trovato</td></tr>';
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento educatori:', error);
+                document.getElementById('educatoriTableBody').innerHTML = '<tr><td colspan="6" class="text-center text-danger">Errore nel caricamento</td></tr>';
+            }
+        }
+
+        async function showAddEducatore() {
+            // Reset del form
+            document.getElementById('educatoreForm').reset();
+            document.getElementById('edPassword').value = '';
+
+            // Carica settori e classi della sede corrente
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const idSede = currentUser.id_sede || 1;
+
+            try {
+                // Carica settori
+                const responseSett = await fetch('api/api_sedi.php?action=get_settori_sede&id_sede=' + idSede);
+                const resultSett = await responseSett.json();
+
+                const selectSettore = document.getElementById('edSettore');
+                selectSettore.innerHTML = '<option value="">Seleziona settore...</option>';
+
+                if (resultSett.success && resultSett.data) {
+                    resultSett.data.forEach(settore => {
+                        const option = document.createElement('option');
+                        option.value = settore.id_settore;
+                        option.textContent = settore.nome_settore;
+                        selectSettore.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento settori:', error);
+            }
+
+            try {
+                // Carica classi
+                const responseClass = await fetch('api/api_sedi.php?action=get_classi_sede&id_sede=' + idSede);
+                const resultClass = await responseClass.json();
+
+                const selectClasse = document.getElementById('edClasse');
+                selectClasse.innerHTML = '<option value="">Seleziona classe...</option>';
+
+                if (resultClass.success && resultClass.data) {
+                    resultClass.data.forEach(classe => {
+                        const option = document.createElement('option');
+                        option.value = classe.id_classe;
+                        option.textContent = classe.nome_classe;
+                        selectClasse.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento classi:', error);
+            }
+
+            // Mostra il modal
+            new bootstrap.Modal(document.getElementById('addEducatoreModal')).show();
+        }
+
+        function generatePasswordEducatore() {
+            const nome = document.getElementById('edNome').value.trim();
+            if (!nome) {
+                showAlert('Inserisci il nome prima di generare la password', 'warning');
+                return;
+            }
+            const password = nome + '123456';
+            document.getElementById('edPassword').value = password;
+        }
+
+        async function createEducatore() {
+            const form = document.getElementById('educatoreForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const password = document.getElementById('edPassword').value.trim();
+            if (!password) {
+                showAlert('Genera una password prima di proseguire', 'warning');
+                return;
+            }
+
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+            // Ottieni il nome della classe dal testo dell'option selezionata
+            const classeSelect = document.getElementById('edClasse');
+            const classeNome = classeSelect.options[classeSelect.selectedIndex]?.text || '';
+
+            const educatoreData = {
+                action: 'create',
+                nome: document.getElementById('edNome').value.trim(),
+                cognome: document.getElementById('edCognome').value.trim(),
+                username: document.getElementById('edEmail').value.trim(),
+                password: password,
+                id_sede: currentUser.id_sede || 1,
+                id_settore: intval(document.getElementById('edSettore').value),
+                classe: classeNome,
+                telefono: document.getElementById('edTelefono').value.trim(),
+                note_professionali: document.getElementById('edNote').value.trim(),
+                user_role: currentUser.ruolo_registrazione
+            };
+
+            try {
+                const response = await fetch('api/api_educatori.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(educatoreData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Educatore creato con successo! Username: ' + educatoreData.username + ', Password: ' + password, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('addEducatoreModal')).hide();
+                    loadEducatori();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione durante la creazione dell\'educatore', 'danger');
+                console.error('Errore:', error);
+            }
+        }
+
+        function editEducatore(id) {
+            alert('Funzione in sviluppo: Modifica educatore ' + id);
+        }
+
+        function deleteEducatore(id) {
+            if (confirm('Sei sicuro di voler eliminare questo educatore?')) {
+                alert('Funzione in sviluppo: Eliminazione educatore ' + id);
+            }
+        }
+
+        /* ===== GESTIONE UTENTI ===== */
+        async function loadUtenti() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const response = await fetch('api/api_pazienti.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'get_all',
+                        user_role: user.ruolo_registrazione,
+                        user_id: user.id_registrazione
+                    })
+                });
+
+                const result = await response.json();
+                const tbody = document.getElementById('utentiTableBody');
+
+                if (result.success && result.data) {
+                    tbody.innerHTML = '';
+
+                    result.data.forEach(utente => {
+                        const statoBadge = utente.stato_paziente === 'attivo'
+                            ? '<span class="badge bg-success">Attivo</span>'
+                            : '<span class="badge bg-warning">Sospeso</span>';
+
+                        const row = `
+                            <tr>
+                                <td><strong>${utente.nome} ${utente.cognome}</strong></td>
+                                <td>${utente.email || '-'}</td>
+                                <td>${utente.educatore_nome || '-'}</td>
+                                <td>${utente.nome_sede || '-'}</td>
+                                <td>${utente.nome_training || '-'}</td>
+                                <td>${statoBadge}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" onclick="showAssociazionModal(${utente.id_paziente}, '${utente.nome} ${utente.cognome}', ${utente.id_registrazione})">
+                                        <i class="bi bi-link"></i> Associa
+                                    </button>
+                                    <button class="btn btn-sm btn-warning" onclick="editUtente(${utente.id_paziente})">
+                                        <i class="bi bi-pencil"></i> Modifica
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteUtente(${utente.id_paziente})">
+                                        <i class="bi bi-trash"></i> Elimina
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nessun utente trovato</td></tr>';
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento utenti:', error);
+                document.getElementById('utentiTableBody').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Errore nel caricamento</td></tr>';
+            }
+        }
+
+        async function showAddUtente() {
+            // Reset del form
+            document.getElementById('utenteForm').reset();
+            document.getElementById('utPassword').value = '';
+
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const idSede = currentUser.id_sede || 1;
+
+            // Carica settori
+            try {
+                const responseSett = await fetch('api/api_sedi.php?action=get_settori_sede&id_sede=' + idSede);
+                const resultSett = await responseSett.json();
+
+                const selectSettore = document.getElementById('utSettore');
+                selectSettore.innerHTML = '<option value="">Seleziona settore...</option>';
+
+                if (resultSett.success && resultSett.data) {
+                    resultSett.data.forEach(settore => {
+                        const option = document.createElement('option');
+                        option.value = settore.id_settore;
+                        option.textContent = settore.nome_settore;
+                        selectSettore.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento settori:', error);
+            }
+
+            // Carica classi
+            try {
+                const responseClass = await fetch('api/api_sedi.php?action=get_classi_sede&id_sede=' + idSede);
+                const resultClass = await responseClass.json();
+
+                const selectClasse = document.getElementById('utClasse');
+                selectClasse.innerHTML = '<option value="">Seleziona classe...</option>';
+
+                if (resultClass.success && resultClass.data) {
+                    resultClass.data.forEach(classe => {
+                        const option = document.createElement('option');
+                        option.value = classe.id_classe;
+                        option.textContent = classe.nome_classe;
+                        selectClasse.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento classi:', error);
+            }
+
+            // Carica elenco educatori
+            try {
+                const response = await fetch('api/api_educatori.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'get_all',
+                        user_role: currentUser.ruolo_registrazione,
+                        user_id: currentUser.id_registrazione
+                    })
+                });
+
+                const result = await response.json();
+                const selectEducatore = document.getElementById('utEducatore');
+                selectEducatore.innerHTML = '<option value="">Seleziona educatore...</option>';
+
+                if (result.success && result.data) {
+                    result.data.forEach(educatore => {
+                        const option = document.createElement('option');
+                        option.value = educatore.id_educatore;
+                        option.textContent = `${educatore.nome} ${educatore.cognome}`;
+                        selectEducatore.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento educatori:', error);
+            }
+
+            // Mostra il modal
+            new bootstrap.Modal(document.getElementById('addUtenteModal')).show();
+        }
+
+        function generatePasswordUtente() {
+            const nome = document.getElementById('utNome').value.trim();
+            if (!nome) {
+                showAlert('Inserisci il nome prima di generare la password', 'warning');
+                return;
+            }
+            const password = nome + '123456';
+            document.getElementById('utPassword').value = password;
+        }
+
+        async function createUtente() {
+            const form = document.getElementById('utenteForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const password = document.getElementById('utPassword').value.trim();
+            if (!password) {
+                showAlert('Genera una password prima di proseguire', 'warning');
+                return;
+            }
+
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const id_educatore = intval(document.getElementById('utEducatore').value);
+
+            // Ottieni il nome del settore dal testo dell'option selezionata
+            const settoreSelect = document.getElementById('utSettore');
+            const settoreNome = settoreSelect.options[settoreSelect.selectedIndex]?.text || '';
+
+            // Ottieni il nome della classe dal testo dell'option selezionata
+            const classeSelect = document.getElementById('utClasse');
+            const classeNome = classeSelect.options[classeSelect.selectedIndex]?.text || '';
+
+            const utenteData = {
+                action: 'create',
+                nome: document.getElementById('utNome').value.trim(),
+                cognome: document.getElementById('utCognome').value.trim(),
+                username: document.getElementById('utEmail').value.trim(),
+                password: password,
+                id_sede: currentUser.id_sede || 1,
+                settore: settoreNome,
+                classe: classeNome,
+                ruolo: 'paziente',
+                calling_user_role: currentUser.ruolo_registrazione,
+                id_educatore: id_educatore > 0 ? id_educatore : null
+            };
+
+            try {
+                const response = await fetch('api/auth_registrazioni.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(utenteData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Utente creato con successo! Username: ' + utenteData.username + ', Password: ' + password, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('addUtenteModal')).hide();
+                    loadUtenti();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione durante la creazione dell\'utente', 'danger');
+                console.error('Errore:', error);
+            }
+        }
+
+        function intval(value) {
+            return parseInt(value) || 0;
+        }
+
+        function editUtente(id) {
+            alert('Funzione in sviluppo: Modifica utente ' + id);
+        }
+
+        function deleteUtente(id) {
+            if (confirm('Sei sicuro di voler eliminare questo utente?')) {
+                alert('Funzione in sviluppo: Eliminazione utente ' + id);
+            }
+        }
+
+        /* ===== ELENCO ESERCIZI (per pazienti) ===== */
+        async function loadEsercizi() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const response = await fetch('api/api_esercizi.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'get_by_patient',
+                        patient_id: user.id_registrazione
+                    })
+                });
+
+                const result = await response.json();
+                const categoriesContainer = document.getElementById('esercizi-categories');
+
+                if (result.success && result.data) {
+                    // Raggruppa esercizi per categoria
+                    const categorizedExercises = {};
+                    result.data.forEach(esercizio => {
+                        const category = esercizio.categoria_training || 'Generale';
+                        if (!categorizedExercises[category]) {
+                            categorizedExercises[category] = [];
+                        }
+                        categorizedExercises[category].push(esercizio);
+                    });
+
+                    // Render categorie
+                    categoriesContainer.innerHTML = Object.keys(categorizedExercises).map(category => {
+                        const exercises = categorizedExercises[category];
+                        return `
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title">${category}</h6>
+                                        <p class="card-text small text-muted">${exercises.length} esercizio(i)</p>
+                                        <button class="btn btn-sm btn-primary" onclick="viewCategoryExercises('${category}')">
+                                            <i class="bi bi-eye"></i> Visualizza
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    categoriesContainer.innerHTML = '<div class="col-12 text-center text-muted"><p>Nessun esercizio assegnato</p></div>';
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento esercizi:', error);
+                document.getElementById('esercizi-categories').innerHTML = '<div class="col-12 text-center text-danger"><p>Errore nel caricamento esercizi</p></div>';
+            }
+        }
+
+        function viewCategoryExercises(category) {
+            alert('Funzione in sviluppo: Visualizzazione esercizi categoria ' + category);
+        }
+
+        /* ===== ASSOCIAZIONE EDUCATORE-UTENTE ===== */
+        async function showAssociazionModal(idPaziente, nomePaziente, idUtente) {
+            // Imposta i dati nel modal
+            document.getElementById('associaUtenteNome').value = nomePaziente;
+            document.getElementById('associaUtenteId').value = idUtente;
+            document.getElementById('associaPazienteId').value = idPaziente;
+
+            // Carica elenco educatori
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+            try {
+                const response = await fetch('api/api_educatori.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'get_all',
+                        user_role: currentUser.ruolo_registrazione,
+                        user_id: currentUser.id_registrazione
+                    })
+                });
+
+                const result = await response.json();
+                const selectEducatore = document.getElementById('associaEducatoreSelect');
+                selectEducatore.innerHTML = '<option value="">Seleziona educatore...</option>';
+
+                if (result.success && result.data) {
+                    result.data.forEach(educatore => {
+                        const option = document.createElement('option');
+                        option.value = educatore.id_educatore;
+                        option.textContent = `${educatore.nome} ${educatore.cognome}`;
+                        selectEducatore.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento educatori:', error);
+                showAlert('Errore nel caricamento degli educatori', 'danger');
+            }
+
+            // Mostra il modal
+            new bootstrap.Modal(document.getElementById('associaEducatoreModal')).show();
+        }
+
+        async function saveAssociazione() {
+            const idEducatore = parseInt(document.getElementById('associaEducatoreSelect').value);
+            const idPaziente = parseInt(document.getElementById('associaPazienteId').value);
+
+            if (!idEducatore || idEducatore <= 0) {
+                showAlert('Seleziona un educatore', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('api/educatori_pazienti.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id_educatore: idEducatore,
+                        pazienti_ids: [idPaziente]
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Educatore associato con successo!', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('associaEducatoreModal')).hide();
+                    loadUtenti();
+                } else {
+                    showAlert('Errore: ' + result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('Errore di connessione durante l\'associazione', 'danger');
+                console.error('Errore:', error);
             }
         }
     </script>

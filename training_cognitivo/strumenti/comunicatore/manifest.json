@@ -1,0 +1,55 @@
+{
+    "name": "Comunicatore Strumenti",
+    "short_name": "Comunicatore",
+    "description": "Sistema di comunicazione con griglia immagini adattiva (1-4 posizioni) e navigazione swipe",
+    "start_url": "./comunicatore.html",
+    "display": "standalone",
+    "background_color": "#F5F5F5",
+    "theme_color": "#673AB7",
+    "orientation": "any",
+    "scope": "./",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "assets/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "assets/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["education", "accessibility", "communication", "utilities"],
+    "lang": "it",
+    "dir": "ltr",
+    "shortcuts": [
+        {
+            "name": "Apri Comunicatore",
+            "short_name": "Comunicatore",
+            "description": "Accesso diretto all'interfaccia paziente",
+            "url": "./comunicatore.html",
+            "icons": [
+                {
+                    "src": "assets/icons/icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Gestione Educatore",
+            "short_name": "Gestione",
+            "description": "Accesso all'interfaccia educatore",
+            "url": "./gestione.html",
+            "icons": [
+                {
+                    "src": "assets/icons/icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ]
+}

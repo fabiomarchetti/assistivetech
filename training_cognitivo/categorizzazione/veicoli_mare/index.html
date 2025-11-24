@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Categorizzazione – Veicoli di Mare</title>
+
+  <!-- PWA Meta Tags -->
+  <meta name="description" content="Esercizio di categorizzazione - Veicoli del Mare - Training Cognitivo AssistiveTech">
+  <meta name="theme-color" content="#0ea5e9">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Veicoli Mare">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="./manifest.json">
+
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192x192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512x512.png">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body{background:#f5f7fb}
+    .header{background:#0ea5e9;color:#fff}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+    .card-item{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);cursor:pointer;user-select:none}
+    .card-item img{width:100%;height:220px;object-fit:contain;padding:6px}
+    .card-item .label{padding:8px 10px;text-align:center;font-weight:600}
+    .card-item.correct{outline:3px solid #22c55e}
+    .card-item.wrong{outline:3px solid #ef4444}
+    .card-item.active{outline:3px dashed #0ea5e9}
+    .hud-badge{border-radius:999px;background:#fff;color:#0ea5e9;padding:6px 12px;font-weight:700}
+    @media (max-width: 576px){ .card-item img{ height:140px; } }
+    @media (min-width: 577px) and (max-width: 768px){ .card-item img{ height:180px; } }
+  </style>
+</head>
+<body>
+  <div class="py-3 header">
+    <div class="container d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <a href="../" class="btn btn-light btn-sm"><i class="bi bi-arrow-left"></i></a>
+        <h5 class="mb-0">Categorizzazione – Veicoli di Mare</h5>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="hud-badge"><i class="bi bi-clock me-1"></i><span id="timer">0.0</span>s</span>
+        <span class="hud-badge"><i class="bi bi-check2-circle me-1"></i><span id="score">0</span></span>
+        <div class="d-flex align-items-center ms-2" style="background:#fff;border-radius:999px;padding:6px 10px;color:#333">
+          <label for="speedRange" class="me-2 mb-0" style="font-weight:700">Velocità</label>
+          <input id="speedRange" type="range" min="3000" max="60000" step="500" value="3000" class="form-range" style="width:220px">
+          <span id="speedLabel" class="ms-2" style="font-weight:700">3.0s</span>
+          <div class="form-check form-switch ms-3">
+            <input class="form-check-input" type="checkbox" id="scanToggle" checked>
+            <label class="form-check-label" for="scanToggle">Timer</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid px-3 px-md-4 my-3">
+    <div id="instruction" class="alert alert-info">Seleziona solo i <strong>veicoli di mare</strong>.</div>
+    <div class="grid" id="grid"></div>
+    <div class="d-flex justify-content-end gap-2 mt-3">
+      <button id="repeatBtn" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-clockwise me-1"></i>Ripeti</button>
+      <button id="endBtn" class="btn btn-primary btn-sm"><i class="bi bi-flag me-1"></i>Termina</button>
+    </div>
+  </div>
+
+  <script>
+    // AUTO-DETECTION BASE_PATH (locale MAMP vs produzione Aruba)
+    const BASE_PATH = window.location.pathname.includes('/Assistivetech/') ? '/Assistivetech' : '';
+    const API_BASE=`${BASE_PATH}/api`;
+    const config=JSON.parse(localStorage.getItem('exerciseConfig')||'{}');
+    const educatorName=config.educatorName||'Sviluppatore';
+    const patientName=config.patientName||'Anonimo';
+    const numItems=Number(config.numItems||config.numStimuli||12); const ttsEnabled=!!config.ttsFeedback;
+
+    const vehicles=["barca","nave","motoscafo","sottomarino","traghetto","canoa"]; // target mare
+    const nonVehicles=["mela","sedia","cane","libro","palla","casa"]; // distrattori
+
+    function pictogramUrl(term){ return `https://api.arasaac.org/api/pictograms/it/search/${encodeURIComponent(term)}`; }
+    async function getFirstPictogram(term){ try{ const r=await fetch(pictogramUrl(term)); const j=await r.json(); if(Array.isArray(j)&&j.length){ return `https://api.arasaac.org/api/pictograms/${j[0]._id}`;} }catch{} return null; }
+    function speak(t){ if(!ttsEnabled) return; try{ const u=new SpeechSynthesisUtterance(t); u.lang='it-IT'; u.rate=0.9; speechSynthesis.speak(u);}catch(e){} }
+
+    async function generateStimuli(){
+      const pool=[]; for(const v of vehicles){ pool.push({term:v,isTarget:true}); } for(const x of nonVehicles){ pool.push({term:x,isTarget:false}); }
+      for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+      const chosen=pool.slice(0,numItems); for(const it of chosen){ it.url=await getFirstPictogram(it.term);} return chosen;
+    }
+
+    let stimuli=[], correct=0, errors=0, startTs=0, itemStart=0;
+    let currentIdx=0, scanTimer=null, scanTimeout=null, scanIntervalMs=1500, cardEls=[];
+    let correctItems=[], wrongItems=[];
+    function startTimer(){ startTs=performance.now(); itemStart=startTs; updateTimer(); }
+    function updateTimer(){ const el=document.getElementById('timer'); if(!el) return; const elapsed=((performance.now()-startTs)/1000).toFixed(1); el.textContent=elapsed; requestAnimationFrame(updateTimer); }
+    function saveItemEvent(name, isCorrect, latency){
+      const d={action:'save_result', nome_educatore:educatorName, nome_paziente:patientName, categoria_esercizio:'categorizzazione', nome_esercizio:'cerca veicoli di mare', tempo_latenza:latency, items_totali_utilizzati:numItems, item_nome:name, item_corretto:isCorrect?1:0, items_corrette:correct, items_errate:errors, nomi_items_corrette:correctItems, nomi_items_errate:wrongItems, session_started_at:sessionStartedAt, timestamp_click:Date.now()};
+      fetch(`${API_BASE}/api_risultati_esercizi.php`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).catch(()=>{});
+    }
+    function saveSummary(){
+      const totalTime=((performance.now()-startTs)/1000).toFixed(2);
+      const d={action:'save_result', nome_educatore:educatorName, nome_paziente:patientName, categoria_esercizio:'categorizzazione', nome_esercizio:'cerca veicoli di mare', tempo_latenza:parseFloat(totalTime), items_totali_utilizzati:numItems, items_corrette:correct, items_errate:errors, nomi_items_corrette:correctItems, nomi_items_errate:wrongItems, session_started_at:sessionStartedAt, timestamp_click:Date.now()};
+      fetch(`${API_BASE}/api_risultati_esercizi.php`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).catch(()=>{});
+    }
+    function renderGrid(){ const grid=document.getElementById('grid'); grid.innerHTML=''; cardEls=[]; stimuli.forEach((s,idx)=>{ const card=document.createElement('div'); card.className='card-item'; card.tabIndex=0; const img=document.createElement('img'); img.alt=s.term; img.src=s.url||''; img.onerror=()=>{ img.onerror=null; img.src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="100%25" height="100%25" fill="%23f3f4f6"/><text x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-family="Arial" font-size="14">immagine non disponibile</text></svg>'; }; card.appendChild(img); const lab=document.createElement('div'); lab.className='label'; lab.textContent=s.term; card.appendChild(lab); card.addEventListener('click',()=>onSelect(idx,card)); card.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); onSelect(idx,card); }}); grid.appendChild(card); cardEls.push(card); }); currentIdx=0; restartScan(); }
+
+    function highlight(idx){ cardEls.forEach((el,i)=>{ el.classList.toggle('active', i===idx); }); }
+    function stepScan(){ if(!stimuli.length){ if(scanTimer) clearInterval(scanTimer); if(scanTimeout) clearTimeout(scanTimeout); return; } highlight(currentIdx); speak(stimuli[currentIdx].term); itemStart=performance.now(); currentIdx = (currentIdx+1) % stimuli.length; }
+    function restartScan(){ if(scanTimer) clearInterval(scanTimer); if(scanTimeout) clearTimeout(scanTimeout); const toggle=document.getElementById('scanToggle'); if(!toggle||!toggle.checked){ highlight(-1); return; } if(!stimuli.length){ highlight(-1); return; } highlight(currentIdx); scanTimeout = setTimeout(()=>{ stepScan(); scanTimer = setInterval(stepScan, scanIntervalMs); }, scanIntervalMs); }
+    function updateSpeed(){ const r=document.getElementById('speedRange'); const lab=document.getElementById('speedLabel'); if(!r||!lab) return; scanIntervalMs = parseInt(r.value,10)||1500; lab.textContent = (scanIntervalMs/1000).toFixed(1)+'s'; restartScan(); }
+    function onSelect(idx,el){ const s=stimuli[idx]; const latency=(performance.now()-itemStart)/1000; try{ speechSynthesis.cancel(); }catch(_){} if(s.isTarget){ correct++; correctItems.push(s.term); speak('Corretto'); } else { errors++; wrongItems.push(s.term); speak('Riprova'); } document.getElementById('score').textContent=`${correct}/${stimuli.length}`; saveItemEvent(s.term, s.isTarget, latency); try{ el.parentElement.removeChild(el); cardEls.splice(idx,1); stimuli.splice(idx,1); if(currentIdx>=stimuli.length){ currentIdx=0; } }catch(e){} itemStart=performance.now(); restartScan(); }
+    document.getElementById('repeatBtn').addEventListener('click', async()=>{ stimuli=await generateStimuli(); correct=0; errors=0; correctItems=[]; wrongItems=[]; document.getElementById('score').textContent='0'; renderGrid(); itemStart=performance.now(); });
+    document.getElementById('endBtn').addEventListener('click', ()=>{ try{ speechSynthesis.cancel(); }catch(_){} if(scanTimer) clearInterval(scanTimer); if(scanTimeout) clearTimeout(scanTimeout); saveSummary(); speak('Sessione terminata'); location.href='../'; });
+    document.addEventListener('keydown', (e)=>{ if(e.key===' '||e.code==='Space'){ e.preventDefault(); if(!stimuli.length||!cardEls.length) return; const idx=(currentIdx-1+stimuli.length)%stimuli.length; onSelect(idx, cardEls[idx]); }});
+    let sessionStartedAt=Date.now();
+    (async function init(){ const p=new URLSearchParams(location.search); if(!p.has('fromSetup')){ location.replace('setup.html'); return; } speak('Cerca tutti i veicoli di mare'); const r=document.getElementById('speedRange'); if(r){ r.addEventListener('input', updateSpeed); updateSpeed(); } const t=document.getElementById('scanToggle'); if(t){ t.addEventListener('change', restartScan); } sessionStartedAt=Date.now(); stimuli=await generateStimuli(); renderGrid(); startTimer(); })();
+
+    // Registrazione Service Worker per PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then((registration) => {
+            console.log('✓ Service Worker registrato:', registration.scope);
+          })
+          .catch((error) => {
+            console.log('✗ Service Worker registrazione fallita:', error);
+          });
+      });
+    }
+  </script>
+</body>
+</html>
+
+

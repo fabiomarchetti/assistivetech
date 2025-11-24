@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cerca Veicoli di Terra</title>
+  <script>
+    // AUTO-DETECTION BASE_PATH (locale MAMP vs produzione Aruba)
+    const BASE_PATH = window.location.pathname.includes('/Assistivetech/') ? '/Assistivetech' : '';
+    const targetURL = BASE_PATH + '/training_cognitivo/categorizzazione/veicoli/setup.html';
+    
+    // Redirect immediato
+    window.location.replace(targetURL);
+  </script>
+  <noscript>
+    <meta http-equiv="refresh" content="0; url=/training_cognitivo/categorizzazione/veicoli/setup.html" />
+  </noscript>
+</head>
+<body>
+  <p>Reindirizzamento a <a href="#" onclick="window.location.href=BASE_PATH + '/training_cognitivo/categorizzazione/veicoli/setup.html'; return false;">Categorizzazione – Veicoli</a>…</p>
+  <script>
+    // Fallback se il redirect automatico non funziona
+    document.querySelector('a').href = BASE_PATH + '/training_cognitivo/categorizzazione/veicoli/setup.html';
+  </script>
+</body>
+</html>
+
+
+
+

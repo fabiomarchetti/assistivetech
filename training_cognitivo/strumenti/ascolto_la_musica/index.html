@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#673AB7">
+    <meta name="description" content="ascolto la musica - Strumento AssistiveTech per training cognitivo">
+
+    <title>ascolto la musica - AssistiveTech</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png?v=2.4.2">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=2.4.2">
+    <link rel="icon" type="image/png" sizes="512x512" href="assets/icons/icon-512.png?v=2.4.2">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-actions-left">
+                <button class="btn-user-options" id="btnUserOptionsHeader" onclick="toggleUserOptions()" title="Opzioni ascolto">
+                    <i class="bi bi-sliders"></i>
+                </button>
+                <button class="btn-back" id="btnBackToPortal" onclick="goBack()">
+                    <i class="bi bi-arrow-left"></i>
+                </button>
+            </div>
+            <h1 class="app-title">ascolto la musica</h1>
+            <button class="btn-menu" onclick="toggleMenu()">
+                <i class="bi bi-three-dots-vertical"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="app-main" id="appMain">
+        <div class="welcome-screen">
+            <div class="welcome-icon">
+                <i class="bi bi-music-note-beamed"></i>
+            </div>
+            <h2>Benvenuto!</h2>
+            <p>Questo è lo strumento <strong>ascolto la musica</strong></p>
+            <p class="description">Scegli la modalità con cui vuoi accedere:</p>
+            <div class="mode-selection">
+                <button class="btn-mode btn-educator" onclick="startEducatorMode()">
+                    <i class="bi bi-person-workspace"></i>
+                    <span>Area Educatore</span>
+                </button>
+                <button class="btn-mode btn-user" onclick="startUserMode()">
+                    <i class="bi bi-headphones"></i>
+                    <span>Area Utente</span>
+                </button>
+            </div>
+            <button class="btn-secondary" style="margin-top: 2rem;" onclick="showInfo()">
+                <i class="bi bi-info-circle"></i> Informazioni
+            </button>
+        </div>
+    </main>
+
+    <!-- Menu laterale -->
+    <nav class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <h3>Menu</h3>
+            <button class="btn-close-menu" onclick="toggleMenu()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <ul class="menu-list">
+            <li><button onclick="showInstructions()"><i class="bi bi-question-circle"></i> Come funziona</button></li>
+            <li id="changeUserMenuItem" style="display: none;"><button onclick="changeLocalUser()"><i class="bi bi-person-circle"></i> Cambia Utente</button></li>
+            <li><button onclick="resetApp()"><i class="bi bi-arrow-clockwise"></i> Ricomincia</button></li>
+            <li><button onclick="showInfo()"><i class="bi bi-info-circle"></i> Informazioni</button></li>
+            <li><button onclick="showSettings()"><i class="bi bi-gear"></i> Impostazioni</button></li>
+            <li id="menuBackToPortal"><button onclick="goBack()"><i class="bi bi-house"></i> Torna alla home</button></li>
+        </ul>
+    </nav>
+
+    <!-- Overlay per menu -->
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <!-- Modal Istruzioni -->
+    <div class="modal" id="instructionsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="bi bi-question-circle"></i> Come funziona</h3>
+                <button class="btn-close-modal" onclick="closeModal('instructionsModal')">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h4>Guida all'uso - Educatore</h4>
+                <ol style="line-height: 2; padding-left: 1.5rem;">
+                    <li><strong>Inserisci il nome utente</strong> nel primo campo del form</li>
+                    <li><strong>Digita la categoria</strong> (es: "canzoni per bambini")</li>
+                    <li>Dopo 1 secondo, <strong>si apre automaticamente YouTube</strong> a destra con la ricerca</li>
+                    <li><strong>Cerca e scegli il brano</strong> su YouTube</li>
+                    <li><strong>Copia il link</strong> dalla barra degli indirizzi del browser YouTube</li>
+                    <li><strong>Incolla il link</strong> nel campo "Link YouTube" del form</li>
+                    <li>L'<strong>anteprima si aggiorna automaticamente</strong> a destra</li>
+                    <li><strong>Compila il nome del brano</strong></li>
+                    <li>Clicca <strong>"Salva brano"</strong> per archiviare</li>
+                </ol>
+                <div class="info-box" style="margin-top: 1.5rem;">
+                    <i class="bi bi-lightbulb"></i>
+                    <p><strong>Suggerimento:</strong> Se modifichi la categoria, la ricerca YouTube si aggiorna automaticamente nella finestra già aperta!</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="closeModal('instructionsModal')">Ho capito</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Informazioni -->
+    <div class="modal" id="infoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="bi bi-info-circle"></i> Informazioni</h3>
+                <button class="btn-close-modal" onclick="closeModal('infoModal')">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h4>ascolto la musica</h4>
+                <p>Questo è uno strumento di training cognitivo sviluppato per AssistiveTech.it</p>
+                <p><strong>ID Strumento:</strong> 30</p>
+                <p><strong>Versione:</strong> 3.2.5</p>
+                <div class="info-box">
+                    <i class="bi bi-lightbulb"></i>
+                    <p>Personalizza questo strumento modificando i file nella cartella del progetto!</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="closeModal('infoModal')">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- YouTube IFrame Player API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+    <script>
+        // Disabilito temporaneamente il Service Worker per evitare problemi di cache
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                    console.log('Service Worker rimosso');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

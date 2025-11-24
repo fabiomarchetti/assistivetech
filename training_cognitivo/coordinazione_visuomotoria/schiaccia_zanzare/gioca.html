@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schiaccia le Zanzare | AssistiveTech</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Gioco interattivo con webcam tracking. Usa la mano per schiacciare zanzare ed evitare farfalle.">
+    <meta name="theme-color" content="#87CEEB">
+    <link rel="manifest" href="./manifest.json">
+
+    <!-- iOS PWA Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Schiaccia Zanzare">
+    <link rel="apple-touch-icon" href="./icons/icon-152x152.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="./icons/icon-72x72.png">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98D8C8 100%);
+        }
+
+        /* Header con bottone Start/Stop */
+        #header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        #header h1 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+
+        #toggleBtn {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        #toggleBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.6);
+        }
+
+        #toggleBtn.stop {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        /* Scoreboard */
+        #scoreboard {
+            position: fixed;
+            top: 80px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 999;
+            min-width: 200px;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .score-value {
+            font-weight: bold;
+            font-size: 1.3rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 8px;
+        }
+
+        .zanzare-colpite {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .farfalle-colpite {
+            background: #e74c3c;
+            color: white;
+        }
+
+        /* Canvas Container */
+        #canvasContainer {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: none;
+        }
+
+        /* Webcam video (nascosto) */
+        #webcam {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+
+        /* Loading overlay */
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            color: white;
+        }
+
+        .spinner {
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loadingText {
+            font-size: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        /* Messaggio iniziale */
+        #startMessage {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            z-index: 1500;
+            max-width: 500px;
+        }
+
+        #startMessage h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        #startMessage p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header con bottone Start/Stop -->
+    <div id="header">
+        <h1>🦟 Schiaccia le Zanzare</h1>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <button id="toggleBtn" onclick="toggleGame()">▶️ START</button>
+            <button onclick="window.location.href='setup.html'" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: bold; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4); transition: all 0.3s ease;">
+                ⚙️ Setup
+            </button>
+        </div>
+    </div>
+
+    <!-- Scoreboard -->
+    <div id="scoreboard">
+        <div class="score-item">
+            <span>🦟 Zanzare colpite:</span>
+            <span class="score-value zanzare-colpite" id="scoreZanzare">0</span>
+        </div>
+        <div class="score-item">
+            <span>🦋 Farfalle colpite:</span>
+            <span class="score-value farfalle-colpite" id="scoreFarfalle">0</span>
+        </div>
+    </div>
+
+    <!-- Canvas per il gioco -->
+    <div id="canvasContainer">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <!-- Webcam (nascosta) -->
+    <video id="webcam" autoplay playsinline></video>
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <div id="loadingText">Inizializzazione webcam...</div>
+    </div>
+
+    <!-- Messaggio iniziale -->
+    <div id="startMessage">
+        <h2>👋 Benvenuto!</h2>
+        <p>Premi <strong>START</strong> per iniziare l'esercizio.</p>
+        <p>Usa la mano per <strong>schiacciare le zanzare</strong> 🦟</p>
+        <p>Evita di toccare le farfalle! 🦋</p>
+    </div>
+
+    <!-- MediaPipe Hands -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+
+    <script>
+        // ==========================================
+        // CONFIGURAZIONE E VARIABILI GLOBALI
+        // ==========================================
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const video = document.getElementById('webcam');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const startMessage = document.getElementById('startMessage');
+        const toggleBtn = document.getElementById('toggleBtn');
+
+        let isRunning = false;
+        let hands = null;
+        let camera = null;
+        let handLandmarks = null;
+
+        // Carica configurazione da localStorage
+        const config = JSON.parse(localStorage.getItem('schiaccia_zanzare_config')) || {
+            zanzare: 5,
+            farfalle: 5,
+            dimensione: 2,
+            velocita: 2
+        };
+
+        // Mappa velocità
+        const speedMap = {
+            1: 1.5,  // Lenta
+            2: 3,    // Media
+            3: 5     // Veloce
+        };
+        const baseSpeed = speedMap[config.velocita];
+
+        // Mappa dimensione (per ipovisione)
+        const sizeMap = {
+            1: 0.7,   // Piccola (70% dimensione base)
+            2: 1.0,   // Media (100% dimensione base)
+            3: 1.5,   // Grande (150% dimensione base)
+            4: 2.0    // Extra Large (200% dimensione base)
+        };
+        const sizeMultiplier = sizeMap[config.dimensione];
+
+        // Array insetti
+        let zanzare = [];
+        let farfalle = [];
+
+        // Punteggio
+        let scoreZanzare = 0;
+        let scoreFarfalle = 0;
+
+        // ==========================================
+        // CLASSI INSETTI
+        // ==========================================
+
+        class Insetto {
+            constructor(type) {
+                this.type = type; // 'zanzara' o 'farfalla'
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                // Dimensione base moltiplicata per il fattore configurato (ipovisione)
+                const baseSize = type === 'zanzara' ? 40 : 50;
+                this.size = baseSize * sizeMultiplier;
+                this.vx = (Math.random() - 0.5) * baseSpeed;
+                this.vy = (Math.random() - 0.5) * baseSpeed;
+                this.emoji = type === 'zanzara' ? '🦟' : '🦋';
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Rimbalza sui bordi
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                // Mantieni dentro i bordi
+                this.x = Math.max(0, Math.min(canvas.width, this.x));
+                this.y = Math.max(0, Math.min(canvas.height, this.y));
+            }
+
+            draw() {
+                ctx.font = `${this.size}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.emoji, this.x, this.y);
+            }
+
+            checkCollision(handX, handY) {
+                const distance = Math.sqrt(
+                    Math.pow(this.x - handX, 2) +
+                    Math.pow(this.y - handY, 2)
+                );
+                return distance < this.size;
+            }
+        }
+
+        // ==========================================
+        // SETUP CANVAS
+        // ==========================================
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - 70;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // ==========================================
+        // INIZIALIZZA INSETTI
+        // ==========================================
+
+        function initInsetti() {
+            zanzare = [];
+            farfalle = [];
+
+            for (let i = 0; i < config.zanzare; i++) {
+                zanzare.push(new Insetto('zanzara'));
+            }
+
+            for (let i = 0; i < config.farfalle; i++) {
+                farfalle.push(new Insetto('farfalla'));
+            }
+        }
+
+        // ==========================================
+        // MEDIAPIPE HANDS SETUP
+        // ==========================================
+
+        async function setupMediaPipe() {
+            hands = new Hands({
+                locateFile: (file) => {
+                    return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+                }
+            });
+
+            hands.setOptions({
+                maxNumHands: 1,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5
+            });
+
+            hands.onResults(onHandsResults);
+
+            // Setup camera
+            camera = new Camera(video, {
+                onFrame: async () => {
+                    if (isRunning) {
+                        await hands.send({image: video});
+                    }
+                },
+                width: 640,
+                height: 480
+            });
+
+            await camera.start();
+
+            loadingOverlay.classList.add('hidden');
+        }
+
+        function onHandsResults(results) {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                handLandmarks = results.multiHandLandmarks[0];
+            } else {
+                handLandmarks = null;
+            }
+        }
+
+        // ==========================================
+        // GAME LOOP
+        // ==========================================
+
+        function gameLoop() {
+            // Pulisci canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Disegna sfondo
+            drawBackground();
+
+            // Aggiorna e disegna insetti
+            [...zanzare, ...farfalle].forEach(insetto => {
+                insetto.update();
+                insetto.draw();
+            });
+
+            // Disegna tracking mano
+            if (handLandmarks && isRunning) {
+                drawHand();
+                checkCollisions();
+            }
+
+            if (isRunning) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function drawBackground() {
+            // Sfondo cielo con nuvole semplici
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#87CEEB');
+            gradient.addColorStop(1, '#98D8C8');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Nuvole semplici
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            drawCloud(100, 100, 80);
+            drawCloud(400, 150, 100);
+            drawCloud(700, 80, 90);
+        }
+
+        function drawCloud(x, y, size) {
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.arc(x + size * 0.5, y - size * 0.3, size * 0.7, 0, Math.PI * 2);
+            ctx.arc(x + size, y, size * 0.8, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawHand() {
+            // Disegna punto della mano (indice)
+            const indexTip = handLandmarks[8]; // Punta indice
+            const x = (1 - indexTip.x) * canvas.width; // Inverte X per effetto specchio
+            const y = indexTip.y * canvas.height;
+
+            // Cerchio semi-trasparente
+            ctx.beginPath();
+            ctx.arc(x, y, 30, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+            ctx.fill();
+
+            // Bordo
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Punto centrale
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+        }
+
+        function checkCollisions() {
+            if (!handLandmarks) return;
+
+            const indexTip = handLandmarks[8];
+            const handX = (1 - indexTip.x) * canvas.width; // Inverte X per effetto specchio
+            const handY = indexTip.y * canvas.height;
+
+            // Controlla collisioni con zanzare
+            for (let i = zanzare.length - 1; i >= 0; i--) {
+                if (zanzare[i].checkCollision(handX, handY)) {
+                    zanzare.splice(i, 1);
+                    scoreZanzare++;
+                    document.getElementById('scoreZanzare').textContent = scoreZanzare;
+
+                    // Aggiungi nuova zanzara se config > 0
+                    if (config.zanzare > 0) {
+                        zanzare.push(new Insetto('zanzara'));
+                    }
+                }
+            }
+
+            // Controlla collisioni con farfalle
+            for (let i = farfalle.length - 1; i >= 0; i--) {
+                if (farfalle[i].checkCollision(handX, handY)) {
+                    farfalle.splice(i, 1);
+                    scoreFarfalle++;
+                    document.getElementById('scoreFarfalle').textContent = scoreFarfalle;
+
+                    // Aggiungi nuova farfalla se config > 0
+                    if (config.farfalle > 0) {
+                        farfalle.push(new Insetto('farfalla'));
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // CONTROLLO START/STOP
+        // ==========================================
+
+        function toggleGame() {
+            isRunning = !isRunning;
+
+            if (isRunning) {
+                toggleBtn.textContent = '⏸️ STOP';
+                toggleBtn.classList.add('stop');
+                startMessage.classList.add('hidden');
+                gameLoop();
+            } else {
+                toggleBtn.textContent = '▶️ START';
+                toggleBtn.classList.remove('stop');
+            }
+        }
+
+        // ==========================================
+        // INIZIALIZZAZIONE
+        // ==========================================
+
+        async function init() {
+            initInsetti();
+            await setupMediaPipe();
+        }
+
+        // Avvia al caricamento pagina
+        init();
+    </script>
+</body>
+</html>

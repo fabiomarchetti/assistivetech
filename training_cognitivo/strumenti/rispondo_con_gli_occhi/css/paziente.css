@@ -1,0 +1,371 @@
+/**
+ * Stili per interfaccia paziente
+ * Rispondo con gli Occhi
+ */
+
+/* === RESET E LAYOUT GENERALE === */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* === HEADER BAR === */
+.header-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+/* === DOMANDA === */
+.domanda-container {
+    text-align: center;
+    padding: 1rem 1.5rem;
+    background-color: rgba(255, 255, 255, 0.95);
+    margin: 80px 20px 10px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.domanda-testo {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.3rem;
+    line-height: 1.2;
+}
+
+/* === RISPOSTE === */
+.risposte-container {
+    flex: 1;
+    padding: 10px 20px;
+    margin-bottom: 10px;
+    max-width: 100%;
+}
+
+.risposta-box {
+    height: 100%;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 1.5rem;
+    border-radius: 25px;
+    background-color: white;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.risposta-box.sinistra {
+    border: 8px solid #0d6efd;
+    box-shadow: 0 0 30px rgba(13, 110, 253, 0.3);
+}
+
+.risposta-box.destra {
+    border: 8px solid #198754;
+    box-shadow: 0 0 30px rgba(25, 135, 84, 0.3);
+}
+
+.risposta-box:hover {
+    transform: scale(1.03);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.risposta-box.sinistra:hover {
+    box-shadow: 0 0 40px rgba(13, 110, 253, 0.5);
+}
+
+.risposta-box.destra:hover {
+    box-shadow: 0 0 40px rgba(25, 135, 84, 0.5);
+}
+
+.risposta-box.attivo {
+    animation: pulse-box 0.6s ease-in-out infinite;
+}
+
+@keyframes pulse-box {
+    0%, 100% {
+        box-shadow: 
+            0 0 80px rgba(13, 110, 253, 0.9), 
+            inset 0 0 50px rgba(13, 110, 253, 0.3),
+            0 20px 80px rgba(13, 110, 253, 0.5);
+    }
+    50% {
+        box-shadow: 
+            0 0 100px rgba(13, 110, 253, 1), 
+            inset 0 0 60px rgba(13, 110, 253, 0.4),
+            0 25px 100px rgba(13, 110, 253, 0.7);
+    }
+}
+
+.risposta-box.destra.attivo {
+    animation: pulse-box-green 0.6s ease-in-out infinite;
+}
+
+@keyframes pulse-box-green {
+    0%, 100% {
+        box-shadow: 
+            0 0 80px rgba(25, 135, 84, 0.9), 
+            inset 0 0 50px rgba(25, 135, 84, 0.3),
+            0 20px 80px rgba(25, 135, 84, 0.5);
+    }
+    50% {
+        box-shadow: 
+            0 0 100px rgba(25, 135, 84, 1), 
+            inset 0 0 60px rgba(25, 135, 84, 0.4),
+            0 25px 100px rgba(25, 135, 84, 0.7);
+    }
+}
+
+.risposta-box.sinistra.attivo {
+    border-width: 15px;
+    border-color: #0a58ca;
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.25), rgba(13, 110, 253, 0.1));
+    box-shadow: 
+        0 0 80px rgba(13, 110, 253, 0.9), 
+        inset 0 0 50px rgba(13, 110, 253, 0.3),
+        0 20px 80px rgba(13, 110, 253, 0.5);
+    transform: scale(1.08) translateX(-10px);
+    z-index: 100;
+}
+
+.risposta-box.destra.attivo {
+    border-width: 15px;
+    border-color: #146c43;
+    background: linear-gradient(135deg, rgba(25, 135, 84, 0.25), rgba(25, 135, 84, 0.1));
+    box-shadow: 
+        0 0 80px rgba(25, 135, 84, 0.9), 
+        inset 0 0 50px rgba(25, 135, 84, 0.3),
+        0 20px 80px rgba(25, 135, 84, 0.5);
+    transform: scale(1.08) translateX(10px);
+    z-index: 100;
+}
+
+.risposta-etichetta {
+    font-size: 3rem;
+    font-weight: 900;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.risposta-box.sinistra .risposta-etichetta {
+    color: #0d6efd;
+    text-shadow: 0 0 20px rgba(13, 110, 253, 0.3);
+}
+
+.risposta-box.destra .risposta-etichetta {
+    color: #198754;
+    text-shadow: 0 0 20px rgba(25, 135, 84, 0.3);
+}
+
+.risposta-immagine-container {
+    width: 100%;
+    max-width: 350px;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.risposta-immagine {
+    max-width: 100%;
+    max-height: 300px;
+    height: auto;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.risposta-box.focus-detected .risposta-immagine {
+    transform: scale(1.1);
+    filter: brightness(1.1) contrast(1.1);
+}
+
+.risposta-box.attivo .risposta-immagine {
+    transform: scale(1.15);
+    filter: brightness(1.15) contrast(1.15) drop-shadow(0 0 30px rgba(255,255,255,0.8));
+    animation: pulse-image 0.6s ease-in-out infinite;
+}
+
+@keyframes pulse-image {
+    0%, 100% {
+        transform: scale(1.15);
+    }
+    50% {
+        transform: scale(1.18);
+    }
+}
+
+/* Video e canvas nascosti (elaborazione in background) */
+#videoPreview,
+#canvasOverlay {
+    display: none !important;
+}
+
+/* === PROGRESS BAR === */
+.progress {
+    border-radius: 6px;
+    overflow: hidden;
+    height: 12px !important;
+    background-color: rgba(0,0,0,0.1);
+}
+
+.progress-bar {
+    transition: width 0.1s linear;
+    font-weight: 700;
+    font-size: 0.7rem;
+}
+
+#progressSinistra .progress-bar {
+    background: linear-gradient(90deg, #0d6efd, #0a58ca);
+}
+
+#progressDestra .progress-bar {
+    background: linear-gradient(90deg, #198754, #146c43);
+}
+
+/* === ANIMAZIONI === */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.slide-up {
+    animation: slideUp 0.5s ease-out;
+}
+
+/* === BADGE === */
+.badge {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+    .domanda-testo {
+        font-size: 1.8rem;
+    }
+    
+    .risposta-etichetta {
+        font-size: 2.5rem;
+    }
+    
+    .risposta-box {
+        padding: 2rem 1rem;
+    }
+    
+    .video-container {
+        height: 120px;
+    }
+    
+    .risposte-container {
+        margin-bottom: 140px;
+    }
+}
+
+@media (max-width: 576px) {
+    .domanda-testo {
+        font-size: 1.5rem;
+    }
+    
+    .risposta-etichetta {
+        font-size: 2rem;
+    }
+    
+    .risposta-immagine {
+        max-height: 150px;
+    }
+}
+
+/* === LOADING === */
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* === STATO FOCUS === */
+.risposta-box.focus-detected {
+    border-width: 12px;
+    transform: scale(1.02);
+}
+
+.risposta-box.sinistra.focus-detected {
+    border-color: #084298;
+    border-width: 14px;
+    box-shadow: 
+        0 0 70px rgba(13, 110, 253, 1), 
+        inset 0 0 50px rgba(13, 110, 253, 0.2),
+        0 15px 60px rgba(13, 110, 253, 0.6);
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.2), white);
+    transform: scale(1.05) translateX(-8px);
+}
+
+.risposta-box.destra.focus-detected {
+    border-color: #0f5132;
+    border-width: 14px;
+    box-shadow: 
+        0 0 70px rgba(25, 135, 84, 1), 
+        inset 0 0 50px rgba(25, 135, 84, 0.2),
+        0 15px 60px rgba(25, 135, 84, 0.6);
+    background: linear-gradient(135deg, rgba(25, 135, 84, 0.2), white);
+    transform: scale(1.05) translateX(8px);
+}
+
+/* === DEBUG INFO === */
+#debugInfo {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+/* === FULLSCREEN === */
+body:fullscreen,
+body:-webkit-full-screen,
+body:-moz-full-screen {
+    width: 100%;
+    height: 100%;
+}
+
